@@ -1,4 +1,6 @@
-# Pyjamapeople
+# alhazen
+
+(see: [https://en.wikipedia.org/wiki/Ibn_al-Haytham] to know where the name of the project is from)
 
 a simple but fully featured example of how to use **tornado**, **asyncio** and **websocket** together 
 to build an application delegating the frontend UI to a browser, local or remote,
