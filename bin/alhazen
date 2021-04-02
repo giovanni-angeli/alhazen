@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-from pyjamampeople import main
+from alhazen.main import main
 
 main()

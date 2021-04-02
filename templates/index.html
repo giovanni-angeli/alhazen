@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>{{ title }}</title>
+        <title>Alhazen frontend</title>
         <meta charset="utf-8" />
         <style type="text/css">
             body {
@@ -27,50 +27,92 @@
             .hidden {
                 display: none;
             }
-            #title {
-                color:#882222;
-            }
             #answer_display {
                 color: #990000;
                 background-color: #FFFF99;
                 padding: 10px;
             }
-        </style>
+
+header {
+	color:#882222;
+	background-color: #EEEEEE;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.col-1 {width: 25%;}
+.col-2 {width: 50%;}
+.col-3 {width: 75%;}
+.col-4 {width: 100%;}
+[class*="col-"] {
+  float: left;
+  padding: 8px;
+//~   border: .1px solid lightgray;
+}
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+#pushed_data_container {
+  float: left;
+  padding: 8px;
+  border: .1px solid lightgray;
+}
+
+		</style>
     </head>
  
     <body>
-        <h1 id="title">{{ title }}</h1>
-        <div id="ws_connection">
-            <label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
-            <label for="port">port:</label><input type="text" id="port" value="8000"/>
-            <label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
-            <br></br>
-            <input type="submit" id="open_btn" value="open" onclick="open_btn_clicked();"/>
-            <input type="submit" id="close_btn" value="close" onclick="close_btn_clicked();" disabled="true"/>
-        </div>
-        <br></br>
-        <div id="message_container">
-            <input type="text" id="message" value="Hot meat!"/>
-            <input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
-        </div>
-        <div id="answer_display">***</div>
-        <br></br>
-        <div>time:[<span id="time_display">***</span>], channel counter:<span id="channel_counter">***</span></div>
-        <div id="pushed_data_container">
-            <table cellpadding="8" align="center">
-                <tr><th width="10">-</th><th>1</th><th>2</th><th>3</th></tr>
-                <tr><td>A</td><td id="datatable_cell_1_1">*</td><td id="datatable_cell_2_1">*</td><td id="datatable_cell_3_1">*</td></tr>
-                <tr><td>B</td><td id="datatable_cell_1_2">*</td><td id="datatable_cell_2_2">*</td><td id="datatable_cell_3_2">*</td></tr>
-                <tr><td>C</td><td id="datatable_cell_1_3">*</td><td id="datatable_cell_2_3">*</td><td id="datatable_cell_3_3">*</td></tr>
-                <tr><td>D</td><td id="datatable_cell_1_4">*</td><td id="datatable_cell_2_4">*</td><td id="datatable_cell_3_4">*</td></tr>
-                <tr><td>E</td><td id="datatable_cell_1_5">*</td><td id="datatable_cell_2_5">*</td><td id="datatable_cell_3_5">*</td></tr>
-            </table>
-        </div>    
-        <small id="footer">{{ footer }}</small>
-        <div id="logger_area_container" hidden>
-            <textarea id="logger_area" maxlength="50" rows="20" cols="100">
-            </textarea>
-        </div>    
+		<header>
+			<div class="row">
+				<div class="col-1"><h3 id="title">Alhazen frontend</h3></div>
+				<div class="col-3" id="ws_connection">
+					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
+					<label for="port">port:</label><input type="text" id="port" value="8000"/>
+					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
+					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
+				</div>
+			</div>
+		</header>
+        
+		</article>
+			<div class="row">
+				<div class="col-1" id="params_container">
+				{% for k, v in model_params %}
+					{{ k }}:<input type="number" id="{{ k }}" value="{{ v }}"/><br/>
+				{% end %}
+				<input type="submit" id="send_params_btn" value="send params" onclick="send_params_btn_clicked();"/>
+				</div>
+				
+				<div class="col-3" id="pushed_data_container">
+				</div>    
+			</div>    
+
+			<div class="row">
+				<div class="col-1" id="message_container">
+					<input type="text" id="message" value="Hot meat!"/>
+					<input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
+				</div>
+				<div class="col-3" id="answer_display">***</div>
+			</div>    
+			<div class="row">
+				<div class="col-4">time:[<span id="time_display">***</span>], channel counter:<span id="channel_counter">***</span></div>
+			</div>    
+
+			<div class="row" id="logger_area_container" hidden>
+				<textarea id="logger_area" maxlength="50" rows="20" cols="100">
+				</textarea>
+			</div>    
+		</article>
+
+		<footer>
+			<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
+		</footer>
     </body>
 
     <script>
@@ -81,6 +123,8 @@
             document.getElementById("logger_area").innerHTML = data.substring(0, 500) + "\n" + _;
             console.log(data);
         };
+        var send_params_btn_clicked = function () {
+		};
         var open_btn_clicked = function () {
 
             var host = document.getElementById("host").value;

@@ -1,3 +1,5 @@
+*.*_history
+*.session
 *.pyc
 *.egg-info
 *~
