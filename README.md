@@ -14,7 +14,7 @@ TAGS: tornado asyncio websocket
 >     $ virtualenv -p /usr/bin/python3 ${VIRTENV_ROOT}
 
 2. clone this project in ${PROJECT_ROOT}
->     $ git clone git@github.com:giovanni-angeli/pyjamapeople.git
+>     $ git clone git@github.com:giovanni-angeli/alhazen.git
 
 3. build Install in edit mode:
 >     $ . ${VIRTENV_ROOT}/bin/activate
@@ -22,9 +22,9 @@ TAGS: tornado asyncio websocket
 >     $ pip install -e ./
 
 4. Run:
->     $ (. ${VIRTENV_ROOT}/bin/activate ; pyjamapeople &)
+>     $ (. ${VIRTENV_ROOT}/bin/activate ; alhazen &)
 >     $ chromium http://127.0.0.1:8000/ &
 >     $ firefox http://127.0.0.1:8000/ &
 
-![Screenshot](doc/Screenshot_2021-01-30_14-58-59.png)#
+
 
