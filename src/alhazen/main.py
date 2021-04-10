@@ -1,10 +1,12 @@
 # coding: utf-8
 
 # pylint: disable=missing-docstring
+# pylint: disable=invalid-name
 
 import sys
 import logging
 import asyncio
+import json
 
 from alhazen.frontend import Frontend
 from alhazen.backend import Backend
@@ -12,31 +14,34 @@ from alhazen.console import Console
 
 
 LOG_LEVEL = "INFO"
-LOG_LEVEL = "ERROR"
+# ~ LOG_LEVEL = "ERROR"
 
-def start():
+def start(settings):
 
     common_context = {
         'frontend': Frontend(),
         'backend': Backend(),
         'console': Console(),
+        'settings': settings,
     }
 
-    for o in common_context.values():
-        o.context = common_context
-        t_ = o.run()
+    for k_ in ('frontend', 'backend', 'console'):
+        instance = common_context[k_]
+        instance.context = common_context
+        t_ = instance.run()
         asyncio.ensure_future(t_)
-        logging.info(f"o:{o}")
+        logging.info("instance:%s", instance)
 
     return common_context
 
-def load_config(pth):
+def load_settings(pth):
 
-    config = None
-    with open(pth) as f:
-        config = json.load(f)
+    settings = {}
+    if pth:
+        with open(pth) as f:
+            settings = json.load(f)
 
-    return config
+    return settings
 
 def set_logging():
 
@@ -48,8 +53,13 @@ def set_logging():
 def main():
 
     set_logging()
-    load_config()
-    start()
+
+    pth = ''
+    if sys.argv[1:]:
+        pth = sys.argv[1]
+
+    settings = load_settings(pth)
+    start(settings)
     asyncio.get_event_loop().run_forever()
 
 

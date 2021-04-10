@@ -6,14 +6,12 @@
 # pylint: disable=invalid-name
 # pylint: disable=too-many-lines
 
-import sys
 import os
 import time
 import asyncio
 import logging
 import traceback
 import json
-import random
 
 import tornado.web            # pylint: disable=import-error
 import tornado.httpserver     # pylint: disable=import-error
@@ -36,34 +34,35 @@ APPLICATION_OPTIONS = dict(
     compiled_template_cache=False)
 
 
+class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-methods
 
-_FRONTEND_INSTANCE = None
-
-def get_frontend_instance():
-    
-    global _FRONTEND_INSTANCE
-    return _FRONTEND_INSTANCE
-
-class Index(tornado.web.RequestHandler):       # pylint: disable=too-few-public-methods
+    frontend_instance = None
 
     def get(self):
 
-        backend = get_frontend_instance().context['backend']
+        model_params = {}
+        if self.frontend_instance:
+            backend = self.frontend_instance.context['backend']
+            model_params = backend.model_params
 
         ctx = {
-            'model_params': backend.model_params,
+            'model_params': model_params,
         }
+
         ret = self.render("index.html", **ctx)
+
         return ret
 
 
 class WebsockHandler(tornado.websocket.WebSocketHandler):
 
+    frontend_instance = None
+
     def initialize(self):
 
-        a = get_frontend_instance()
-        a.web_socket_channels.append(self)
-        logging.info(f"n. of active web_socket_channels:{len(a.web_socket_channels)}")
+        if self.frontend_instance:
+            self.frontend_instance.web_socket_channels.append(self)
+            logging.info(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
 
     def open(self, *args, **kwargs):
 
@@ -72,15 +71,15 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
 
-        a = get_frontend_instance()
-        t_ = a.handle_message_from_UI(self, message)
-        asyncio.ensure_future(t_)
+        if self.frontend_instance:
+            t_ = self.frontend_instance.handle_message_from_UI(self, message)
+            asyncio.ensure_future(t_)
 
     def on_close(self):
 
-        a = get_frontend_instance()
-        a.web_socket_channels.remove(self)
-        logging.info(f"n. of active web_socket_channels:{len(a.web_socket_channels)}")
+        if self.frontend_instance:
+            self.frontend_instance.web_socket_channels.remove(self)
+            logging.info(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
 
 
 class Frontend(tornado.web.Application):
@@ -89,12 +88,15 @@ class Frontend(tornado.web.Application):
 
         self.web_socket_channels = []
 
-        global _FRONTEND_INSTANCE
-        _FRONTEND_INSTANCE = self
+        class WebsockHandler_(WebsockHandler):
+            frontend_instance = self
+
+        class Index_(Index): # pylint: disable=too-few-public-methods
+            frontend_instance = self
 
         url_map = [
-            (r"/", Index, {}),
-            (WS_URI, WebsockHandler, {}),
+            (r"/", Index_, {}),
+            (WS_URI, WebsockHandler_, {}),
         ]
         super().__init__(url_map, **APPLICATION_OPTIONS)
 
