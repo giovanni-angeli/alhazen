@@ -140,7 +140,6 @@
 			var model_params = model_param_elements.map(get_id_value);
 
 			var msg_ = JSON.stringify({"command": "refresh_data_graph", "params": model_params});
-//~             console("sending message to ws: '" + msg_ + "'");
 			ws_instance.send(msg_);
 		};
         var open_btn_clicked = function () {
@@ -190,6 +189,7 @@
             document.getElementById("send_btn").disabled = false; 
             document.getElementById("close_btn").disabled = false; 
 
+			reset_model_params();
 			refresh_data_graph();
         }
         var on_ws_close = function (evt) {

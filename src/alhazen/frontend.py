@@ -137,7 +137,7 @@ class Frontend(tornado.web.Application):
         data = self.context['backend'].refresh_model_data()
 
         line_chart = pygal.XY(width=900, height=500)
-        line_chart.title = 'semi-random data (au, au)'
+        line_chart.title = 'plot example (au, au)'
         line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0])/10))]
 
         for line in data:
@@ -171,7 +171,7 @@ class Frontend(tornado.web.Application):
             self.context['backend'].update_model_params(params)
 
             self.__refresh_data_graph()
-            self.__refresh_params_panel()
+            # ~ self.__refresh_params_panel()
 
         else:
             answer = f"received:{message}"

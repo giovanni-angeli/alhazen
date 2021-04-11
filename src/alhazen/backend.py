@@ -11,11 +11,11 @@ import asyncio
 class Backend:
 
     default_model_params = {
-        'One  ': {'a': 1, 'b': 1, 'c': 5.1},
-        'Two  ': {'a': 2, 'b': 2, 'c': 5.2},
-        'Three': {'a': 3, 'b': 3, 'c': 5.3},
-        'Four ': {'a': 4, 'b': 4, 'c': 5.4},
-        'Five ': {'a': 5, 'b': 5, 'c': 5.5},
+        '1st Line': {'a':  1, 'b':  1, 'c':  1},
+        '2nd Line': {'a':  4, 'b':  4, 'c':  4},
+        '3rd Line': {'a':  6, 'b':  6, 'c':  6},
+        '4th Line': {'a':  8, 'b':  8, 'c':  8},
+        '5th Line': {'a': 10, 'b': 10, 'c': 10},
     }
 
     model_results = []
@@ -26,11 +26,10 @@ class Backend:
         while True:
 
             await asyncio.sleep(5)
-            # ~ logging.info(f"self.context:{self.context}")
 
-    def model_distribution(self, x, a, b, c):
+    def model_distribution(self, x, a, b, c, N):
 
-        return  10. * a * x * random.random() + b * x * x + math.exp(c/50. * x)
+        return  .002 * a * x * random.random() + .1 * b * math.exp(x * 1/50.) + (10 + c) * math.exp(-1 * (x - N/(c + 1.))**2 * 0.2*c/N)
 
     def reset_model_params(self):
 
@@ -44,11 +43,12 @@ class Backend:
 
     def refresh_model_data(self):
 
-        N = 100
+        N0 = - 10
+        N1 = 120
 
         data = []
         for k, p in self.model_params.items():
-            data.append((k, [(i, self.model_distribution(i, p['a'], p['b'], p['c'])) for i in range(N)]))
+            data.append((k, [(i, self.model_distribution(i, p['a'], p['b'], p['c'], N1 - N0)) for i in range(N0, N1)]))
 
         return data
 
