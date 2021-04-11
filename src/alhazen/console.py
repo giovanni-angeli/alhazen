@@ -19,6 +19,10 @@ open(HISTORY_PATH, 'a').close()
 class Console:
 
     async def run(self):
+        
+        # TDO: implement console
+        logging.warning("console is disabled (To Be Implemented)")
+        return
 
         session = PromptSession(history=FileHistory(HISTORY_PATH))
         while True:
@@ -28,11 +32,9 @@ class Console:
                     if input.strip():
                         answer = eval(input, self.context)
                         print('<<< {}'.format(answer))
-                    # ~ logging.warning('<<< {}'.format(answer))
                 except KeyboardInterrupt:
                     continue
                 except EOFError:
                     break
                 except Exception as e:
-                    # ~ logging.error(traceback.format_exc())
                     print(f"{e}")
