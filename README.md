@@ -23,5 +23,6 @@ TAGS: tornado asyncio websocket
 >     $ chromium http://127.0.0.1:8000/ &
 >     $ firefox http://127.0.0.1:8000/ &
 
+![Screenshot](doc/Screenshot_2021-04-11_18-05-53.png)#
 
 
