@@ -21,3 +21,4 @@ __wheels__
 build
 dist
 
+*.igno.*

@@ -22,7 +22,7 @@ class Console:
         
         # TDO: implement console
         logging.warning("console is disabled (To Be Implemented)")
-        return
+        # ~ return
 
         session = PromptSession(history=FileHistory(HISTORY_PATH))
         while True:
@@ -30,11 +30,14 @@ class Console:
                 input = await session.prompt_async('>>> ', auto_suggest=AutoSuggestFromHistory())
                 try:
                     if input.strip():
-                        answer = eval(input, self.context)
+                        answer = eval(input)
                         print('<<< {}'.format(answer))
+                except SyntaxError:
+                    exec(input)
                 except KeyboardInterrupt:
                     continue
                 except EOFError:
                     break
                 except Exception as e:
-                    print(f"{e}")
+                    # ~ logging.warning(traceback.format_exc())
+                    logging.error(f"{e}")

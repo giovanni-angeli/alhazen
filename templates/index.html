@@ -1,17 +1,13 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Alhazen frontend</title>
-        <meta charset="utf-8" />
-        <style type="text/css">
+	<head>
+		<title>Alhazen frontend</title>
+		<meta charset="utf-8" />
+		<style type="text/css">
 			body {
 				font-family: Monospace;
 				text-align: center;
 				min-width: 600px;
-			}
-			.pushed_data_container {
-				overflow-x: auto;
-				overflow: auto;
 			}
 			.hidden {
 				display: none;
@@ -52,28 +48,26 @@
 			  clear: both;
 			  display: table;
 			}
-
-			#pushed_data_container {
+			.data_container {
 			  float: left;
 			  padding: 8px;
 			  border: .1px solid lightgray;
 			}
 			input[type="number"] {
-			   width:100px;
+			   width:50px;
 			   height:40px;
 			}
 			input[type=number]:hover::-webkit-inner-spin-button {  
 				width: 80px;
 				height: 40px;
 			}
-
 		</style>
-    </head>
+	</head>
  
-    <body>
+	<body>
 		<header>
 			<div class="row">
-				<div class="col-2"><h3 id="title">Alhazen frontend</h3></div>
+				<div class="col-2"><b id="title">Alhazen frontend</b></div>
 				<div class="col-8" id="ws_connection">
 					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
 					<label for="port">port:</label><input type="text" id="port" value="8000"/>
@@ -82,10 +76,6 @@
 					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
 				</div>
 			</div>
-		</header>
-        
-		<article>
-
 			<div class="row">
 				<div class="col-2" id="message_container">
 					<input type="text" id="message" value="Hot meat!"/>
@@ -93,6 +83,10 @@
 				</div>
 				<div class="col-8" id="answer_display">***</div>
 			</div>    
+		</header>
+		
+		<article>
+
 			<div class="row">
 			</div>    
 
@@ -102,14 +96,20 @@
 			</div>    
 
 			<div class="row">
-				<div class="col-3">
+				<div class="col-2">
 					<div></div>
 					<div id="params_container"></div>
 					<div></div>
 					<input type="submit" id="reset_model_params_btn" value="reset model params" onclick="reset_model_params();"/>
 				</div>
-				
-				<div class="col-7" id="pushed_data_container">
+				<div class="col-7" class="data_container" id="pygal_data_container">
+				</div>    
+			</div>    
+			<div class="row">
+				<div class="col-2">
+					<div></div>
+				</div>
+				<div class="col-7" class="data_container" id="altair_data_container">
 				</div>    
 			</div>    
 
@@ -118,21 +118,21 @@
 		<footer>
 			<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
 		</footer>
-    </body>
+	</body>
 
-    <script>
+	<script>
  
-        var ws_instance;  
-        var logging = function(data){
-            _ = document.getElementById("logger_area").innerHTML;
-            document.getElementById("logger_area").innerHTML = data.substring(0, 500) + "\n" + _;
-            console.log(data);
-        };
-        var reset_model_params = function () {
+		var ws_instance;  
+		var logging = function(data){
+			_ = document.getElementById("logger_area").innerHTML;
+			document.getElementById("logger_area").innerHTML = data.substring(0, 500) + "\n" + _;
+			console.log(data);
+		};
+		var reset_model_params = function () {
 			var msg_ = JSON.stringify({"command": "reset_model_params", "params": {}});
 			ws_instance.send(msg_);
 		}
-        var refresh_data_graph = function () {
+		var refresh_data_graph = function () {
 			var model_param_elements = Array.from(document.getElementsByClassName("model_param"));
 			function get_id_value(item) {
 				return [item.id, item.value];
@@ -142,82 +142,80 @@
 			var msg_ = JSON.stringify({"command": "refresh_data_graph", "params": model_params});
 			ws_instance.send(msg_);
 		};
-        var open_btn_clicked = function () {
+		var open_btn_clicked = function () {
 
-            var host = document.getElementById("host").value;
-            var port = document.getElementById("port").value;
-            var uri  = document.getElementById("uri").value;
-            try {
+			var host = document.getElementById("host").value;
+			var port = document.getElementById("port").value;
+			var uri  = document.getElementById("uri").value;
+			try {
 
-                if (ws_instance) {
-                    ws_instance.close();
-                }
-                var resource = "ws://" + host + ":" + port + uri;
-                logging("connecting to: " + resource);
-                ws_instance = new WebSocket(resource);
-                ws_instance.onerror   = on_ws_error  ; 
-                ws_instance.onopen    = on_ws_open   ;  
-                ws_instance.onclose   = on_ws_close  ;
-                ws_instance.onmessage = on_ws_message;
-            } catch(err) {
-                logging("err:" + err);
-            }
-        }
-        var close_btn_clicked = function () {
-            try {
-                ws_instance.close();
-                ws_instance = null;
-            } catch(err) {
-                logging("err:" + err);
-            }
-        }
-        var send_btn_clicked = function () {
-            var value = document.getElementById("message").value;
-            for (i = 0; i < 10; i++) { 
+				if (ws_instance) {
+					ws_instance.close();
+				}
+				var resource = "ws://" + host + ":" + port + uri;
+				logging("connecting to: " + resource);
+				ws_instance = new WebSocket(resource);
+				ws_instance.onerror   = on_ws_error  ; 
+				ws_instance.onopen    = on_ws_open   ;  
+				ws_instance.onclose   = on_ws_close  ;
+				ws_instance.onmessage = on_ws_message;
+			} catch(err) {
+				logging("err:" + err);
+			}
+		}
+		var close_btn_clicked = function () {
+			try {
+				ws_instance.close();
+				ws_instance = null;
+			} catch(err) {
+				logging("err:" + err);
+			}
+		}
+		var send_btn_clicked = function () {
+			var value = document.getElementById("message").value;
+			for (i = 0; i < 10; i++) { 
 				var msg_ = JSON.stringify({"command": "test", "params": value + " (" + i + ")"});
 				logging("sending message to ws: '" + msg_ + "'");
-                ws_instance.send(msg_);
-            }
-        }
-        var on_ws_error = function (evt) {
-            logging("error: " + evt.data);
-            alert("error: " + evt.data);
-        }
-        var on_ws_open = function (evt) {
-            logging("* ws connection open *");
-            document.getElementById("open_btn").disabled = true; 
-            document.getElementById("send_btn").disabled = false; 
-            document.getElementById("close_btn").disabled = false; 
+				ws_instance.send(msg_);
+			}
+		}
+		var on_ws_error = function (evt) {
+			logging("error: " + evt.data);
+			alert("error: " + evt.data);
+		}
+		var on_ws_open = function (evt) {
+			logging("* ws connection open *");
+			document.getElementById("open_btn").disabled = true; 
+			document.getElementById("send_btn").disabled = false; 
+			document.getElementById("close_btn").disabled = false; 
 
 			reset_model_params();
 			refresh_data_graph();
-        }
-        var on_ws_close = function (evt) {
-            logging("* ws connection closed *");
-            document.getElementById("open_btn").disabled = false; 
-            document.getElementById("send_btn").disabled = true; 
-            document.getElementById("close_btn").disabled = true; 
-        }
-        var on_ws_message = function (evt) {
-            try {
-                var data = JSON.parse(evt.data);            
-//~                 eval(data.js);
-                if ((data.innerHTML) && (data.element_id)) {
-                    var el = document.getElementById(data.element_id)
-                    if (el) { el.innerHTML = data.innerHTML; }
-                }
-            } catch(err) {
-                logging("err:" + err);
-            }
-        }
+		}
+		var on_ws_close = function (evt) {
+			logging("* ws connection closed *");
+			document.getElementById("open_btn").disabled = false; 
+			document.getElementById("send_btn").disabled = true; 
+			document.getElementById("close_btn").disabled = true; 
+		}
+		var on_ws_message = function (evt) {
+			try {
+				var data = JSON.parse(evt.data);            
+				if ((data.innerHTML) && (data.element_id)) {
+					var el = document.getElementById(data.element_id)
+					if (el) { el.innerHTML = data.innerHTML; }
+				}
+			} catch(err) {
+				logging("err:" + err);
+			}
+		}
 
-        var init = function () {
-             open_btn_clicked();
-        }
-    </script>
+		var init = function () {
+			 open_btn_clicked();
+		}
 
-    <script>
-        init();
-    </script>
+		init();
+	
+	</script>
 
 </html>

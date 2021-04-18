@@ -12,6 +12,7 @@ import asyncio
 import logging
 import traceback
 import json
+import webbrowser
 
 import tornado.web            # pylint: disable=import-error
 import tornado.httpserver     # pylint: disable=import-error
@@ -19,8 +20,7 @@ import tornado.ioloop         # pylint: disable=import-error
 import tornado.websocket      # pylint: disable=import-error
 import tornado.options        # pylint: disable=import-error
 
-import pygal # pylint: disable=import-error
-
+import pygal  # pylint: disable=import-error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,8 +28,11 @@ DEBUG_LEVEL = "INFO"
 
 WS_URI = r'/websocket'
 LISTEN_PORT = 8000
-# ~ LISTEN_ADDRESS = '127.0.0.1'
-LISTEN_ADDRESS = '*'
+LISTEN_ADDRESS = '127.0.0.1'
+# ~ LISTEN_ADDRESS = '*'
+
+# ~ BROWSER = "firefox"
+BROWSER = "chromium"
 
 APPLICATION_OPTIONS = dict(
     debug=True,
@@ -53,7 +56,7 @@ class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-metho
             'model_params': model_params,
         }
 
-        logging.info(f"ctx:{ctx}")
+        logging.debug(f"ctx:{ctx}")
 
         ret = self.render("index.html", **ctx)
 
@@ -68,16 +71,24 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
 
         if self.frontend_instance:
             self.frontend_instance.web_socket_channels.append(self)
-            logging.info(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
+            logging.debug(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
 
     def open(self, *args, **kwargs):
 
         super().open(args, kwargs)
-        logging.info(f"")
+        logging.debug(f"")
+
+    async def write_message(self, msg):
+
+        try:
+            # ~ logging.info(f"msg:{msg}")
+            await super().write_message(msg)
+        except BaseException: # pylint: disable=broad-except
+            logging.error(traceback.format_exc())
 
     def on_message(self, message):
 
-        logging.info(f"message:{message}")
+        logging.debug(f"message:{message}")
 
         if self.frontend_instance:
             t_ = self.frontend_instance.handle_message_from_UI(self, message)
@@ -99,7 +110,7 @@ class Frontend(tornado.web.Application):
         class WebsockHandler_(WebsockHandler):
             frontend_instance = self
 
-        class Index_(Index): # pylint: disable=too-few-public-methods
+        class Index_(Index):  # pylint: disable=too-few-public-methods
             frontend_instance = self
 
         url_map = [
@@ -110,53 +121,86 @@ class Frontend(tornado.web.Application):
 
     async def run(self):
 
-        logging.info("starting tornado webserver on http://{}:{}...".format(LISTEN_ADDRESS, LISTEN_PORT))
+        logging.info("starting tornado webserver on http://{}:{} ...".format(LISTEN_ADDRESS, LISTEN_PORT))
         self.listen(LISTEN_PORT, LISTEN_ADDRESS)
         tornado.platform.asyncio.AsyncIOMainLoop().install()
 
-    def __refresh_params_panel(self):
+        try:
 
-        html_ = ""
+            logging.info("starting browser ...")
+            try:
+                webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+            except:
+                webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+
+        except BaseException: # pylint: disable=broad-except
+            logging.error(traceback.format_exc())
+
+    def refresh_params_panel(self):
+
+        html_ = "<table>"
         for k, p in self.context['backend'].model_params.items():
-            html_ += f'{k}:<br></br>'
+            html_ += f'<tr><td colspan="3">{k}:</td></tr>'
+
+            html_ += '<tr>'
             for k_ in ('a', 'b', 'c'):
                 html_ += f"""
-                    <label>{k_}:</label>
-                    <input type="number" step="0.1" class="model_param" id="{k}_{k_}" value="{p[k_]}" 
+                <td>
+                    <label for=""{k}_{k_}"">{k_}:</label>
+                    <input type="number" step="0.1" class="model_param" id="{k}_{k_}" value="{p[k_]}"
                      min="0" max="100"
                     onchange="refresh_data_graph();"></input>
+                </td>
                 """
-            html_ += '<br></br>'
+            html_ += '</tr>'
+        html_ += '</table>'
 
         # ~ logging.info(f"html_:{html_}")
 
         self.send_message_to_UI("params_container", html_)
 
-    def __refresh_data_graph(self):
+    def refresh_data_graph(self):
 
         data = self.context['backend'].refresh_model_data()
 
-        line_chart = pygal.XY(width=900, height=500)
+        line_chart = pygal.XY(
+            width=900,
+            height=500,
+            x_label_rotation=30,
+            dots_size=0.5,
+            stroke_style={'width': .5},
+            # ~ stroke=False,
+            # ~ show_dots=False,
+            # ~ show_legend=False, 
+            human_readable=True, 
+            legend_at_bottom=True,
+            legend_at_bottom_columns=len(data),
+            # ~ legend_box_size=40,
+            truncate_legend=40,
+        )
+
         line_chart.title = 'plot example (au, au)'
-        line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0])/10))]
+        line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0]) / 10))]
 
         for line in data:
-            line_chart.add(*line)
-        graph_html = line_chart.render()
-        self.send_message_to_UI("pushed_data_container", graph_html.decode())
+            label, serie = line
+            line_chart.add(label, serie)
+        graph_svg = line_chart.render(is_unicode=True)
+        self.send_message_to_UI("pygal_data_container", graph_svg)
+
+        # ~ self.send_message_to_UI("altair_data_container", graph_html.decode())
 
     async def handle_message_from_UI(self, ws_socket, message):
 
-        index_ = self.web_socket_channels.index(ws_socket)
-        logging.info(f"index_:{index_}, message({type(message)}):{message}")
+        logging.debug(f"message({type(message)}):{message}")
         message_dict = json.loads(message)
 
         if message_dict.get("command") == "reset_model_params":
 
             self.context['backend'].reset_model_params()
 
-            self.__refresh_data_graph()
-            self.__refresh_params_panel()
+            self.refresh_data_graph()
+            self.refresh_params_panel()
 
         elif message_dict.get("command") == "refresh_data_graph":
 
@@ -166,30 +210,29 @@ class Frontend(tornado.web.Application):
                 params.setdefault(line_name, {})
                 params[line_name][param_name] = float(v)
 
-            logging.info(f"params:{params}")
+            logging.debug(f"params:{params}")
 
             self.context['backend'].update_model_params(params)
 
-            self.__refresh_data_graph()
-            # ~ self.__refresh_params_panel()
+            self.refresh_data_graph()
 
         else:
             answer = f"received:{message}"
             innerHTML = "ws_index:{} [{}] {} -> {}".format(
-                index_, time.asctime(), message, answer)
-            self.send_message_to_UI("answer_display", innerHTML)
+                self.web_socket_channels.index(ws_socket), time.asctime(), message, answer)
+            self.send_message_to_UI("answer_display", innerHTML, ws_socket)
 
-
-    def send_message_to_UI(self, element_id, innerHTML, ws_index=None):
+    def send_message_to_UI(self, element_id, innerHTML, ws_client=None):
 
         msg = {"element_id": element_id, "innerHTML": innerHTML}
         msg = json.dumps(msg)
 
-        if ws_index:
-            t_ = self.web_socket_channels[ws_index].write_message(msg)
+        if ws_client:
+            t_ = ws_client.write_message(msg)
             asyncio.ensure_future(t_)
 
         else:  # broadcast
             for ws_ch in self.web_socket_channels:
                 t_ = ws_ch.write_message(msg)
                 asyncio.ensure_future(t_)
+
