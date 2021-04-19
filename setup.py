@@ -50,6 +50,7 @@ def main():
         install_requires=[
             'tornado',
             'prompt_toolkit',
+            'pygal',
         ],
     )
 
