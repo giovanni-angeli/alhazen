@@ -20,7 +20,7 @@ class Console:
 
     async def run(self):
         
-        # TDO: implement console
+        # TODO: implement console
         logging.warning("console is disabled (To Be Implemented)")
         # ~ return
 
