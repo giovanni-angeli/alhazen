@@ -76,13 +76,6 @@
 					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-2" id="message_container">
-					<input type="text" id="message" value="Hot meat!"/>
-					<input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
-				</div>
-				<div class="col-8" id="answer_display">***</div>
-			</div>    
 		</header>
 		
 		<article>
@@ -96,21 +89,18 @@
 			</div>    
 
 			<div class="row">
-				<div class="col-2">
-					<div></div>
-					<div id="params_container"></div>
-					<div></div>
-					<input type="submit" id="reset_model_params_btn" value="reset model params" onclick="reset_model_params();"/>
+				<div class="col-3 data_container" id="params_panel">params_panel
 				</div>
-				<div class="col-7" class="data_container" id="pygal_data_container">
+				<div class="col-7 data_container" id="data_graph">data_graph
 				</div>    
 			</div>    
+
 			<div class="row">
-				<div class="col-2">
-					<div></div>
+				<div class="col-2" id="message_container">
+					<input type="text" id="message" value="Hot meat!"/>
+					<input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
 				</div>
-				<div class="col-7" class="data_container" id="altair_data_container">
-				</div>    
+				<div class="col-8" id="answer_display">***</div>
 			</div>    
 
 		</article>
@@ -132,14 +122,14 @@
 			var msg_ = JSON.stringify({"command": "reset_model_params", "params": {}});
 			ws_instance.send(msg_);
 		}
-		var refresh_data_graph = function () {
+		var render_data_graph = function () {
 			var model_param_elements = Array.from(document.getElementsByClassName("model_param"));
 			function get_id_value(item) {
 				return [item.id, item.value];
 			}
 			var model_params = model_param_elements.map(get_id_value);
 
-			var msg_ = JSON.stringify({"command": "refresh_data_graph", "params": model_params});
+			var msg_ = JSON.stringify({"command": "render_data_graph", "params": model_params});
 			ws_instance.send(msg_);
 		};
 		var open_btn_clicked = function () {
@@ -190,7 +180,7 @@
 			document.getElementById("close_btn").disabled = false; 
 
 			reset_model_params();
-			refresh_data_graph();
+			render_data_graph();
 		}
 		var on_ws_close = function (evt) {
 			logging("* ws connection closed *");

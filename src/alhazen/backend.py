@@ -4,64 +4,106 @@
 # pylint: disable=invalid-name
 # pylint: disable=logging-format-interpolation
 
+import os
+import asyncio
+import json
 import logging
 import random
 import math
-import asyncio
 
 
 class Backend:
 
-    default_model_params = {
-        '1st Line': {'a': 1, 'b': 1, 'c': 1},
-        '2nd Line': {'a': 2, 'b': 2, 'c': 2},
-        '3rd Line': {'a': 4, 'b': 4, 'c': 4},
-        '4th Line': {'a': 8, 'b': 8, 'c': 8},
+    default_params = {
+        'start': {
+            'value': 0,
+            'description': "first line of data to graph",
+            "type": "int",
+            'min':0,
+            'max':10,
+        },
+        'stop': {
+            'value': 3,
+            'description': "last line of data to graph",
+            "type": "int",
+            'min':0,
+            'max':10,
+        },
+        'noise_rate': {
+            'value': 0.1,
+            'description': "",
+            "type": "float",
+            'min':0,
+            'max':10.,
+        },
+        'data_file': {
+            'value': "./test/fixtures/samples.json",
+            'description': "",
+            "type": "str",
+        },
     }
 
-    model_params = {}
-
-    N0 = - 10
-    N1 = 180
-
-    model_results = []
+    params = {}
+    params_file_path = "./alhazen.params.json"
+    title = 'plot example - intensity(%) vs wavelength(nm)'
 
     async def run(self):
 
-        self.reset_model_params()
+        self.reset_params()
+        self.load_params_from_json_file()
+
         while True:
 
             await asyncio.sleep(5)
 
-    def reset_model_params(self):
+    def reset_params(self):
 
-        self.model_params = self.default_model_params.copy()
-        logging.debug(f"self.model_params:{self.model_params}")
+        self.params = self.default_params.copy()
 
-    def update_model_params(self, params):
+    def update_params(self, params):
 
-        self.model_params.update(params)
-        logging.debug(f"self.model_params:{self.model_params}")
+        self.params.update(params)
 
-    def refresh_model_data(self):
+    def dump_params_to_json_file(self):
 
-        data = []
+        logging.info(f"self.params_file_path:{self.params_file_path}")
 
-        def model_distribution(x, a, b, c, N):
+        with open(self.params_file_path, 'w') as f:
+            json.dump(self.params, f, indent=2)
 
-            y = 0
-            y += .002 * a * x * random.random()
-            y += (5 / N) * b * math.exp(x * 0.02)
-            y += 10. * (1 + c) * math.exp(-1 * (x - N / (c + 1.))**2 * 0.002 * c)
+    def load_params_from_json_file(self):
 
-            return y
+        logging.info(f"self.params_file_path:{self.params_file_path}")
 
-        def map_(i, p):
-            return model_distribution(i, p['a'], p['b'], p['c'], (self.N1 + self.N0) / 2)
+        if os.path.exists(self.params_file_path):
+            with open(self.params_file_path) as f:
+                self.params = json.load(f)
 
-        for k, p in self.model_params.items():
+    def load_data_from_json_file(self):
 
-            serie = [(i, map_(i, p)) for i in range(self.N0, self.N1)]
-            data.append((k, serie))
+        data_file = self.params['data_file']['value']
+
+        logging.info(f"data_file:{data_file}")
+
+        samples = []
+        if os.path.exists(data_file):
+            with open(data_file) as f:
+                samples = json.load(f)
+
+        return samples
+
+    def run_model(self):
+
+        samples = self.load_data_from_json_file()
+
+        # ~ TODO: compute data from samples
+
+        noise_rate = float(self.params.get('noise_rate', {}).get('value', 0.1))
+
+        data = samples
+        for d in data:
+            for line in d["spectra_lines"]:
+                for i, k in enumerate(line):
+                    line[i][1] = line[i][1] * (1 + noise_rate * random.random())
 
         return data

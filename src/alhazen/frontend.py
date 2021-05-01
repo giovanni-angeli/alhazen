@@ -32,7 +32,8 @@ LISTEN_ADDRESS = '127.0.0.1'
 # ~ LISTEN_ADDRESS = '*'
 
 # ~ BROWSER = "firefox"
-BROWSER = "chromium"
+# ~ BROWSER = "chromium"
+BROWSER = None
 
 APPLICATION_OPTIONS = dict(
     debug=True,
@@ -47,18 +48,7 @@ class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-metho
 
     def get(self):
 
-        model_params = []
-        if self.frontend_instance:
-            backend = self.frontend_instance.context['backend']
-            model_params = backend.default_model_params
-
-        ctx = {
-            'model_params': model_params,
-        }
-
-        logging.debug(f"ctx:{ctx}")
-
-        ret = self.render("index.html", **ctx)
+        ret = self.render("index.html")
 
         return ret
 
@@ -81,7 +71,6 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
     async def write_message(self, msg):
 
         try:
-            # ~ logging.info(f"msg:{msg}")
             await super().write_message(msg)
         except BaseException: # pylint: disable=broad-except
             logging.error(traceback.format_exc())
@@ -125,70 +114,78 @@ class Frontend(tornado.web.Application):
         self.listen(LISTEN_PORT, LISTEN_ADDRESS)
         tornado.platform.asyncio.AsyncIOMainLoop().install()
 
-        try:
-
-            logging.info("starting browser ...")
+        if BROWSER:
             try:
-                webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
-            except:
-                webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
 
-        except BaseException: # pylint: disable=broad-except
-            logging.error(traceback.format_exc())
+                logging.info("starting browser ...")
+                try:
+                    webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+                except:
+                    webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
 
-    def refresh_params_panel(self):
+            except BaseException: # pylint: disable=broad-except
+                logging.error(traceback.format_exc())
+
+    def handle_params_panel(self, params):
+
+        params = dict(params)
+        for (k, v) in params.items():
+            if self.context['backend'].params.get(k):
+                self.context['backend'].params[k]['value'] = v
+        logging.info(f"{self.context['backend'].params}")
+        # ~ self.context['backend'].update_params(params)
+
+    def render_params_panel(self):
 
         html_ = "<table>"
-        for k, p in self.context['backend'].model_params.items():
-            html_ += f'<tr><td colspan="3">{k}:</td></tr>'
+        html_ += f'<tr><th colspan="2"> params_panel </th></tr>'
+        for k, v in self.context['backend'].params.items():
+            if v['type'] == 'int':
+                _type = f"""type="number" step="1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 100)}" """
+            elif v['type'] == 'float':
+                _type = f"""type="number" step="0.1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 1.)}" """
+            else:
+                _type = f'type="text" size=40'
+            html_ += f"""<tr>
+            <td title="{v['description']}"><label for=""{k}"">{k}:</label></td>
+            <td><input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();"></input></td>
+            </tr>"""
 
-            html_ += '<tr>'
-            for k_ in ('a', 'b', 'c'):
-                html_ += f"""
-                <td>
-                    <label for=""{k}_{k_}"">{k_}:</label>
-                    <input type="number" step="0.1" class="model_param" id="{k}_{k_}" value="{p[k_]}"
-                     min="0" max="100"
-                    onchange="refresh_data_graph();"></input>
-                </td>
-                """
-            html_ += '</tr>'
         html_ += '</table>'
 
-        # ~ logging.info(f"html_:{html_}")
+        self.send_message_to_UI("params_panel", html_)
 
-        self.send_message_to_UI("params_container", html_)
-
-    def refresh_data_graph(self):
-
-        data = self.context['backend'].refresh_model_data()
+    def render_data_graph(self, title, data, start, stop):
 
         line_chart = pygal.XY(
             width=900,
             height=500,
             x_label_rotation=30,
             dots_size=0.5,
-            stroke_style={'width': .5},
+            stroke_style={'width': 1.},
             # ~ stroke=False,
             # ~ show_dots=False,
             # ~ show_legend=False, 
             human_readable=True, 
             legend_at_bottom=True,
-            legend_at_bottom_columns=len(data),
+            # ~ legend_at_bottom_columns=len(data),
             # ~ legend_box_size=40,
             truncate_legend=40,
         )
 
-        line_chart.title = 'plot example (au, au)'
-        line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0]) / 10))]
+        line_chart.title = title
 
-        for line in data:
-            label, serie = line
-            line_chart.add(label, serie)
+        for sample in data[start:stop+1]:
+            _line = "1 {}".format(sample.get('name')), sample['spectra_lines'][0]
+            line_chart.add(*_line)
+            if sample['spectra_lines'][1]:
+                _line = "2 " + sample.get('name'), sample['spectra_lines'][1]
+                line_chart.add(*_line)
+
         graph_svg = line_chart.render(is_unicode=True)
-        self.send_message_to_UI("pygal_data_container", graph_svg)
+        self.send_message_to_UI("data_graph", graph_svg)
 
-        # ~ self.send_message_to_UI("altair_data_container", graph_html.decode())
+        # ~ line_chart.render_to_file('samples.svg')   
 
     async def handle_message_from_UI(self, ws_socket, message):
 
@@ -197,24 +194,20 @@ class Frontend(tornado.web.Application):
 
         if message_dict.get("command") == "reset_model_params":
 
-            self.context['backend'].reset_model_params()
+            self.context['backend'].reset_params()
+            self.render_params_panel()
 
-            self.refresh_data_graph()
-            self.refresh_params_panel()
+        elif message_dict.get("command") == "render_data_graph":
 
-        elif message_dict.get("command") == "refresh_data_graph":
+            params = message_dict.get("params", [])
+            self.handle_params_panel(params)
 
-            params = {}
-            for (k, v) in message_dict.get("params", []):
-                line_name, param_name = k.split('_')
-                params.setdefault(line_name, {})
-                params[line_name][param_name] = float(v)
+            start = self.context['backend'].params.get('start', {}).get('value', 0)
+            stop = self.context['backend'].params.get('stop', {}).get('value', 1)
+            title = self.context['backend'].title
+            data = self.context['backend'].run_model()
 
-            logging.debug(f"params:{params}")
-
-            self.context['backend'].update_model_params(params)
-
-            self.refresh_data_graph()
+            self.render_data_graph(title, data, int(start), int(stop))
 
         else:
             answer = f"received:{message}"

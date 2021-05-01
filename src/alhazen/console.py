@@ -20,10 +20,6 @@ class Console:
 
     async def run(self):
         
-        # TODO: implement console
-        logging.warning("console is disabled (To Be Implemented)")
-        # ~ return
-
         session = PromptSession(history=FileHistory(HISTORY_PATH))
         while True:
             with patch_stdout():
@@ -39,5 +35,4 @@ class Console:
                 except EOFError:
                     break
                 except Exception as e:
-                    # ~ logging.warning(traceback.format_exc())
                     logging.error(f"{e}")

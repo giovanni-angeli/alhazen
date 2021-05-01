@@ -25,12 +25,13 @@ def start(settings):
         'settings': settings,
     }
 
-    for k_ in ('frontend', 'backend', 'console'):
+    for k_ in ('backend', 'frontend', 'console'):
         instance = common_context[k_]
         instance.context = common_context
         t_ = instance.run()
         asyncio.ensure_future(t_)
-        logging.info("instance:%s", instance)
+        # ~ logging.info("instance:%s", instance)
+
 
     return common_context
 
