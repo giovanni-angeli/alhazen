@@ -44,16 +44,16 @@ def load_settings(pth):
 
     return settings
 
-def set_logging():
+def set_logging(log_level):
 
     logging.basicConfig(
         stream=sys.stdout,
-        level=LOG_LEVEL,
+        level=log_level,
         format="[%(asctime)s]%(levelname)s %(funcName)s() %(filename)s:%(lineno)d %(message)s")
 
 def main():
 
-    set_logging()
+    set_logging(LOG_LEVEL)
 
     pth = ''
     if sys.argv[1:]:

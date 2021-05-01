@@ -9,8 +9,10 @@ import asyncio
 import json
 import logging
 import random
+import copy
 import math
 
+PARAMS_FILE = "./alhazen.params.json"
 
 class Backend:
 
@@ -19,22 +21,22 @@ class Backend:
             'value': 0,
             'description': "first line of data to graph",
             "type": "int",
-            'min':0,
-            'max':10,
+            'min': 0,
+            'max': 10,
         },
         'stop': {
             'value': 3,
             'description': "last line of data to graph",
             "type": "int",
-            'min':0,
-            'max':10,
+            'min': 0,
+            'max': 10,
         },
         'noise_rate': {
             'value': 0.1,
             'description': "",
             "type": "float",
-            'min':0,
-            'max':10.,
+            'min': 0,
+            'max': 10.,
         },
         'data_file': {
             'value': "./test/fixtures/samples.json",
@@ -44,7 +46,7 @@ class Backend:
     }
 
     params = {}
-    params_file_path = "./alhazen.params.json"
+    params_file_path = PARAMS_FILE
     title = 'plot example - intensity(%) vs wavelength(nm)'
 
     async def run(self):
@@ -58,11 +60,9 @@ class Backend:
 
     def reset_params(self):
 
-        self.params = self.default_params.copy()
+        logging.info("")
 
-    def update_params(self, params):
-
-        self.params.update(params)
+        self.params = copy.deepcopy(self.default_params)
 
     def dump_params_to_json_file(self):
 
@@ -73,7 +73,7 @@ class Backend:
 
     def load_params_from_json_file(self):
 
-        logging.info(f"self.params_file_path:{self.params_file_path}")
+        logging.debug(f"self.params_file_path:{self.params_file_path}")
 
         if os.path.exists(self.params_file_path):
             with open(self.params_file_path) as f:
@@ -83,7 +83,7 @@ class Backend:
 
         data_file = self.params['data_file']['value']
 
-        logging.info(f"data_file:{data_file}")
+        logging.debug(f"data_file:{data_file}")
 
         samples = []
         if os.path.exists(data_file):
@@ -103,7 +103,7 @@ class Backend:
         data = samples
         for d in data:
             for line in d["spectra_lines"]:
-                for i, k in enumerate(line):
+                for i, _ in enumerate(line):
                     line[i][1] = line[i][1] * (1 + noise_rate * random.random())
 
         return data

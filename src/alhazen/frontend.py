@@ -35,6 +35,8 @@ LISTEN_ADDRESS = '127.0.0.1'
 # ~ BROWSER = "chromium"
 BROWSER = None
 
+GRAPH_DUMP_FILE = 'alhazen.graph.dump.svg'
+
 APPLICATION_OPTIONS = dict(
     debug=True,
     autoreload=True,
@@ -72,7 +74,7 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
 
         try:
             await super().write_message(msg)
-        except BaseException: # pylint: disable=broad-except
+        except BaseException:  # pylint: disable=broad-except
             logging.error(traceback.format_exc())
 
     def on_message(self, message):
@@ -120,10 +122,10 @@ class Frontend(tornado.web.Application):
                 logging.info("starting browser ...")
                 try:
                     webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
-                except:
+                except BaseException:  # pylint: disable=broad-except
                     webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
 
-            except BaseException: # pylint: disable=broad-except
+            except BaseException:  # pylint: disable=broad-except
                 logging.error(traceback.format_exc())
 
     def handle_params_panel(self, params):
@@ -132,13 +134,13 @@ class Frontend(tornado.web.Application):
         for (k, v) in params.items():
             if self.context['backend'].params.get(k):
                 self.context['backend'].params[k]['value'] = v
-        logging.info(f"{self.context['backend'].params}")
-        # ~ self.context['backend'].update_params(params)
 
     def render_params_panel(self):
 
         html_ = "<table>"
-        html_ += f'<tr><th colspan="2"> params_panel </th></tr>'
+        html_ += """<tr>
+            <th colspan="3"> model params panel </th></tr>"""
+
         for k, v in self.context['backend'].params.items():
             if v['type'] == 'int':
                 _type = f"""type="number" step="1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 100)}" """
@@ -146,16 +148,22 @@ class Frontend(tornado.web.Application):
                 _type = f"""type="number" step="0.1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 1.)}" """
             else:
                 _type = f'type="text" size=40'
-            html_ += f"""<tr>
-            <td title="{v['description']}"><label for=""{k}"">{k}:</label></td>
-            <td><input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();"></input></td>
+            html_ += f"""
+            <tr title="{v['description']}">
+            <td><label for=""{k}"">{k}:</label></td>
+            <td><input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();">{v['description']}</input></td>
             </tr>"""
 
         html_ += '</table>'
 
         self.send_message_to_UI("params_panel", html_)
 
-    def render_data_graph(self, title, data, start, stop):
+    def render_data_graph(self, to_file=False):
+
+        start = int(self.context['backend'].params.get('start', {}).get('value', 0))
+        stop = int(self.context['backend'].params.get('stop', {}).get('value', 1))
+        title = self.context['backend'].title
+        data = self.context['backend'].run_model()
 
         line_chart = pygal.XY(
             width=900,
@@ -165,8 +173,8 @@ class Frontend(tornado.web.Application):
             stroke_style={'width': 1.},
             # ~ stroke=False,
             # ~ show_dots=False,
-            # ~ show_legend=False, 
-            human_readable=True, 
+            # ~ show_legend=False,
+            human_readable=True,
             legend_at_bottom=True,
             # ~ legend_at_bottom_columns=len(data),
             # ~ legend_box_size=40,
@@ -175,41 +183,55 @@ class Frontend(tornado.web.Application):
 
         line_chart.title = title
 
-        for sample in data[start:stop+1]:
+        for sample in data[start:stop + 1]:
             _line = "1 {}".format(sample.get('name')), sample['spectra_lines'][0]
             line_chart.add(*_line)
             if sample['spectra_lines'][1]:
                 _line = "2 " + sample.get('name'), sample['spectra_lines'][1]
                 line_chart.add(*_line)
 
-        graph_svg = line_chart.render(is_unicode=True)
-        self.send_message_to_UI("data_graph", graph_svg)
-
-        # ~ line_chart.render_to_file('samples.svg')   
+        if to_file:
+            line_chart.render_to_file(GRAPH_DUMP_FILE)
+        else:
+            graph_svg = line_chart.render(is_unicode=True)
+            self.send_message_to_UI("data_graph_panel", graph_svg)
 
     async def handle_message_from_UI(self, ws_socket, message):
 
         logging.debug(f"message({type(message)}):{message}")
+
         message_dict = json.loads(message)
 
         if message_dict.get("command") == "reset_model_params":
 
             self.context['backend'].reset_params()
             self.render_params_panel()
+            self.render_data_graph()
+
+        elif message_dict.get("command") == "load_model_params":
+
+            self.context['backend'].load_params_from_json_file()
+            self.render_params_panel()
+            self.render_data_graph()
+
+        elif message_dict.get("command") == "dump_model_params":
+
+            self.context['backend'].dump_params_to_json_file()
+
+        elif message_dict.get("command") == "dump_svg_graph":
+
+            self.render_data_graph(to_file=True)
 
         elif message_dict.get("command") == "render_data_graph":
 
             params = message_dict.get("params", [])
             self.handle_params_panel(params)
-
-            start = self.context['backend'].params.get('start', {}).get('value', 0)
-            stop = self.context['backend'].params.get('stop', {}).get('value', 1)
-            title = self.context['backend'].title
-            data = self.context['backend'].run_model()
-
-            self.render_data_graph(title, data, int(start), int(stop))
+            self.render_data_graph()
 
         else:
+
+            logging.warning(f"message({type(message)}):{message}")
+
             answer = f"received:{message}"
             innerHTML = "ws_index:{} [{}] {} -> {}".format(
                 self.web_socket_channels.index(ws_socket), time.asctime(), message, answer)
@@ -228,4 +250,3 @@ class Frontend(tornado.web.Application):
             for ws_ch in self.web_socket_channels:
                 t_ = ws_ch.write_message(msg)
                 asyncio.ensure_future(t_)
-
