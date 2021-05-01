@@ -24,8 +24,6 @@ import pygal  # pylint: disable=import-error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-DEBUG_LEVEL = "INFO"
-
 WS_URI = r'/websocket'
 LISTEN_PORT = 8000
 LISTEN_ADDRESS = '127.0.0.1'
@@ -50,7 +48,12 @@ class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-metho
 
     def get(self):
 
-        ret = self.render("index.html")
+        ctx = {
+            'ws_uri': WS_URI,
+            'ws_listen_port': LISTEN_PORT,
+            'ws_listen_address': LISTEN_ADDRESS,
+        }
+        ret = self.render("index.html", **ctx)
 
         return ret
 

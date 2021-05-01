@@ -73,9 +73,9 @@
 			<div class="row" id="ws_connection_panel">
 				<div class="col-2"><h3 id="title">Alhazen frontend</h3></div>
 				<div class="col-8" id="ws_connection">
-					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
-					<label for="port">port:</label><input type="text" id="port" value="8000"/>
-					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+					<label for="host">host:</label><input type="text" id="host" value="{{ ws_listen_address }}"/>
+					<label for="port">port:</label><input type="text" id="port" value="{{ ws_listen_port }}"/>
+					<label for="uri">uri:</label><input type="text" id="uri" value="{{ ws_uri }}">
 					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
 					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
 				</div>
