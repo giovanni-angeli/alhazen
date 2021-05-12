@@ -17,30 +17,175 @@ PARAMS_FILE = "./alhazen.params.json"
 class Backend:
 
     default_params = {
-        'start': {
+# layer 1
+        'layer1_name': {
+            'value': "top layer",
+            'description': "name of layer 1",
+            "type": "str",
+        },
+        'layer1_thickness': {
             'value': 0,
-            'description': "first line of data to graph",
-            "type": "int",
-            'min': 0,
-            'max': 10,
-        },
-        'stop': {
-            'value': 3,
-            'description': "last line of data to graph",
-            "type": "int",
-            'min': 0,
-            'max': 10,
-        },
-        'noise_rate': {
-            'value': 0.1,
-            'description': "",
+            'description': "thickness of layer 1",
             "type": "float",
             'min': 0,
-            'max': 10.,
+            'max': 10,
         },
-        'data_file': {
-            'value': "./test/fixtures/samples.json",
-            'description': "",
+        'layer1_coherence': {
+            'value': False,
+            'description': "coherence of layer 1",
+            "type": "bool",
+        },
+        'layer1_roughness': {
+            'value': 0,
+            'description': "roughness of layer 1",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer1_medium1_name': {
+            'value': "air",
+            'description': "name of medium 1 of layer 1",
+            "type": "str",
+        },
+        'layer1_medium1_fraction': {
+            'value': 100,
+            'description': "fraction of medium 1 of layer 1",
+            "type": "float",
+            'min': 0,
+            'max': 100,
+        },
+        'layer1_medium1_opticalPropertiesFileName': {
+            'value': "",
+            'description': "optical properties of medium 1 of layer 1",
+            "type": "str",
+        },
+
+# layer 2
+        'layer2_name': {
+            'value': "top layer",
+            'description': "name of layer 2",
+            "type": "str",
+        },
+        'layer2_thickness': {
+            'value': 0,
+            'description': "thickness of layer 2",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer2_coherence': {
+            'value': False,
+            'description': "coherence of layer 2",
+            "type": "bool",
+        },
+        'layer2_roughness': {
+            'value': 0,
+            'description': "roughness of layer 2",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer2_medium1_name': {
+            'value': "air",
+            'description': "name of medium 1 of layer 2",
+            "type": "str",
+        },
+        'layer2_medium1_fraction': {
+            'value': 100,
+            'description': "fraction of medium 1 of layer 2",
+            "type": "float",
+            'min': 0,
+            'max': 100,
+        },
+        'layer2_medium1_opticalPropertiesFileName': {
+            'value': "",
+            'description': "optical properties of medium 1 of layer 2",
+            "type": "str",
+        },
+
+# layer 3
+        'layer3_name': {
+            'value': "top layer",
+            'description': "name of layer 3",
+            "type": "str",
+        },
+        'layer3_thickness': {
+            'value': 0,
+            'description': "thickness of layer 3",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer3_coherence': {
+            'value': False,
+            'description': "coherence of layer 3",
+            "type": "bool",
+        },
+        'layer3_roughness': {
+            'value': 0,
+            'description': "roughness of layer 3",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer3_medium1_name': {
+            'value': "air",
+            'description': "name of medium 1 of layer 3",
+            "type": "str",
+        },
+        'layer3_medium1_fraction': {
+            'value': 100,
+            'description': "fraction of medium 1 of layer 3",
+            "type": "float",
+            'min': 0,
+            'max': 100,
+        },
+        'layer3_medium1_opticalPropertiesFileName': {
+            'value': "",
+            'description': "optical properties of medium 1 of layer 3",
+            "type": "str",
+        },
+
+# layer 4
+        'layer4_name': {
+            'value': "top layer",
+            'description': "name of layer 4",
+            "type": "str",
+        },
+        'layer4_thickness': {
+            'value': 0,
+            'description': "thickness of layer 4",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer4_coherence': {
+            'value': False,
+            'description': "coherence of layer 4",
+            "type": "bool",
+        },
+        'layer4_roughness': {
+            'value': 0,
+            'description': "roughness of layer 4",
+            "type": "float",
+            'min': 0,
+            'max': 10,
+        },
+        'layer4_medium1_name': {
+            'value': "air",
+            'description': "name of medium 1 of layer 4",
+            "type": "str",
+        },
+        'layer4_medium1_fraction': {
+            'value': 100,
+            'description': "fraction of medium 1 of layer 4",
+            "type": "float",
+            'min': 0,
+            'max': 100,
+        },
+        'layer4_medium1_opticalPropertiesFileName': {
+            'value': "",
+            'description': "optical properties of medium 1 of layer 4",
             "type": "str",
         },
     }
