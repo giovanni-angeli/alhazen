@@ -139,9 +139,15 @@ class Frontend(tornado.web.Application):
     def handle_structure_params_panel(self, params):
 
         params = dict(params)
-        for (k, v) in params.items():
+
+        # ~ logging.warning(f"params:{params}")
+
+        for k, v in params.items():
             if self.context['backend'].params.get(k):
-                self.context['backend'].params[k]['value'] = v
+                if self.context['backend'].params[k]['value'] != v:
+                    self.context['backend'].params[k]['value'] = v
+
+        # ~ logging.warning(f"self.context['backend'].params:{self.context['backend'].params}")
 
     def render_structure_params_panel(self):
 
@@ -172,9 +178,10 @@ class Frontend(tornado.web.Application):
 
     def render_data_graph(self, to_file=False):
 
-        start = int(self.context['backend'].params.get('start', {}).get('value', 0))
-        stop = int(self.context['backend'].params.get('stop', {}).get('value', 1))
         title = self.context['backend'].title
+
+        # ~ logging.warning(f"self.context['backend'].params:{self.context['backend'].params}")
+
         data = self.context['backend'].run_model()
 
         line_chart = pygal.XY(
@@ -195,12 +202,8 @@ class Frontend(tornado.web.Application):
 
         line_chart.title = title
 
-        for sample in data[start:stop + 1]:
-            _line = "1 {}".format(sample.get('name')), sample['spectra_lines'][0]
-            line_chart.add(*_line)
-            if sample['spectra_lines'][1]:
-                _line = "2 " + sample.get('name'), sample['spectra_lines'][1]
-                line_chart.add(*_line)
+        for item in data:
+            line_chart.add(item.get('line_name'), item.get('x_y_data'))
 
         if to_file:
             line_chart.render_to_file(GRAPH_DUMP_FILE)
