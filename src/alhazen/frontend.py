@@ -151,9 +151,9 @@ class Frontend(tornado.web.Application):
 
         for k, v in self.context['backend'].params.items():
             if v['type'] == 'int':
-                _type = f"""type="number" step="1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 100)}" """
+                _type = f"""type="number" step="1" id="{k}" min="{v.get('min', 0)}" max="{v.get('max', 100)}" """
             elif v['type'] == 'float':
-                _type = f"""type="number" step="0.1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 1.)}" """
+                _type = f"""type="number" step="0.1" id="{k}" min="{v.get('min', 0)}" max="{v.get('max', 1.)}" """
             else:
                 _type = f""" type="text" size="{v.get('size', 32)}" """
             html_ += f"""
