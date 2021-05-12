@@ -65,12 +65,12 @@ class Backend:
 
     def __init__(self):
 
-        self.default_params = {}
+        self.default_structure_params = {}
 
-        self.layer_name_list = ["L1", "L2", "L3", ]
+        self.layer_name_list = ["L1", "L2", "L3", "L4", ]
 
         for layer_name in self.layer_name_list:
-            self.default_params.update(
+            self.default_structure_params.update(
                 {"{}_{}".format(layer_name, k): v for k, v in LAYER_PARAMETER_SCHEMA.items()})
 
         self.params = {}
@@ -79,27 +79,27 @@ class Backend:
 
     async def run(self):
 
-        self.reset_params()
-        self.load_params_from_json_file()
+        self.reset_structure_params()
+        self.load_structure_params_from_json_file()
 
         while True:
 
             await asyncio.sleep(5)
 
-    def reset_params(self):
+    def reset_structure_params(self):
 
         logging.info("")
 
-        self.params = copy.deepcopy(self.default_params)
+        self.params = copy.deepcopy(self.default_structure_params)
 
-    def dump_params_to_json_file(self):
+    def dump_structure_params_to_json_file(self):
 
         logging.info(f"self.params_file_path:{self.params_file_path}")
 
         with open(self.params_file_path, 'w') as f:
             json.dump(self.params, f, indent=2)
 
-    def load_params_from_json_file(self):
+    def load_structure_params_from_json_file(self):
 
         logging.debug(f"self.params_file_path:{self.params_file_path}")
 

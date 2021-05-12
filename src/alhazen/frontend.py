@@ -136,18 +136,18 @@ class Frontend(tornado.web.Application):
         else:
             print("please, open your browser at: 'http://127.0.0.1:{}'".format(LISTEN_PORT))
 
-    def handle_params_panel(self, params):
+    def handle_structure_params_panel(self, params):
 
         params = dict(params)
         for (k, v) in params.items():
             if self.context['backend'].params.get(k):
                 self.context['backend'].params[k]['value'] = v
 
-    def render_params_panel(self):
+    def render_structure_params_panel(self):
 
         html_ = """<table>"""
         html_ += """<tr>
-            <th colspan="3"> model params panel </th></tr>"""
+            <th colspan="3"> structure params panel </th></tr>"""
 
         for k, v in self.context['backend'].params.items():
             if v['type'] == 'int':
@@ -160,7 +160,7 @@ class Frontend(tornado.web.Application):
             <tr title="{v['description']}">
             <td align="left"><label for=""{k}"">{k}:</label></td>
             <td align="left">
-                <input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();">
+                <input {_type} id="{k}" value="{v['value']}" class="structure_param" onchange="render_data_graph();">
                 </input>
             </td>
             </tr>"""
@@ -214,21 +214,21 @@ class Frontend(tornado.web.Application):
 
         message_dict = json.loads(message)
 
-        if message_dict.get("command") == "reset_model_params":
+        if message_dict.get("command") == "reset_structure_params":
 
-            self.context['backend'].reset_params()
-            self.render_params_panel()
+            self.context['backend'].reset_structure_params()
+            self.render_structure_params_panel()
             self.render_data_graph()
 
-        elif message_dict.get("command") == "load_model_params":
+        elif message_dict.get("command") == "load_structure_params":
 
-            self.context['backend'].load_params_from_json_file()
-            self.render_params_panel()
+            self.context['backend'].load_structure_params_from_json_file()
+            self.render_structure_params_panel()
             self.render_data_graph()
 
-        elif message_dict.get("command") == "dump_model_params":
+        elif message_dict.get("command") == "dump_structure_params":
 
-            self.context['backend'].dump_params_to_json_file()
+            self.context['backend'].dump_structure_params_to_json_file()
 
         elif message_dict.get("command") == "dump_svg_graph":
 
@@ -237,7 +237,7 @@ class Frontend(tornado.web.Application):
         elif message_dict.get("command") == "render_data_graph":
 
             params = message_dict.get("params", [])
-            self.handle_params_panel(params)
+            self.handle_structure_params_panel(params)
             self.render_data_graph()
 
         else:

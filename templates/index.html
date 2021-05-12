@@ -86,9 +86,9 @@
 					<div class="data_container" id="params_panel">params_panel
 					</div>
 					<div class="data_container" id="params_buttons">
-						<button id="load_model_params"  onclick="send_command_to_ws('load_model_params', {});"> load model params from file    </button><br></br>
-						<button id="dump_model_params"  onclick="send_command_to_ws('dump_model_params', {});"> dump model params to file      </button><br></br>
-						<button id="reset_model_params" onclick="send_command_to_ws('reset_model_params', {});">reset model params to default   </button><br></br>
+						<button id="load_structure_params"  onclick="send_command_to_ws('load_structure_params', {});"> load structure params from file    </button><br></br>
+						<button id="dump_structure_params"  onclick="send_command_to_ws('dump_structure_params', {});"> dump structure params to file      </button><br></br>
+						<button id="reset_structure_params" onclick="send_command_to_ws('reset_structure_params', {});">reset structure params to default   </button><br></br>
 						<button id="dump_data_graph"    onclick="send_command_to_ws('dump_svg_graph', {});">    dump data graph to svg file     </button><br></br>
 					</div>
 				</div>
@@ -129,13 +129,13 @@
 			ws_instance.send(msg_);
 		}
 		var render_data_graph = function () {
-			var model_param_elements = Array.from(document.getElementsByClassName("model_param"));
+			var structure_param_elements = Array.from(document.getElementsByClassName("structure_param"));
 			function get_id_value(item) {
 				return [item.id, item.value];
 			}
-			var model_params = model_param_elements.map(get_id_value);
+			var structure_params = structure_param_elements.map(get_id_value);
 
-			send_command_to_ws("render_data_graph", model_params);
+			send_command_to_ws("render_data_graph", structure_params);
 		};
 		var open_btn_clicked = function () {
 
@@ -184,7 +184,7 @@
 			document.getElementById("send_btn").disabled = false; 
 			document.getElementById("close_btn").disabled = false; 
 
-			send_command_to_ws('reset_model_params', {});
+			send_command_to_ws('reset_structure_params', {});
 			render_data_graph();
 		}
 		var on_ws_close = function (evt) {
@@ -207,7 +207,7 @@
 
 		var init = function () {
 			open_btn_clicked();
-			document.getElementById("load_model_params").focus();
+			document.getElementById("load_structure_params").focus();
 		}
 
 		init();
