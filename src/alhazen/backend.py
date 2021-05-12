@@ -21,7 +21,7 @@ LAYER_PARAMETER_SCHEMA = {
         "type": "str",
     },
     'thickness': {
-        'value': 0,
+        'value': 1.3,
         'description': "thickness (nm)",
         "type": "float",
         'min': 0,
@@ -70,8 +70,8 @@ class Backend:
         self.layer_name_list = ["L1", "L2", "L3", ]
 
         for layer_name in self.layer_name_list:
-            self.default_params.update(
-                {"{}_{}".format(layer_name, k): v for k, v in LAYER_PARAMETER_SCHEMA.items()})
+            for k, v in LAYER_PARAMETER_SCHEMA.items():
+                self.default_params["{}_{}".format(layer_name, k)] = copy.deepcopy(v)
 
         self.params = {}
         self.params_file_path = PARAMS_FILE
@@ -129,5 +129,18 @@ class Backend:
         # ~ compute data to be visualized
         # ~ and format them into lines for graph
         data = []
+        for i, p in enumerate(self.layer_name_list):
+
+            k = "{}_{}".format(p, 'thickness')
+            thickness = float(self.params.get(k, {}).get('value', 10))
+
+            k = "{}_{}".format(p, 'roughness')
+            roughness = float(self.params.get(k, {}).get('value', 10))
+
+            item = {
+                'line_name': f'line {p}', 
+                'x_y_data':  [(j, 0.001 * thickness * j**2 + roughness * random.random()) for j in range(100)]
+            }
+            data.append(item)
 
         return data
