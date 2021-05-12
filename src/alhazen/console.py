@@ -3,6 +3,7 @@
 # pylint: disable=missing-docstring
 
 import os
+import sys
 import logging
 import traceback
 import asyncio
@@ -28,15 +29,15 @@ class Console:
         print('*******************')
         while True:
             with patch_stdout():
-                input = await session.prompt_async('>>> ', auto_suggest=AutoSuggestFromHistory())
                 try:
+                    input = await session.prompt_async('>>> ', auto_suggest=AutoSuggestFromHistory())
                     if input.strip():
                         answer = eval(input)
                         print('<<< {}'.format(answer))
                 except SyntaxError:
                     exec(input)
                 except KeyboardInterrupt:
-                    continue
+                    break
                 except EOFError:
                     continue
                 except Exception as e:

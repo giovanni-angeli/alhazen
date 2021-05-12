@@ -14,40 +14,66 @@ import math
 
 PARAMS_FILE = "./alhazen.params.json"
 
+LAYER_PARAMETER_SCHEMA = {
+    'name': {
+        'value': "top layer",
+        'description': "name",
+        "type": "str",
+    },
+    'thickness': {
+        'value': 0,
+        'description': "thickness",
+        "type": "float",
+        'min': 0,
+        'max': 10,
+    },
+    'coherence': {
+        'value': False,
+        'description': "coherence",
+        "type": "bool",
+    },
+    'roughness': {
+        'value': 0,
+        'description': "roughness",
+        "type": "float",
+        'min': 0,
+        'max': 10,
+    },
+    'M1_name': {
+        'value': "air",
+        'description': "name of medium 1",
+        "type": "str",
+    },
+    'M1_fraction': {
+        'value': 100,
+        'description': "fraction of medium 1",
+        "type": "float",
+        'min': 0,
+        'max': 100,
+    },
+    'M1_opticalProps FileName': {
+        'value': "",
+        'description': "optical properties of medium 1",
+        "type": "str",
+    },
+}
+
+
 class Backend:
 
-    default_params = {
-        'start': {
-            'value': 0,
-            'description': "first line of data to graph",
-            "type": "int",
-            'min': 0,
-            'max': 10,
-        },
-        'stop': {
-            'value': 3,
-            'description': "last line of data to graph",
-            "type": "int",
-            'min': 0,
-            'max': 10,
-        },
-        'noise_rate': {
-            'value': 0.1,
-            'description': "",
-            "type": "float",
-            'min': 0,
-            'max': 10.,
-        },
-        'data_file': {
-            'value': "./test/fixtures/samples.json",
-            'description': "",
-            "type": "str",
-        },
-    }
+    def __init__(self):
 
-    params = {}
-    params_file_path = PARAMS_FILE
-    title = 'plot example - intensity(%) vs wavelength(nm)'
+        self.default_params = {}
+
+        self.layer_name_list = ["L1", "L2", "L3", ]
+
+        for layer_name in self.layer_name_list:
+            self.default_params.update(
+                {"{}_{}".format(layer_name, k): v for k, v in LAYER_PARAMETER_SCHEMA.items()})
+
+        self.params = {}
+        self.params_file_path = PARAMS_FILE
+        self.title = 'plot example - intensity(%) vs wavelength(nm)'
 
     async def run(self):
 
@@ -79,31 +105,27 @@ class Backend:
             with open(self.params_file_path) as f:
                 self.params = json.load(f)
 
-    def load_data_from_json_file(self):
+    def load_optical_properties_from_file(self, filename):
 
-        data_file = self.params['data_file']['value']
+        logging.debug(f"data_file:{filename}")
 
-        logging.debug(f"data_file:{data_file}")
+        optical_properties = []
+        if os.path.exists(filename):
+            with open(filename) as f:
+                optical_properties = json.load(f)
 
-        samples = []
-        if os.path.exists(data_file):
-            with open(data_file) as f:
-                samples = json.load(f)
-
-        return samples
+        return optical_properties
 
     def run_model(self):
 
-        samples = self.load_data_from_json_file()
+        for n in self.layer_name_list:
+            fname = "{}_{}".format(n, 'M1_opticalProps FileName')
+            optical_properties = self.load_optical_properties_from_file(fname)
 
-        # ~ TODO: compute data from samples
+            # ~ use loaded mproperties
 
-        noise_rate = float(self.params.get('noise_rate', {}).get('value', 0.1))
-
-        data = samples
-        for d in data:
-            for line in d["spectra_lines"]:
-                for i, _ in enumerate(line):
-                    line[i][1] = line[i][1] * (1 + noise_rate * random.random())
+        # ~ compute data to be visualized
+        # ~ and format them into lines for graph
+        data = []
 
         return data

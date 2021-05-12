@@ -19,6 +19,7 @@ import tornado.httpserver     # pylint: disable=import-error
 import tornado.ioloop         # pylint: disable=import-error
 import tornado.websocket      # pylint: disable=import-error
 import tornado.options        # pylint: disable=import-error
+# ~ import tornado.escape
 
 import pygal  # pylint: disable=import-error
 
@@ -42,12 +43,14 @@ APPLICATION_OPTIONS = dict(
     compiled_template_cache=False)
 
 
+
+
 class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-methods
 
     frontend_instance = None
 
     def get(self):
-
+        
         ctx = {
             'ws_uri': WS_URI,
             'ws_listen_port': LISTEN_PORT,
@@ -130,6 +133,8 @@ class Frontend(tornado.web.Application):
 
             except BaseException:  # pylint: disable=broad-except
                 logging.error(traceback.format_exc())
+        else:
+            print("please, open your browser at: 'http://127.0.0.1:{}'".format(LISTEN_PORT))
 
     def handle_params_panel(self, params):
 
@@ -140,7 +145,7 @@ class Frontend(tornado.web.Application):
 
     def render_params_panel(self):
 
-        html_ = "<table>"
+        html_ = """<table>"""
         html_ += """<tr>
             <th colspan="3"> model params panel </th></tr>"""
 
@@ -150,16 +155,20 @@ class Frontend(tornado.web.Application):
             elif v['type'] == 'float':
                 _type = f"""type="number" step="0.1" id="{k}" min="{v.get('min', 0)}" min="{v.get('max', 1.)}" """
             else:
-                _type = f'type="text" size=40'
+                _type = f""" type="text" size="{v.get('size', 32)}" """
             html_ += f"""
             <tr title="{v['description']}">
-            <td><label for=""{k}"">{k}:</label></td>
-            <td><input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();">{v['description']}</input></td>
+            <td align="left"><label for=""{k}"">{k}:</label></td>
+            <td align="left">
+                <input {_type} id="{k}" value="{v['value']}" class="model_param" onchange="render_data_graph();">
+                </input>
+            </td>
             </tr>"""
 
         html_ += '</table>'
 
         self.send_message_to_UI("params_panel", html_)
+
 
     def render_data_graph(self, to_file=False):
 
@@ -172,8 +181,8 @@ class Frontend(tornado.web.Application):
             width=900,
             height=500,
             x_label_rotation=30,
-            dots_size=0.5,
-            stroke_style={'width': 1.},
+            # ~ dots_size=0.5,
+            # ~ stroke_style={'width': 1.},
             # ~ stroke=False,
             # ~ show_dots=False,
             # ~ show_legend=False,

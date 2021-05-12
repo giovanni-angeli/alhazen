@@ -86,10 +86,10 @@
 					<div class="data_container" id="params_panel">params_panel
 					</div>
 					<div class="data_container" id="params_buttons">
-						<input type="button" value="load model params from file " onclick="send_command_to_ws('load_model_params', {});"></input><br></br>
-						<input type="button" value="dump model params to file " onclick="send_command_to_ws('dump_model_params', {});"></input><br></br>
-						<input type="button" value="reset model params to default " onclick="send_command_to_ws('reset_model_params', {});"></input><br></br>
-						<input type="button" value="dump data graph to svg file " onclick="send_command_to_ws('dump_svg_graph', {});"></input><br></br>
+						<button id="load_model_params"  onclick="send_command_to_ws('load_model_params', {});"> load model params from file    </button><br></br>
+						<button id="dump_model_params"  onclick="send_command_to_ws('dump_model_params', {});"> dump model params to file      </button><br></br>
+						<button id="reset_model_params" onclick="send_command_to_ws('reset_model_params', {});">reset model params to default   </button><br></br>
+						<button id="dump_data_graph"    onclick="send_command_to_ws('dump_svg_graph', {});">    dump data graph to svg file     </button><br></br>
 					</div>
 				</div>
 				<div class="col-7 data_container" id="data_graph_panel">data_graph
@@ -206,7 +206,8 @@
 		}
 
 		var init = function () {
-			 open_btn_clicked();
+			open_btn_clicked();
+			document.getElementById("load_model_params").focus();
 		}
 
 		init();
