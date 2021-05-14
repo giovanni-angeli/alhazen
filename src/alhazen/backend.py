@@ -11,8 +11,10 @@ import logging
 import random
 import copy
 import math
+import numpy as np
 
 PARAMS_FILE = "./alhazen.params.json"
+EXPERIMENTAL_DATA_FILE = "./test/RTsperimentali.dat"
 
 LAYER_PARAMETER_SCHEMA = {
     'name': {
@@ -109,6 +111,7 @@ class Backend:
 
         self.params = {}
         self.params_file_path = PARAMS_FILE
+        self.experimental_data_path = EXPERIMENTAL_DATA_FILE
         self.title = 'plot example - intensity(%) vs wavelength(nm)'
 
     async def run(self):
@@ -152,29 +155,55 @@ class Backend:
 
         return optical_properties
 
+    def read_experimental_data(self):
+
+        logging.debug(f"experimental data file:{self.experimental_data_path}")
+        
+        experimental_data = np.loadtxt(self.experimental_data_path)
+
+        return experimental_data
+
     def run_model(self):
 
-        for n in self.layer_name_list:
-            fname = "{}_{}".format(n, 'M1_opticalProps FileName')
-            optical_properties = self.load_optical_properties_from_file(fname)
+        #TODO: separare plot dati sperimentali e risultato del calcolo del modello applicato alla struttura
 
-            # ~ use loaded mproperties
+        experimental_data = self.read_experimental_data()
 
-        # ~ compute data to be visualized
-        # ~ and format them into lines for graph
         data = []
-        for i, p in enumerate(self.layer_name_list):
+        # dati sperimentali
+        exp_data_size = len(experimental_data)
+        item = {
+            'line_name': 'experimental data: reflectance', 
+            'x_y_data':  [(experimental_data[j,0], experimental_data[j,1]) for j in range(exp_data_size)]
+        }
+        data.append(item)
+        item = {
+            'line_name': 'experimental data: transmittance', 
+            'x_y_data':  [(experimental_data[j,0], experimental_data[j,2]) for j in range(exp_data_size)]
+        }
+        data.append(item)
 
-            k = "{}_{}".format(p, 'thickness')
-            thickness = float(self.params.get(k, {}).get('value', 10))
-
-            k = "{}_{}".format(p, 'roughness')
-            roughness = float(self.params.get(k, {}).get('value', 10))
-
-            item = {
-                'line_name': f'line {p}', 
-                'x_y_data':  [(j, 0.001 * thickness * j**2 + roughness * random.random()) for j in range(100)]
-            }
-            data.append(item)
+#        for n in self.layer_name_list:
+#            fname = "{}_{}".format(n, 'M1_opticalProps FileName')
+#            optical_properties = self.load_optical_properties_from_file(fname)
+#
+#            # ~ use loaded mproperties
+#
+#        # ~ compute data to be visualized
+#        # ~ and format them into lines for graph
+#        data = []
+#        for i, p in enumerate(self.layer_name_list):
+#
+#            k = "{}_{}".format(p, 'thickness')
+#            thickness = float(self.params.get(k, {}).get('value', 10))
+#
+#            k = "{}_{}".format(p, 'roughness')
+#            roughness = float(self.params.get(k, {}).get('value', 10))
+#
+#            item = {
+#                'line_name': f'line {p}', 
+#                'x_y_data':  [(j, 0.001 * thickness * j**2 + roughness * random.random()) for j in range(100)]
+#            }
+#            data.append(item)
 
         return data
