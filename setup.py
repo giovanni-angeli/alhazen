@@ -51,6 +51,7 @@ def main():
             'tornado',
             'prompt_toolkit',
             'pygal',
+            'numpy',
         ],
     )
 
