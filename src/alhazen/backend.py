@@ -22,24 +22,24 @@ LAYER_PARAMETER_SCHEMA = {
     },
     'thickness': {
         'value': 1.3,
-        'description': "thickness (nm)",
+        'description': "thickness (Angstrom)",
         "type": "float",
         'min': 0,
-        'max': 10,
+        'max': 100000000, # FIXME: deve poter essere espresso in notazione scientifica 1e8
     },
-    'coherence': {
+    'incoherence': { #FIXME: questo dovrebbe essere reso con un thick (ed essere bool)
         'value': 0,
-        'description': "1 if medium is coherent, else 0",
-        "type": "int",
+        'description': "0 if medium is coherent, else 1", # TODO: reverse?
+        "type": "int", # FIXME: bool
         'min': 0,
         'max': 1,
     },
     'roughness': {
         'value': 0,
-        'description': "roughness ()",
+        'description': "roughness (Angstrom)",
         "type": "float",
         'min': 0,
-        'max': 10,
+        'max': 100, # TODO: chiedere Caterina limite realistico
     },
     'M1_name': {
         'value': "air",
@@ -55,7 +55,41 @@ LAYER_PARAMETER_SCHEMA = {
     },
     'M1_opticalProps FileName': {
         'value': "",
+        'description': "optical properties of medium 2",
+        "type": "str",
+    },
+    'M2_name': {
+        'value': "air",
+        'description': "name of medium 2",
+        "type": "str",
+    },
+    'M2_fraction': {
+        'value': 0,
+        'description': "fraction of medium 2",
+        "type": "float",
+        'min': 0,
+        'max': 100,
+    },
+    'M2_opticalProps FileName': {
+        'value': "",
         'description': "optical properties of medium 1",
+        "type": "str",
+    },
+    'M3_name': {
+        'value': "air",
+        'description': "name of medium 3",
+        "type": "str",
+    },
+    'M3_fraction': {
+        'value': 0,
+        'description': "fraction of medium 3",
+        "type": "float",
+        'min': 0,
+        'max': 100,
+    },
+    'M3_opticalProps FileName': {
+        'value': "",
+        'description': "optical properties of medium 3",
         "type": "str",
     },
 }
