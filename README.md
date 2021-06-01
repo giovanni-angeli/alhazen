@@ -21,6 +21,6 @@ TAGS: tornado asyncio websocket
 4. Run:
 >     $ . ${VIRTENV_ROOT}/bin/activate ; alhazen
 
-![Screenshot](doc/Screenshot_2021-04-11_18-05-53.png)#
+![Screenshot](doc/Screenshot.png)#
 
 

@@ -66,51 +66,47 @@
  
 	<body>
 		<header>
-			<div class="row">
-				<div class="col-2"><b id="title">Alhazen frontend</b></div>
+		</header>
+		
+		<article>
+
+			<div class="row" id="ws_connection_panel">
+				<div class="col-2"><h3 id="title">Alhazen frontend</h3></div>
 				<div class="col-8" id="ws_connection">
-					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
-					<label for="port">port:</label><input type="text" id="port" value="8000"/>
-					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+					<label for="host">host:</label><input type="text" id="host" value="{{ ws_listen_address }}"/>
+					<label for="port">port:</label><input type="text" id="port" value="{{ ws_listen_port }}"/>
+					<label for="uri">uri:</label><input type="text" id="uri" value="{{ ws_uri }}">
 					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
 					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
 				</div>
 			</div>
-			<div class="row">
+
+			<div class="row" id="main_panel">
+				<div class="col-3">
+					<div class="data_container" id="params_panel">params_panel
+					</div>
+					<div class="data_container" id="params_buttons">
+						<input type="button" value="load model params from file " onclick="send_command_to_ws('load_model_params', {});"></input><br></br>
+						<input type="button" value="dump model params to file " onclick="send_command_to_ws('dump_model_params', {});"></input><br></br>
+						<input type="button" value="reset model params to default " onclick="send_command_to_ws('reset_model_params', {});"></input><br></br>
+						<input type="button" value="dump data graph to svg file " onclick="send_command_to_ws('dump_svg_graph', {});"></input><br></br>
+					</div>
+				</div>
+				<div class="col-7 data_container" id="data_graph_panel">data_graph
+				</div>    
+			</div>    
+
+			<div class="row" id="logger_area_panel" hidden>
+				<textarea id="logger_area" maxlength="50" rows="20" cols="100">
+				</textarea>
+			</div>    
+
+			<div class="row" id="send_ws_message_area_panel" hidden>
 				<div class="col-2" id="message_container">
 					<input type="text" id="message" value="Hot meat!"/>
 					<input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
 				</div>
 				<div class="col-8" id="answer_display">***</div>
-			</div>    
-		</header>
-		
-		<article>
-
-			<div class="row">
-			</div>    
-
-			<div class="row" id="logger_area_container" hidden>
-				<textarea id="logger_area" maxlength="50" rows="20" cols="100">
-				</textarea>
-			</div>    
-
-			<div class="row">
-				<div class="col-2">
-					<div></div>
-					<div id="params_container"></div>
-					<div></div>
-					<input type="submit" id="reset_model_params_btn" value="reset model params" onclick="reset_model_params();"/>
-				</div>
-				<div class="col-7" class="data_container" id="pygal_data_container">
-				</div>    
-			</div>    
-			<div class="row">
-				<div class="col-2">
-					<div></div>
-				</div>
-				<div class="col-7" class="data_container" id="altair_data_container">
-				</div>    
 			</div>    
 
 		</article>
@@ -128,19 +124,18 @@
 			document.getElementById("logger_area").innerHTML = data.substring(0, 500) + "\n" + _;
 			console.log(data);
 		};
-		var reset_model_params = function () {
-			var msg_ = JSON.stringify({"command": "reset_model_params", "params": {}});
+		var send_command_to_ws = function (cmd, params) {
+			var msg_ = JSON.stringify({"command": cmd, "params": params});
 			ws_instance.send(msg_);
 		}
-		var refresh_data_graph = function () {
+		var render_data_graph = function () {
 			var model_param_elements = Array.from(document.getElementsByClassName("model_param"));
 			function get_id_value(item) {
 				return [item.id, item.value];
 			}
 			var model_params = model_param_elements.map(get_id_value);
 
-			var msg_ = JSON.stringify({"command": "refresh_data_graph", "params": model_params});
-			ws_instance.send(msg_);
+			send_command_to_ws("render_data_graph", model_params);
 		};
 		var open_btn_clicked = function () {
 
@@ -189,8 +184,8 @@
 			document.getElementById("send_btn").disabled = false; 
 			document.getElementById("close_btn").disabled = false; 
 
-			reset_model_params();
-			refresh_data_graph();
+			send_command_to_ws('reset_model_params', {});
+			render_data_graph();
 		}
 		var on_ws_close = function (evt) {
 			logging("* ws connection closed *");

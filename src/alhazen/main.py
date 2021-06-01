@@ -25,12 +25,13 @@ def start(settings):
         'settings': settings,
     }
 
-    for k_ in ('frontend', 'backend', 'console'):
+    for k_ in ('backend', 'frontend', 'console'):
         instance = common_context[k_]
         instance.context = common_context
         t_ = instance.run()
         asyncio.ensure_future(t_)
-        logging.info("instance:%s", instance)
+        # ~ logging.info("instance:%s", instance)
+
 
     return common_context
 
@@ -43,16 +44,16 @@ def load_settings(pth):
 
     return settings
 
-def set_logging():
+def set_logging(log_level):
 
     logging.basicConfig(
         stream=sys.stdout,
-        level=LOG_LEVEL,
+        level=log_level,
         format="[%(asctime)s]%(levelname)s %(funcName)s() %(filename)s:%(lineno)d %(message)s")
 
 def main():
 
-    set_logging()
+    set_logging(LOG_LEVEL)
 
     pth = ''
     if sys.argv[1:]:
