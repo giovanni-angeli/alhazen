@@ -32,7 +32,8 @@ LISTEN_ADDRESS = '127.0.0.1'
 # ~ LISTEN_ADDRESS = '*'
 
 # ~ BROWSER = "firefox"
-BROWSER = "chromium"
+# ~ BROWSER = "chromium"
+BROWSER = None
 
 APPLICATION_OPTIONS = dict(
     debug=True,
@@ -40,16 +41,20 @@ APPLICATION_OPTIONS = dict(
     template_path=os.path.join(HERE, "..", "..", "templates"),
     compiled_template_cache=False)
 
-
 class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-methods
 
-    frontend_instance = None
+    def __init__(self, *args, **kwargs):
+
+        logging.debug(f"args:{args}, kwargs:{kwargs}")
+
+        self.parent = kwargs.pop('parent')
+        super().__init__(*args, **kwargs)
 
     def get(self):
 
         model_params = []
-        if self.frontend_instance:
-            backend = self.frontend_instance.context['backend']
+        if self.parent:
+            backend = self.parent.backend
             model_params = backend.default_model_params
 
         ctx = {
@@ -65,18 +70,23 @@ class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-metho
 
 class WebsockHandler(tornado.websocket.WebSocketHandler):
 
-    frontend_instance = None
+    def __init__(self, *args, **kwargs):
+
+        logging.debug(f"args:{args}, kwargs:{kwargs}")
+        self.parent = kwargs.pop('parent')
+
+        super().__init__(*args, **kwargs)
 
     def initialize(self):
 
-        if self.frontend_instance:
-            self.frontend_instance.web_socket_channels.append(self)
-            logging.debug(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
+        if self.parent:
+            self.parent.web_socket_channels.append(self)
+            logging.debug(f"n. of active web_socket_channels:{len(self.parent.web_socket_channels)}")
 
     def open(self, *args, **kwargs):
 
+        logging.info(f"args:{args}, kwargs:{kwargs}")
         super().open(args, kwargs)
-        logging.debug(f"")
 
     async def write_message(self, msg):
 
@@ -90,32 +100,29 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
 
         logging.debug(f"message:{message}")
 
-        if self.frontend_instance:
-            t_ = self.frontend_instance.handle_message_from_UI(self, message)
+        if self.parent:
+            t_ = self.parent.handle_message_from_UI(self, message)
             asyncio.ensure_future(t_)
 
     def on_close(self):
 
-        if self.frontend_instance:
-            self.frontend_instance.web_socket_channels.remove(self)
-            logging.info(f"n. of active web_socket_channels:{len(self.frontend_instance.web_socket_channels)}")
+        if self.parent:
+            self.parent.web_socket_channels.remove(self)
+            logging.info(f"n. of active web_socket_channels:{len(self.parent.web_socket_channels)}")
 
 
 class Frontend(tornado.web.Application):
 
-    def __init__(self):
+    def __init__(self, settings, backend):
+
+        self.settings = settings
+        self.backend = backend
 
         self.web_socket_channels = []
 
-        class WebsockHandler_(WebsockHandler):
-            frontend_instance = self
-
-        class Index_(Index):  # pylint: disable=too-few-public-methods
-            frontend_instance = self
-
         url_map = [
-            (r"/", Index_, {}),
-            (WS_URI, WebsockHandler_, {}),
+            (r"/", Index, {'parent': self}),
+            (WS_URI, WebsockHandler, {'parent': self}),
         ]
         super().__init__(url_map, **APPLICATION_OPTIONS)
 
@@ -123,15 +130,15 @@ class Frontend(tornado.web.Application):
 
         logging.info("starting tornado webserver on http://{}:{} ...".format(LISTEN_ADDRESS, LISTEN_PORT))
         self.listen(LISTEN_PORT, LISTEN_ADDRESS)
-        tornado.platform.asyncio.AsyncIOMainLoop().install()
 
         try:
 
-            logging.info("starting browser ...")
-            try:
-                webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
-            except:
-                webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+            if BROWSER is not None:
+                logging.warning("starting browser ...")
+                try:
+                    webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+                except:
+                    webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
 
         except BaseException: # pylint: disable=broad-except
             logging.error(traceback.format_exc())
@@ -139,7 +146,7 @@ class Frontend(tornado.web.Application):
     def refresh_params_panel(self):
 
         html_ = "<table>"
-        for k, p in self.context['backend'].model_params.items():
+        for k, p in self.backend.model_params.items():
             html_ += f'<tr><td colspan="3">{k}:</td></tr>'
 
             html_ += '<tr>'
@@ -161,7 +168,7 @@ class Frontend(tornado.web.Application):
 
     def refresh_data_graph(self):
 
-        data = self.context['backend'].refresh_model_data()
+        data = self.backend.refresh_model_data()
 
         line_chart = pygal.XY(
             width=900,
@@ -197,7 +204,7 @@ class Frontend(tornado.web.Application):
 
         if message_dict.get("command") == "reset_model_params":
 
-            self.context['backend'].reset_model_params()
+            self.backend.reset_model_params()
 
             self.refresh_data_graph()
             self.refresh_params_panel()
@@ -212,7 +219,7 @@ class Frontend(tornado.web.Application):
 
             logging.debug(f"params:{params}")
 
-            self.context['backend'].update_model_params(params)
+            self.backend.update_model_params(params)
 
             self.refresh_data_graph()
 

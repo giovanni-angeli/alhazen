@@ -7,52 +7,48 @@ import sys
 import logging
 import asyncio
 import json
+import time
 
 from alhazen.frontend import Frontend
 from alhazen.backend import Backend
-from alhazen.console import Console
+# ~ from alhazen.console import Console
 
 
+# ~ LOG_LEVEL = "DEBUG"
 LOG_LEVEL = "INFO"
 # ~ LOG_LEVEL = "ERROR"
 
 def start(settings):
 
-    common_context = {
-        'frontend': Frontend(),
-        'backend': Backend(),
-        'console': Console(),
-        'settings': settings,
-    }
+    backend = Backend(settings)
+    frontend = Frontend(settings, backend)
 
-    for k_ in ('frontend', 'backend', 'console'):
-        instance = common_context[k_]
-        instance.context = common_context
+    for instance in (backend, frontend):
         t_ = instance.run()
         asyncio.ensure_future(t_)
-        logging.info("instance:%s", instance)
-
-    return common_context
+        logging.debug("instance:%s", instance)
 
 def load_settings(pth):
 
     settings = {}
     if pth:
-        with open(pth) as f:
+        with open(pth, encoding="UTF-8") as f:
             settings = json.load(f)
 
     return settings
 
-def set_logging():
+def set_logging(log_level):
 
     logging.basicConfig(
         stream=sys.stdout,
-        level=LOG_LEVEL,
+        level=log_level,
         format="[%(asctime)s]%(levelname)s %(funcName)s() %(filename)s:%(lineno)d %(message)s")
 
 def main():
 
-    set_logging()
+    set_logging(LOG_LEVEL)
+
+    logging.debug(f"time:{time.asctime()}")
 
     pth = ''
     if sys.argv[1:]:

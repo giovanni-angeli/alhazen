@@ -3,6 +3,7 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=logging-format-interpolation
+# pylint: disable=logging-fstring-interpolation
 
 import logging
 import random
@@ -25,6 +26,10 @@ class Backend:
     N1 = 180
 
     model_results = []
+
+    def __init__(self, settings):
+
+        self.settings = settings
 
     async def run(self):
 
