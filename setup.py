@@ -41,8 +41,8 @@ def main():
         packages=find_packages(where='src'),
         package_dir={'': 'src'},
         data_files=[
-            ('templates', list(glob.glob('templates/*'))),
-            ('static', list(glob.glob('static/*'))),
+            ('templates', list(glob.glob('src/templates/*'))),
+            ('static', list(glob.glob('src/static/*'))),
         ],
         include_package_data=True,
         scripts=[
@@ -50,7 +50,6 @@ def main():
         ],
         install_requires=[
             'tornado',
-            'prompt_toolkit',
             'pygal',
         ],
     )

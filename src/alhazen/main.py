@@ -22,12 +22,12 @@ LOG_LEVEL = "INFO"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 TORNADO_APPLICATION_OPTIONS = dict(
-    # ~ debug=True,
-    # ~ autoreload=True,
-    debug=False,
-    autoreload=False,
-    template_path=os.path.join(HERE, "..", "..", "templates"),
-    static_path=os.path.join(HERE, "..", "..", "static"),
+    debug=True,
+    autoreload=True,
+    # ~ debug=False,
+    # ~ autoreload=False,
+    template_path=os.path.join(HERE, "..", "templates"),
+    static_path=os.path.join(HERE, "..", "static"),
     compiled_template_cache=False)
 
 

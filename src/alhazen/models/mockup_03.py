@@ -13,16 +13,35 @@ import random
 import math
 
 
-class Model:
+class Model_01:
 
     K0 = .001
     K1 = 50.
     K2 = 50.
     K3 = 0.002
-    K4 = 0.02
+    K4 = 0.005
 
-    N0 = - 100
-    N1 = 200
+    start = -10
+    interval = 400
+    N0 = start
+    N1 = start + interval
+
+class Model_02:
+
+    K0 = .001
+    K1 = 50.
+    K2 = 50.
+    K3 = 0.002
+    K4 = 0.001
+
+    start = -10
+    interval = 400
+    N0 = start
+    N1 = start + interval
+
+class Model(Model_01):
+# ~ class Model(Model_02):
+
 
     def __str__(self):
 

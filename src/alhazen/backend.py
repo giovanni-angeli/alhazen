@@ -14,10 +14,11 @@ import pkgutil
 class Backend:
 
     default_model_params = {
-        '1st Line': {'a': 1, 'b': 1, 'c': 1},
-        '2nd Line': {'a': 2, 'b': 2, 'c': 2},
-        '3rd Line': {'a': 4, 'b': 4, 'c': 4},
-        '4th Line': {'a': 8, 'b': 8, 'c': 8},
+        '1st series': {'a': 1, 'b': 1, 'c': 1},
+        '2nd series': {'a': 2, 'b': 2, 'c': 2},
+        '3rd series': {'a': 4, 'b': 4, 'c': 4},
+        '4th series': {'a': 8, 'b': 8, 'c': 8},
+        '5th series': {'a': 0, 'b': 0.8, 'c': 0.08},
     }
 
     model_params = {}
