@@ -11,6 +11,11 @@ var logging = function(data){
 	}
 };
 
+var error_handler = function(data){
+    logging("ERROR:" + data);
+    alert(data);
+}
+
 var clear_logger_area_view = function(){
 	var el = document.getElementById("logger_area");
 	if (el) {
@@ -57,7 +62,6 @@ var open_btn_clicked = function () {
 	var port = document.getElementById("port").value;
 	var uri  = document.getElementById("uri").value;
 	try {
-
 		if (ws_instance) {
 			ws_instance.close();
 		}
@@ -69,7 +73,7 @@ var open_btn_clicked = function () {
 		ws_instance.onclose   = on_ws_close  ;
 		ws_instance.onmessage = on_ws_message;
 	} catch(err) {
-		logging("err:" + err);
+		error_handler("err:" + err);
 	}
 }
 
@@ -78,7 +82,7 @@ var close_btn_clicked = function () {
 		ws_instance.close();
 		ws_instance = null;
 	} catch(err) {
-		logging("err:" + err);
+		error_handler("err:" + err);
 	}
 }
 var send_btn_clicked = function () {
@@ -90,9 +94,17 @@ var send_btn_clicked = function () {
 }
 
 var send_to_websocket_server = function (object) {
-	var msg_ = JSON.stringify(object);
-	logging("send_to_websocket_server() msg_:'" + msg_ + "'");
-	ws_instance.send(msg_);
+	if (ws_instance != null) {
+		try {
+			var msg_ = JSON.stringify(object);
+			logging("send_to_websocket_server() msg_:'" + msg_ + "'");
+			ws_instance.send(msg_);
+		} catch(err) {
+			error_handler("err:" + err);
+		}
+	} else {
+		error_handler("Cannot send: the web socket is disconnected!");
+	}
 }
 
 var on_ws_error = function (evt) {
@@ -132,7 +144,7 @@ var on_ws_message = function (evt) {
 			}
 		}
 	} catch(err) {
-		logging("err:" + err);
+		error_handler("err:" + err);
 	}
 }
 
