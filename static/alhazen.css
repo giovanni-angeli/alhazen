@@ -1,0 +1,64 @@
+body {
+	font-family: Monospace;
+	text-align: center;
+	min-width: 600px;
+	background-color: #F7FAF7;
+}
+.hidden {
+	display: none;
+}
+#status_display {
+	color: #990000;
+	background-color: #FFFF99;
+	padding: 10px;
+}
+#params_panel {
+	background-color: #EEEEEE;
+	padding: 10px;
+}
+header {
+	color:#882222;
+	background-color: #EEEEEE;
+}
+* {
+  box-sizing: border-box;
+}
+.col-1 {width: 10%;}
+.col-2 {width: 20%;}
+.col-3 {width: 30%;}
+.col-4 {width: 40%;}
+.col-5 {width: 50%;}
+.col-6 {width: 60%;}
+.col-7 {width: 70%;}
+.col-8 {width: 80%;}
+.col-9 {width: 90%;}
+.col-10 {width: 100%;}
+[class*="col-"] {
+  float: left;
+  padding: 8px;
+//~   border: .1px solid lightgray;
+}
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.data_container {
+  float: left;
+  padding: 8px;
+  border: .1px solid lightgray;
+}
+input[type="number"] {
+   width:50px;
+   height:40px;
+}
+input[type=number]:hover::-webkit-inner-spin-button {  
+	width: 80px;
+	height: 40px;
+}
+
+.model_selector {
+	background-color: #FFFFFF;
+	padding: 10px;
+}
+

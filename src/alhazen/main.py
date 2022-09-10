@@ -3,6 +3,7 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 
+import os
 import sys
 import logging
 import asyncio
@@ -18,10 +19,22 @@ from alhazen.backend import Backend
 LOG_LEVEL = "INFO"
 # ~ LOG_LEVEL = "ERROR"
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+TORNADO_APPLICATION_OPTIONS = dict(
+    # ~ debug=True,
+    # ~ autoreload=True,
+    debug=False,
+    autoreload=False,
+    template_path=os.path.join(HERE, "..", "..", "templates"),
+    static_path=os.path.join(HERE, "..", "..", "static"),
+    compiled_template_cache=False)
+
+
 def start(settings):
 
     backend = Backend(settings)
-    frontend = Frontend(settings, backend)
+    frontend = Frontend(TORNADO_APPLICATION_OPTIONS, backend)
 
     for instance in (backend, frontend):
         t_ = instance.run()
