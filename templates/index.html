@@ -30,15 +30,6 @@
 		</header>
 		
 		<article>
-
-			<div class="row">
-			</div>    
-
-			<div class="row" id="logger_area_container" hidden>
-				<textarea id="logger_area" maxlength="50" rows="20" cols="100">
-				</textarea>
-			</div>    
-
 			<div class="row">
 				<div class="col-2"></div>
 				<div class="col-7" class="data_container" id="pygal_description_container"></div>    
@@ -51,7 +42,7 @@
 					</div>    
 					<div><hr></hr></div>    
 					<div class="row" name="model_selector_container">
-						<div class="col-12">
+						<div class="col-10">
 							<label for="model_selector" id="model_selector_label" class="model_selector">model:</label><br></br>
 							<select id="model_selector" onchange="import_model();" class="model_selector">
 								{% for name in model_names %}
@@ -71,11 +62,24 @@
 				</div>
 				<div class="col-7" class="data_container" id="pygal_data_container"></div>    
 			</div>    
-
+			<div class="row" id="hint">
+				<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
+			</div>
+			<div class="row" id="logger_area_container">
+				<div class="col-1" >
+					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_logger_area_view();">
+					</input>
+					<input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
+					</input>
+				</div>
+				<div class="col-9" >
+					<textarea id="logger_area" rows="10" cols="200" hidden>
+					</textarea>
+				</div>    
+			</div>    
 		</article>
 
 		<footer>
-			<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
 		</footer>
 	</body>
 

@@ -19,10 +19,10 @@ class Model:
     K1 = 50.
     K2 = 50.
     K3 = 0.2
-    K4 = 0.02
+    K4 = 0.01
 
     N0 = - 10
-    N1 = 200
+    N1 = 500
 
     def __str__(self):
 
@@ -39,6 +39,6 @@ class Model:
 
     def out_data(self, a=0, b=0, c=0):
 
-        N = (self.N1 + self.N0) / 2
+        N = 600
         out_data = [(i, self.map_(i, N, a, b, c)) for i in range(self.N0, self.N1)]
         return out_data 

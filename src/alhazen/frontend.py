@@ -9,7 +9,6 @@
 # pylint: disable=consider-using-f-string
 # pylint: disable=broad-except
 
-import os
 import time
 import asyncio
 import logging
@@ -138,7 +137,7 @@ class Frontend(tornado.web.Application):
         except BaseException:  # pylint: disable=broad-except
             logging.error(traceback.format_exc())
 
-    async def refresh_params_panel(self):
+    async def refresh_params_panel(self, ws_socket):
 
         html_ = "<table>"
         for k, p in self.backend.model_params.items():
@@ -162,9 +161,9 @@ class Frontend(tornado.web.Application):
 
         # ~ logging.info(f"html_:{html_}")
 
-        await self.send_message_to_UI("params_panel", html_)
+        await self.send_message_to_UI("params_panel", html_, ws_socket)
 
-    async def refresh_data_graph(self):
+    async def refresh_data_graph(self, ws_socket):
 
         data = self.backend.refresh_model_data()
 
@@ -191,8 +190,8 @@ class Frontend(tornado.web.Application):
             label, serie = line
             line_chart.add(label, serie)
         graph_svg = line_chart.render(is_unicode=True)
-        await self.send_message_to_UI("pygal_data_container", graph_svg)
-        await self.send_message_to_UI("pygal_description_container", self.backend.model_description)
+        await self.send_message_to_UI("pygal_data_container", graph_svg, ws_socket)
+        await self.send_message_to_UI("pygal_description_container", self.backend.model_description, ws_socket)
 
         # ~ await self.send_message_to_UI("altair_data_container", graph_html.decode())
 
@@ -208,8 +207,8 @@ class Frontend(tornado.web.Application):
 
                 self.backend.reset_model_params()
 
-                await self.refresh_data_graph()
-                await self.refresh_params_panel()
+                await self.refresh_data_graph(ws_socket)
+                await self.refresh_params_panel(ws_socket)
 
                 await self.send_message_to_UI("status_display", "done.", ws_socket)
 
@@ -232,7 +231,7 @@ class Frontend(tornado.web.Application):
 
                 self.backend.update_model_params(params)
 
-                await self.refresh_data_graph()
+                await self.refresh_data_graph(ws_socket)
 
                 await self.send_message_to_UI("status_display", "done.", ws_socket)
 

@@ -2,14 +2,36 @@
 var ws_instance;  
 
 var logging = function(data){
-	_ = document.getElementById("logger_area").innerHTML;
-	document.getElementById("logger_area").innerHTML = data.substring(0, 500) + "\n" + _;
 	console.log(data);
+	var el = document.getElementById("logger_area");
+	if (el) {
+		let s = new Date().toLocaleString();
+		_ = el.innerHTML.substring(0, 10000);
+		el.innerHTML = "[" + s + "]" + data.substring(0, 100) + "\n" + _;
+	}
+};
+
+var clear_logger_area_view = function(){
+	var el = document.getElementById("logger_area");
+	if (el) {
+		el.innerHTML = '';
+	}
+};
+
+var toggle_logger_area_view = function(){
+	var el = document.getElementById("logger_area");
+	if (el) {
+		if (el.style.display == 'block'){
+			el.style.display = 'none';
+		} else {
+			el.style.display = 'block';
+		}
+	}
 };
 
 var reset_model_params = function () {
-	var msg_ = JSON.stringify({"command": "reset_model_params", "params": {}});
-	ws_instance.send(msg_);
+	var object = {"command": "reset_model_params", "params": {}};
+	send_to_websocket_server(object);
 }
 
 var refresh_data_graph = function () {
@@ -18,15 +40,14 @@ var refresh_data_graph = function () {
 		return [item.id, item.value];
 	}
 	var model_params = model_param_elements.map(get_id_value);
-	var msg_ = JSON.stringify({"command": "refresh_data_graph", "params": model_params});
-	ws_instance.send(msg_);
+	var object = {"command": "refresh_data_graph", "params": model_params};
+	send_to_websocket_server(object);
 };
 
 var import_model = function () {
 	var model_ = document.getElementById("model_selector").value;
-	var msg_ = JSON.stringify({"command": "import_model", "params": model_});
-	logging(msg_);
-	ws_instance.send(msg_);
+	var object = {"command": "import_model", "params": model_};
+	send_to_websocket_server(object);
 	refresh_data_graph();
 }
 
@@ -63,10 +84,15 @@ var close_btn_clicked = function () {
 var send_btn_clicked = function () {
 	var value = document.getElementById("message").value;
 	for (i = 0; i < 10; i++) { 
-		var msg_ = JSON.stringify({"command": "test", "params": value + " (" + i + ")"});
-		logging("sending message to ws: '" + msg_ + "'");
-		ws_instance.send(msg_);
+		var object = {"command": "test", "params": value + " (" + i + ")"};
+		send_to_websocket_server(object);
 	}
+}
+
+var send_to_websocket_server = function (object) {
+	var msg_ = JSON.stringify(object);
+	logging("send_to_websocket_server() msg_:'" + msg_ + "'");
+	ws_instance.send(msg_);
 }
 
 var on_ws_error = function (evt) {
