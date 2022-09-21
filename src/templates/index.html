@@ -1,90 +1,51 @@
-<!doctype html>
-<html>
-	<head>
-		<title>Alhazen frontend</title>
-		<meta charset="utf-8" />
-		<link type="text/css" rel="stylesheet" href="/static/alhazen.css"/>
-		<script type="text/javascript" src="/static/alhazen.js"></script>
-	</head>
- 
-	<body>
-		<header>
-			<div class="row">
-				<div class="col-2"><b id="title">Alhazen frontend</b></div>
-				<div class="col-8" id="ws_connection">
-					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
-					<label for="port">port:</label><input type="text" id="port" value="8000"/>
-					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
-					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
-					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-2" id="message_container">
-					<input type="text" id="message" value="Hot meat!"/>
-					<input type="submit" id="send_btn" value="send" onclick="send_btn_clicked();" disabled="true"/>
-				</div>
-				<div class="col-8" id="status_display">***</div>
-				<div class="col-8" id="error_display" onclick="document.getElementById('error_display').style.display='none';"></div>
-			</div>    
-		</header>
-		
-		<article>
-			<div class="row">
-				<div class="col-2"></div>
-				<div class="col-7" class="data_container" id="pygal_description_container"></div>    
-			</div>
-			<div class="row">
-				<div class="col-2">
-					<div class="row" name="model_selector_container">
-						<div id="params_panel"></div>
-						<input type="submit" id="reset_model_params_btn" value="reset model params" onclick="reset_model_params();"/>
-					</div>    
-					<div><hr></hr></div>    
-					<div class="row" name="model_selector_container">
-						<div class="col-10">
-							<label for="model_selector" id="model_selector_label" class="model_selector">model:</label><br></br>
-							<select id="model_selector" onchange="import_model();" class="model_selector">
-								{% for name in model_names %}
-									{% if model_name == name %}
-										<option value="{{ name }}" selected='on'>{{ name }}</option>
-									{% else %}
-										<option value="{{ name }}">{{ name }}</option>
-									{% end %}
-								{% end %}
-							</select>
-							<input type="submit" id="reimport_model_btn" value="re-import (Alt+r)" accesskey="r" 
-								 class="model_selector" onclick="import_model();">
-							
-							</input>
-						</div>    
-					</div>    
-				</div>
-				<div class="col-7" class="data_container" id="pygal_data_container"></div>    
-			</div>    
-			<div class="row" id="hint">
-				<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
-			</div>
-			<div class="row" id="logger_area_container">
-				<div class="col-1" >
-					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_logger_area_view();">
-					</input>
-					<input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
-					</input>
-				</div>
-				<div class="col-9" >
-					<textarea id="logger_area" rows="10" cols="200" hidden>
-					</textarea>
-				</div>    
-			</div>    
-		</article>
+{% extends "base.html" %}
 
-		<footer>
-		</footer>
-	</body>
 
-	<script>
-	init_alhazen();
-	</script>
+{% block article %}
 
-</html>
+<div class="row">
+	<div class="col-10" id="status_display"></div>
+	<div class="col-10" id="error_display" onclick="document.getElementById('error_display').style.display='none';"></div>
+</div>
+<div class="row">
+	<div class="col-2"></div>
+	<div class="col-7" class="data_container" id="pygal_description_container"></div>    
+</div>
+<div class="row">
+	<div class="col-2">
+		<div class="row" name="model_selector_container">
+			<div class="col-10">
+				<p>
+					<label for="structure_selector" id="structure_selector_label" class="file_selector">select a structure file:</label>
+				</p>
+				<select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector">
+					{% for name in structure_file_list %}
+						{% if structure_file == name %}
+							<option value="{{ name }}" selected='on'>{{ name }}</option>
+						{% else %}
+							<option value="{{ name }}">{{ name }}</option>
+						{% end %}
+					{% end %}
+				</select>
+				<div><hr></hr></div>    
+				<p><label for="measure_selector" id="measure_selector_label" class="file_selector">select a measurement file:</label></p>
+				<select id="measure_selector" onchange="on_file_selected('measure');" class="file_selector">
+					{% for name in measure_file_list %}
+						{% if measure_file == name %}
+							<option value="{{ name }}" selected='on'>{{ name }}</option>
+						{% else %}
+							<option value="{{ name }}">{{ name }}</option>
+						{% end %}
+					{% end %}
+				</select>
+				<div><hr></hr></div>    
+				<input type="submit" id="refresh_data_graph_btn" value="refresh graph (Alt+r)" accesskey="r" 
+					 class="file_selector" onclick="refresh_data_graph();">
+				</input>
+			</div>    
+		</div>    
+	</div>
+	<div class="col-7" class="data_container" id="pygal_data_container"></div>    
+</div>    
+
+{% end %}

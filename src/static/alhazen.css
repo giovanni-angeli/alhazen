@@ -57,8 +57,18 @@ input[type=number]:hover::-webkit-inner-spin-button {
 	height: 40px;
 }
 
-.model_selector {
+.file_selector {
 	background-color: #FFFFFF;
 	padding: 10px;
 }
 
+.btn {
+	background-color: #FFFFEE;
+	padding: 8px;
+  border: .01px solid lightgray;
+}
+.file_list {
+	text-align: left;
+	padding: 4px;
+  border: .01px solid lightgray;
+}

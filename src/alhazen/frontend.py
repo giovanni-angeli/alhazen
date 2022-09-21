@@ -9,6 +9,7 @@
 # pylint: disable=consider-using-f-string
 # pylint: disable=broad-except
 
+import os
 import time
 import asyncio
 import logging
@@ -24,6 +25,8 @@ import tornado.options        # pylint: disable=import-error
 
 import pygal  # pylint: disable=import-error
 
+from alhazen.backend import (STRUCTURE_FILES_PATH, MEASURE_FILES_PATH)
+
 WS_URI = r'/websocket'
 LISTEN_PORT = 8000
 LISTEN_ADDRESS = '127.0.0.1'
@@ -33,7 +36,8 @@ LISTEN_ADDRESS = '127.0.0.1'
 # ~ BROWSER = "chromium"
 BROWSER = None
 
-class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-methods
+
+class BaseRequestHandler(tornado.web.RequestHandler):  # pylint: disable=too-few-public-methods
 
     def __init__(self, *args, **kwargs):
 
@@ -45,19 +49,71 @@ class Index(tornado.web.RequestHandler):  # pylint: disable=too-few-public-metho
 
         logging.warning(f"args:{args}, kwargs:{kwargs}")
 
-    def get(self):
 
-        model_params = []
-        if self.parent:
-            backend = self.parent.backend
-            model_params = backend.default_model_params
-            model_names = backend.list_models()
-            model_name = backend.model_name
+class Setup(BaseRequestHandler):  # pylint: disable=too-few-public-methods
+
+    @staticmethod
+    def __get_context(result_title, results, errors):
+
+        structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
+        measure_file_list = os.listdir(MEASURE_FILES_PATH)
 
         ctx = {
-            'model_params': model_params,
-            'model_name': model_name,
-            'model_names': model_names,
+            'page_name': 'Alhazen conf page',
+            'page_links': [('/', 'graph page'),],
+            'ws_connection': True,
+            'result_title': result_title,
+            'results': results,
+            'errors': errors,
+            'structure_file_list': structure_file_list,
+            'measure_file_list': measure_file_list,
+        }
+
+        return ctx
+
+    def get(self):
+
+        ctx = self.__get_context(result_title='', results=[], errors=[])
+        return self.render("setup.html", **ctx)
+
+    def post(self):
+
+        logging.warning(f"self.request:{self.request}")
+
+        results = []
+        errors = []
+        for key, path in (
+                ('structure_file', STRUCTURE_FILES_PATH),
+                ('measure_file', MEASURE_FILES_PATH)):
+
+            for _file in self.request.files.get(key, []):
+                original_fname = _file['filename']
+                try:
+                    with open(os.path.join(path, original_fname), 'wb') as output_file:
+                        output_file.write(_file['body'])
+                    results.append(original_fname)
+                except Exception as e:
+                    errors.append(e)
+
+        ctx = self.__get_context(result_title="uploaded files:", results=results, errors=errors)
+        return self.render("setup.html", **ctx)
+
+
+class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
+
+    def get(self):
+
+        structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
+        measure_file_list = os.listdir(MEASURE_FILES_PATH)
+
+        ctx = {
+            'page_name': 'Alhazen graph page',
+            'page_links': [('/setup', 'conf page'),],
+            'ws_connection': True,
+            'structure_file': self.parent.backend.structure_file,
+            'measure_file': self.parent.backend.measure_file,
+            'structure_file_list': structure_file_list,
+            'measure_file_list': measure_file_list,
         }
 
         logging.debug(f"ctx:{ctx}")
@@ -105,7 +161,6 @@ class WebsockHandler(tornado.websocket.WebSocketHandler):
         logging.warning(f"args:{args}, kwargs:{kwargs}")
 
 
-
 class Frontend(tornado.web.Application):
 
     def __init__(self, settings, backend):
@@ -116,6 +171,7 @@ class Frontend(tornado.web.Application):
 
         url_map = [
             (r"/", Index, {'parent': self}),
+            (r"/setup", Setup, {'parent': self}),
             (WS_URI, WebsockHandler, {'parent': self}),
         ]
         super().__init__(url_map, **settings)
@@ -137,31 +193,6 @@ class Frontend(tornado.web.Application):
         except BaseException:  # pylint: disable=broad-except
             logging.error(traceback.format_exc())
 
-    async def refresh_params_panel(self, ws_socket):
-
-        html_ = "<table>"
-        for k, p in self.backend.model_params.items():
-            html_ += f'<tr><td colspan="3">{k}:</td></tr>'
-
-            html_ += '<tr>'
-            for k_ in ('a', 'b', 'c'):
-                html_ += f"""
-                <td>
-                    <label for=""{k}_{k_}"">{k_}:</label>
-                    <input id="{k}_{k_}" value="{p[k_]}"
-                        class="model_param"
-                        onchange="refresh_data_graph();"
-                        type="number" step="0.1" min="0" max="100"
-                        style="width:60px;height:40px;"
-                        ></input>
-                </td>
-                """
-            html_ += '</tr>'
-        html_ += '</table>'
-
-        # ~ logging.info(f"html_:{html_}")
-
-        await self.send_message_to_UI("params_panel", html_, ws_socket)
 
     async def refresh_data_graph(self, ws_socket):
 
@@ -183,7 +214,7 @@ class Frontend(tornado.web.Application):
             truncate_legend=40,
         )
 
-        line_chart.title = self.backend.model_name
+        line_chart.title = ''
         line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0]) / 10))]
 
         for line in data:
@@ -191,7 +222,7 @@ class Frontend(tornado.web.Application):
             line_chart.add(label, serie)
         graph_svg = line_chart.render(is_unicode=True)
         await self.send_message_to_UI("pygal_data_container", graph_svg, ws_socket)
-        await self.send_message_to_UI("pygal_description_container", self.backend.model_description, ws_socket)
+        await self.send_message_to_UI("pygal_description_container", '', ws_socket)
 
         # ~ await self.send_message_to_UI("altair_data_container", graph_html.decode())
 
@@ -201,45 +232,33 @@ class Frontend(tornado.web.Application):
         message_dict = json.loads(message)
         try:
 
-            if message_dict.get("command") == "reset_model_params":
+            if message_dict.get("command") == "install_templates":
 
-                await self.send_message_to_UI("status_display", 'resetting params, please wait...', ws_socket)
+                self.backend.install_templates()
 
-                self.backend.reset_model_params()
+            elif message_dict.get("command") == "structure_selected":
 
-                await self.refresh_data_graph(ws_socket)
-                await self.refresh_params_panel(ws_socket)
+                _name = message_dict.get("params")
+                self.backend.load_structure(_name)
 
-                await self.send_message_to_UI("status_display", "done.", ws_socket)
+            elif message_dict.get("command") == "measure_selected":
 
-            elif message_dict.get("command") == "import_model":
-
-                model_name = message_dict.get("params")
-                self.backend.import_model(model_name)
+                _name = message_dict.get("params")
+                self.backend.load_measure(_name)
 
             elif message_dict.get("command") == "refresh_data_graph":
 
                 await self.send_message_to_UI("status_display", 'recalculating model, please wait...', ws_socket)
-
-                params = {}
-                for (k, v) in message_dict.get("params", []):
-                    line_name, param_name = k.split('_')
-                    params.setdefault(line_name, {})
-                    params[line_name][param_name] = float(v)
-
-                logging.debug(f"params:{params}")
-
-                self.backend.update_model_params(params)
-
                 await self.refresh_data_graph(ws_socket)
-
-                await self.send_message_to_UI("status_display", "done.", ws_socket)
+                _msg = f"structure_file:{self.backend.structure_file}, measure_file:{self.backend.measure_file}"
+                await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket)
 
             else:
                 answer = f"received:{message}"
                 innerHTML = "ws_index:{} [{}] {} -> {}".format(
                     self.web_socket_channels.index(ws_socket), time.asctime(), message, answer)
                 await self.send_message_to_UI("status_display", innerHTML, ws_socket)
+                logging.warning(f"innerHTML:{innerHTML}")
 
             # ~ await self.send_message_to_UI("error_display", "-", ws_socket)
 

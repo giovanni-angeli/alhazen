@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+
+{% block article %}
+
+<div class="row"> 
+	<hr></hr>
+</div>    
+<div class="row">
+	<div class="col-2">
+		<input class="btn" type="button" name="install_templates_btn" onclick="install_templates();" value="install templates from template library"></input>
+		 <br/>
+		<label>(will overwrite existent copies)</label>
+	</div>
+	<div class="col-3">
+		<div id="structure_file_list" class="file_list">    
+			{% if structure_file_list %}
+				<h3>structure files:</h3>
+				{% for f in structure_file_list %}
+				<br>{{ escape(str(f)) }}</br>
+				{% end %}
+			{% end %}
+		</div>    
+		<hr></hr>
+		<div>
+			<h3>upload structure file (json format)</h3>
+			<form method="POST" action="/setup" enctype="multipart/form-data" id="upload_structure_form">
+				<input class="btn" type="file" name="structure_file" multiple="true" autocomplete="on" required></input>
+			</form>    
+		</div>    
+		<br></br>    
+		<div>    
+			<input class="btn" type="button" onclick="document.forms['upload_structure_form'].submit();" value="upload"></input>
+		</div>    
+	</div>    
+	<div class="col-3">
+		<div id="measure_file_list" class="file_list">    
+			{% if measure_file_list %}
+				<h3>measure files:</h3>
+				{% for f in measure_file_list %}
+				<br>{{ escape(str(f)) }}</br>
+				{% end %}
+			{% end %}
+		</div>    
+		<hr></hr>
+		<div>
+			<h3>upload measurement file (csv format)</h3>
+			<form method="POST" action="/setup" enctype="multipart/form-data" id="upload_measure_form">
+				<input class="btn" type="file" name="measure_file" multiple="true" autocomplete="on" required></input>
+			</form>    
+		</div>
+		<br></br>    
+		<div>    
+			<input class="btn"  type="button" onclick="document.forms['upload_measure_form'].submit();" value="upload"></input>
+		</div>    
+	</div>    
+</div>
+<div class="row"> 
+	<hr></hr>
+</div>    
+
+{% end %}

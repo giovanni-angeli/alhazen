@@ -18,7 +18,7 @@ var error_handler = function(data){
 
 var clear_logger_area_view = function(){
 	var el = document.getElementById("logger_area");
-	if (el) {
+    if (window.confirm("comfirm clearing logs?") && el) {
 		el.innerHTML = '';
 	}
 };
@@ -34,25 +34,29 @@ var toggle_logger_area_view = function(){
 	}
 };
 
-var reset_model_params = function () {
-	var object = {"command": "reset_model_params", "params": {}};
-	send_to_websocket_server(object);
-}
 
 var refresh_data_graph = function () {
-	var model_param_elements = Array.from(document.getElementsByClassName("model_param"));
-	function get_id_value(item) {
-		return [item.id, item.value];
-	}
-	var model_params = model_param_elements.map(get_id_value);
-	var object = {"command": "refresh_data_graph", "params": model_params};
+	var object = {"command": "refresh_data_graph", "params": null};
 	send_to_websocket_server(object);
 };
 
-var import_model = function () {
-	var model_ = document.getElementById("model_selector").value;
-	var object = {"command": "import_model", "params": model_};
-	send_to_websocket_server(object);
+var install_templates = function () {
+    var _object = {"command": "install_templates", "params": null};
+	send_to_websocket_server(_object);
+    location.reload();
+}
+
+var on_file_selected = function (arg) {
+	var _params = '';
+    if (arg == 'structure') {
+        _params = document.getElementById("structure_selector").value;
+        _cmd = "structure_selected";
+    } else if (arg == 'measure') {
+        _params = document.getElementById("measure_selector").value;
+        _cmd = "measure_selected";
+    }
+    var _object = {"command": _cmd, "params": _params};
+	send_to_websocket_server(_object);
 	refresh_data_graph();
 }
 
@@ -85,14 +89,6 @@ var close_btn_clicked = function () {
 		error_handler("err:" + err);
 	}
 }
-var send_btn_clicked = function () {
-	var value = document.getElementById("message").value;
-	for (i = 0; i < 10; i++) { 
-		var object = {"command": "test", "params": value + " (" + i + ")"};
-		send_to_websocket_server(object);
-	}
-}
-
 var send_to_websocket_server = function (object) {
 	if (ws_instance != null) {
 		try {
@@ -116,18 +112,16 @@ var on_ws_open = function (evt) {
 	logging("* ws connection open *");
 	document.getElementById("open_btn").disabled = true; 
 	document.getElementById("open_btn").style.color = "gray"; 
-	document.getElementById("send_btn").disabled = false; 
 	document.getElementById("close_btn").disabled = false; 
 
-	reset_model_params();
 	refresh_data_graph();
 }
 
 var on_ws_close = function (evt) {
 	logging("* ws connection closed *");
+	ws_instance = null;
 	document.getElementById("open_btn").disabled = false; 
 	document.getElementById("open_btn").style.color = "red"; 
-	document.getElementById("send_btn").disabled = true; 
 	document.getElementById("close_btn").disabled = true; 
 	document.getElementById("close_btn").style.color = "grey"; 
 }
@@ -148,7 +142,7 @@ var on_ws_message = function (evt) {
 	}
 }
 
-var init_alhazen = function () {
+var init_wsocket = function () {
 	 open_btn_clicked();
 }
 

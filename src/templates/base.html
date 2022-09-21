@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Alhazen</title>
+		<meta charset="utf-8" />
+		<link type="text/css" rel="stylesheet" href="/static/alhazen.css"/>
+		<script type="text/javascript" src="/static/alhazen.js"></script>
+	</head>
+ 
+	<body>
+		<header>
+			<div class="row">
+				<div class="col-2">{{ page_name }}</div>
+				{% for l, n in page_links %}
+				<div class="col-1"><a href="{{ l }}">{{ n }}</a></div>
+				{% end %}
+			</div>    
+			<div class="row">
+				{% if ws_connection %}
+					<div class="col-8" id="ws_connection">
+						<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
+						<label for="port">port:</label><input type="text" id="port" value="8000"/>
+						<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+						<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
+						<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
+					</div>
+					<script>
+					init_wsocket();
+					</script>
+				{% end %}
+			</div>
+		</header>
+
+		<article>
+			{% block article %}
+			{% end %}
+		</article>
+
+		<footer>
+			<div class="row" id="hint">
+				<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham">Alhazem</a> on wikipedia</small>
+			</div>
+			<div class="row" id="logger_area_container">
+				<div class="col-1" >
+					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_logger_area_view();">
+					</input>
+					<input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
+					</input>
+				</div>
+				<div class="col-9" >
+					<textarea id="logger_area" rows="10" cols="200" hidden>
+					</textarea>
+				</div>    
+			</div>    
+		</footer>
+	</body>
+
+</html>

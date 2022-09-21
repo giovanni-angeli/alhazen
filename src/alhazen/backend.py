@@ -5,90 +5,93 @@
 # pylint: disable=logging-format-interpolation
 # pylint: disable=logging-fstring-interpolation
 
+import os
 import logging
 import asyncio
-import importlib
-import pkgutil
+import shutil
+import json
+import traceback
+
+from alhazen.compute_optical_constants import (compute_R, compute_T)
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+DATA_TEMPLATES_PATH = os.path.join(HERE, "..", "..", "data_templates")
+DATA_PATH = os.path.join(HERE, "..", "..", "__tmp__", "data")
+
+STRUCTURE_FILES_PATH = os.path.join(DATA_PATH, "structure_files")
+MEASURE_FILES_PATH = os.path.join(DATA_PATH, "measure_files")
 
 
 class Backend:
-
-    default_model_params = {
-        '1st series': {'a': 1, 'b': 1, 'c': 1},
-        '2nd series': {'a': 2, 'b': 2, 'c': 2},
-        '3rd series': {'a': 4, 'b': 4, 'c': 4},
-        '4th series': {'a': 8, 'b': 8, 'c': 8},
-        '5th series': {'a': 0, 'b': 0.8, 'c': 0.08},
-    }
-
-    model_params = {}
-
-    N0 = - 10
-    N1 = 200
 
     model_results = []
 
     def __init__(self, settings):
 
         self.settings = settings
-        self._model = None
-        self.model_name = None
 
-        self.alhazen_models = importlib.import_module("alhazen.models")
-        self.alhazen_models_modules = {}
+        self.structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
+        self.measure_file_list = os.listdir(MEASURE_FILES_PATH)
+
+        self.structure_file = self.structure_file_list[0] if self.structure_file_list else ''
+        self.measure_file = self.measure_file_list[0] if self.measure_file_list else ''
+
+        self._structure = {}
+        self._measure = {}
+
+        try:
+            if self.structure_file:
+                self.load_structure(self.structure_file)
+            if self.measure_file:
+                self.load_measure(self.measure_file)
+
+        except BaseException:  # pylint: disable=broad-except
+
+            logging.error(traceback.format_exc())
 
     async def run(self):
 
-        model_list = self.list_models()
-        logging.warning(f"model_list:{model_list}")
-
-        if model_list:
-            self.import_model(model_list[0])
-
-        self.reset_model_params()
         while True:
 
             await asyncio.sleep(5)
 
-    def list_models(self):
+    def install_templates(self):
 
-        model_list = [m.name for m in pkgutil.walk_packages(self.alhazen_models.__path__)]
-        return model_list
+        for p in (DATA_PATH, STRUCTURE_FILES_PATH, MEASURE_FILES_PATH):
+            if not os.path.exists(p):
+                os.makedirs(p)
 
-    def import_model(self, model_name):
+        shutil.copytree(DATA_TEMPLATES_PATH, DATA_PATH, dirs_exist_ok=True)
 
-        logging.warning(f"dir(self.alhazen_models):{dir(self.alhazen_models)}")
+        logging.info(f"structure_files:{os.listdir(STRUCTURE_FILES_PATH)}")
+        logging.info(f"measure_files:{os.listdir(MEASURE_FILES_PATH)}")
 
-        importlib.reload(self.alhazen_models)
+    def load_structure(self, name):
 
-        if self.alhazen_models_modules.get(model_name):
-            importlib.reload(self.alhazen_models_modules[model_name])
-        else:
-            self.alhazen_models_modules[model_name] = importlib.import_module(f".{model_name}", "alhazen.models")
+        logging.info(f"name:{name}")
 
-        self._model = self.alhazen_models_modules[model_name].Model()
-        self.model_name = model_name
-        self.model_description = str(self._model)
-        logging.warning(f"self.model_name:{self.model_name}, self.__model:{self._model}")
+        pth = os.path.join(STRUCTURE_FILES_PATH, name)
+        with open(pth, encoding='utf-8') as f:
+            self._structure = json.load(f)
+        self.structure_file = name
 
-    def reset_model_params(self):
+    def load_measure(self, name):
 
-        self.model_params = self.default_model_params.copy()
-        logging.debug(f"self.model_params:{self.model_params}")
+        logging.info(f"name:{name}")
 
-    def update_model_params(self, params):
-
-        self.model_params.update(params)
-        logging.debug(f"self.model_params:{self.model_params}")
+        pth = os.path.join(MEASURE_FILES_PATH, name)
+        with open(pth, encoding='utf-8') as f:
+            self._measure = f.read()
+        self.measure_file = name
 
     def refresh_model_data(self):
 
         data = []
-        for k, params in self.model_params.items():
-
-            logging.warning(f"params:{params}")
-
-            serie = self._model.out_data(**params)
-            data.append((k, serie))
+        if self._structure:
+            serie_R = compute_R(self._structure)
+            serie_T = compute_T(self._structure)
+            data.append(("R", serie_R))
+            data.append(("T", serie_T))
 
         return data

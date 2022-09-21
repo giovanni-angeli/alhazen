@@ -12,11 +12,11 @@ import time
 
 from alhazen.frontend import Frontend
 from alhazen.backend import Backend
-# ~ from alhazen.console import Console
 
 
 # ~ LOG_LEVEL = "DEBUG"
 LOG_LEVEL = "INFO"
+# ~ LOG_LEVEL = "WARNING"
 # ~ LOG_LEVEL = "ERROR"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +39,7 @@ def start(settings):
     for instance in (backend, frontend):
         t_ = instance.run()
         asyncio.ensure_future(t_)
-        logging.debug("instance:%s", instance)
+        logging.debug(f"instance:{instance}")
 
 def load_settings(pth):
 
@@ -47,6 +47,8 @@ def load_settings(pth):
     if pth:
         with open(pth, encoding="UTF-8") as f:
             settings = json.load(f)
+
+    logging.debug(f"settings:{settings}")
 
     return settings
 
@@ -61,11 +63,11 @@ def main():
 
     set_logging(LOG_LEVEL)
 
-    logging.debug(f"time:{time.asctime()}")
-
     pth = ''
     if sys.argv[1:]:
         pth = sys.argv[1]
+
+    logging.warning(f"time:{time.asctime()} starting application. settings pth:'{pth}'.")
 
     settings = load_settings(pth)
     start(settings)
