@@ -1,5 +1,6 @@
 
 var ws_instance;  
+var ws_on_connect_call_back;  
 
 
 var on_template_clicked = function(action, type, file_name) {
@@ -81,24 +82,7 @@ var toggle_logger_area_view = function(){
 
 
 var open_btn_clicked = function () {
-
-	var host = document.getElementById("host").value;
-	var port = document.getElementById("port").value;
-	var uri  = document.getElementById("uri").value;
-	try {
-		if (ws_instance) {
-			ws_instance.close();
-		}
-		var resource = "ws://" + host + ":" + port + uri;
-		logging("connecting to: " + resource);
-		ws_instance = new WebSocket(resource);
-		ws_instance.onerror   = on_ws_error  ; 
-		ws_instance.onopen    = on_ws_open   ;  
-		ws_instance.onclose   = on_ws_close  ;
-		ws_instance.onmessage = on_ws_message;
-	} catch(err) {
-		error_handler("err:" + err);
-	}
+    init_wsocket();
 }
 
 var close_btn_clicked = function () {
@@ -133,8 +117,9 @@ var on_ws_open = function (evt) {
 	document.getElementById("open_btn").disabled = true; 
 	document.getElementById("open_btn").style.color = "gray"; 
 	document.getElementById("close_btn").disabled = false; 
-
-	refresh_data_graph();
+    if (ws_on_connect_call_back ) {
+        ws_on_connect_call_back();
+    }
 }
 
 var on_ws_close = function (evt) {
@@ -149,32 +134,33 @@ var on_ws_close = function (evt) {
 var on_ws_message = function (evt) {
 	try {
 		var data = JSON.parse(evt.data);            
-		//~ console.log(JSON.stringify(data));
-		//~ console.log(JSON.stringify(data.data));
-		//~ console.log(JSON.stringify(data.innerHTML));
-		//~ console.log(JSON.stringify(data.id));
         var el = document.getElementById(data.element_id)
-        if (el) {
-            el.style.display = 'block';
-            if (data.innerHTML != null) {
-                if (el) { 
-                    el.innerHTML = data.innerHTML; 
-                }
-            } else if (data.data != null) {
-                var el = document.getElementById(data.element_id)
-                if (el) { 
-                    el.data = data.data; 
-                    el.width = 1200;
-                    el.height = 600;
-                }
-            }
-		}
+        el.style.display = 'block';
+        el[data.target] = data.payload; 
 	} catch(err) {
 		error_handler("err:" + err);
+        console.log("on_ws_message() " + data.element_id + ', '  + data.target + ', ' + data.payload);
 	}
 }
 
-var init_wsocket = function () {
-	 open_btn_clicked();
+var init_wsocket = function (on_connect_call_back) {
+    ws_on_connect_call_back = on_connect_call_back;
+	var host = document.getElementById("host").value;
+	var port = document.getElementById("port").value;
+	var uri  = document.getElementById("uri").value;
+	try {
+		if (ws_instance) {
+			ws_instance.close();
+		}
+		var resource = "ws://" + host + ":" + port + uri;
+		logging("connecting to: " + resource);
+		ws_instance = new WebSocket(resource);
+		ws_instance.onerror   = on_ws_error  ; 
+		ws_instance.onopen    = on_ws_open   ;  
+		ws_instance.onclose   = on_ws_close  ;
+		ws_instance.onmessage = on_ws_message;
+	} catch(err) {
+		error_handler("err:" + err);
+	}
 }
 

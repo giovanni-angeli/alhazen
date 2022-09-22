@@ -17,9 +17,7 @@
 			<div class="col-10">
 				<div> {% include "param_edit_panel.html" %} </div>    
 				<div><hr></hr></div>    
-				<p>
-					<label for="structure_selector" id="structure_selector_label" class="file_selector">select a structure file:</label>
-				</p>
+				<h3>select a structure file:</h3>
 				<select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector">
 					{% for name in structure_file_list %}
 						{% if structure_file == name %}
@@ -30,7 +28,7 @@
 					{% end %}
 				</select>
 				<div><hr></hr></div>    
-				<p><label for="measure_selector" id="measure_selector_label" class="file_selector">select a measurement file:</label></p>
+				<h3>select a measurement file:</h3>
 				<select id="measure_selector" onchange="on_file_selected('measure');" class="file_selector">
 					{% for name in measure_file_list %}
 						{% if measure_file == name %}
@@ -47,10 +45,13 @@
 			</div>    
 		</div>    
 	</div>
-	<div class="col-7" class="data_container" id="pygal_data_container">
+	<div class="col-7" class="data_container" id="pygal_data_container_frame">
+	<object id="pygal_data_container" type="image/svg+xml" data=""></object>
 	</div>    
-	
-
 </div>    
+
+<script>
+	init_wsocket(refresh_data_graph);
+</script>
 
 {% end %}

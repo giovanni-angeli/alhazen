@@ -223,11 +223,15 @@ class Frontend(tornado.web.Application):
         for line in data:
             label, serie = line
             line_chart.add(label, serie)
-        graph_svg = line_chart.render(is_unicode=True)
-        await self.send_message_to_UI("pygal_data_container", graph_svg, ws_socket)
-        await self.send_message_to_UI("pygal_description_container", '', ws_socket)
 
-        # ~ await self.send_message_to_UI("altair_data_container", graph_html.decode())
+        # ~ graph_svg = line_chart.render(is_unicode=True)
+        # ~ await self.send_message_to_UI("pygal_data_container", innerHTML=None, ws_client=ws_socket, data=graph_svg)
+
+        STATIC_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'static')
+        line_chart.render_to_file(STATIC_PATH + '/temp_chart.svg')
+        await self.send_message_to_UI("pygal_data_container", payload='/static/temp_chart.svg', ws_client=ws_socket, target='data')
+
+        await self.send_message_to_UI("pygal_description_container", '', ws_socket)
 
     async def handle_message_from_UI(self, ws_socket, message):
 
@@ -293,9 +297,9 @@ class Frontend(tornado.web.Application):
             logging.warning(traceback.format_exc())
             await self.send_message_to_UI("error_display", f"Exception:{e}", ws_socket)
 
-    async def send_message_to_UI(self, element_id, innerHTML=None, ws_client=None, data=None):
+    async def send_message_to_UI(self, element_id, payload, ws_client=None, target='innerHTML'):
 
-        msg = {"element_id": element_id, "innerHTML": innerHTML, "data": data}
+        msg = {"element_id": element_id, 'target': target, 'payload': payload}
         msg = json.dumps(msg)
 
         if ws_client:
