@@ -16,6 +16,7 @@ import logging
 import traceback
 import json
 import webbrowser
+import shutil
 
 import tornado.web            # pylint: disable=import-error
 import tornado.httpserver     # pylint: disable=import-error
@@ -235,6 +236,30 @@ class Frontend(tornado.web.Application):
             if message_dict.get("command") == "install_templates":
 
                 self.backend.install_templates()
+
+            elif message_dict.get("command") == "on_template_clicked":
+
+                _action = message_dict.get("params", {}).get('action')
+                _type = message_dict.get("params", {}).get('type')
+                _file_name = message_dict.get("params", {}).get('file_name')
+
+                logging.warning(f"_type:{_type}, _file_name:{_file_name}")
+
+                if _action and _type and _file_name:
+                    if _action == 'delete':
+                        _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
+                        r = os.remove(os.path.join(_pth, _file_name)) 
+                        logging.warning(f"r:{r}")
+                    elif _action == 'edit':
+                        pass
+                    elif _action == 'clone':
+                        _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
+                        original = os.path.join(_pth, _file_name)
+                        target = '(copy)'.join(os.path.splitext(original))
+
+                        shutil.copyfile(original, target)
+
+
 
             elif message_dict.get("command") == "structure_selected":
 

@@ -1,6 +1,46 @@
 
 var ws_instance;  
 
+
+var on_template_clicked = function(action, type, file_name) {
+    if (confirm("confirm " + action + ": " + file_name + "?")) {
+        if (action == 'edit') {
+            alert("Sorry, action edit is not yet implemented.");
+            return;
+        };
+        var object = {"command": "on_template_clicked", "params": {'action': action, 'type': type, 'file_name': file_name}};
+        send_to_websocket_server(object);
+
+        setTimeout(function() { location.reload(); }, 200);
+    };
+}
+
+var on_file_selected = function (arg) {
+	var _params = '';
+    if (arg == 'structure') {
+        _params = document.getElementById("structure_selector").value;
+        _cmd = "structure_selected";
+    } else if (arg == 'measure') {
+        _params = document.getElementById("measure_selector").value;
+        _cmd = "measure_selected";
+    }
+    var _object = {"command": _cmd, "params": _params};
+	send_to_websocket_server(_object);
+	refresh_data_graph();
+}
+
+var refresh_data_graph = function () {
+	var object = {"command": "refresh_data_graph", "params": null};
+	send_to_websocket_server(object);
+};
+
+var install_templates = function () {
+    var _object = {"command": "install_templates", "params": null};
+	send_to_websocket_server(_object);
+
+    setTimeout(function() { location.reload(); }, 200);
+}
+
 var logging = function(data){
 	console.log(data);
 	var el = document.getElementById("logger_area");
@@ -34,31 +74,6 @@ var toggle_logger_area_view = function(){
 	}
 };
 
-
-var refresh_data_graph = function () {
-	var object = {"command": "refresh_data_graph", "params": null};
-	send_to_websocket_server(object);
-};
-
-var install_templates = function () {
-    var _object = {"command": "install_templates", "params": null};
-	send_to_websocket_server(_object);
-    location.reload();
-}
-
-var on_file_selected = function (arg) {
-	var _params = '';
-    if (arg == 'structure') {
-        _params = document.getElementById("structure_selector").value;
-        _cmd = "structure_selected";
-    } else if (arg == 'measure') {
-        _params = document.getElementById("measure_selector").value;
-        _cmd = "measure_selected";
-    }
-    var _object = {"command": _cmd, "params": _params};
-	send_to_websocket_server(_object);
-	refresh_data_graph();
-}
 
 var open_btn_clicked = function () {
 

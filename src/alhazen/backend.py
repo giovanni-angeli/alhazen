@@ -11,6 +11,7 @@ import asyncio
 import shutil
 import json
 import traceback
+import csv
 
 from alhazen.compute_optical_constants import (compute_R, compute_T)
 
@@ -38,7 +39,7 @@ class Backend:
         self.measure_file = self.measure_file_list[0] if self.measure_file_list else ''
 
         self._structure = {}
-        self._measure = {}
+        self._measure = []
 
         try:
             if self.structure_file:
@@ -80,9 +81,19 @@ class Backend:
 
         logging.info(f"name:{name}")
 
+        self._measure = [[], []] 
         pth = os.path.join(MEASURE_FILES_PATH, name)
         with open(pth, encoding='utf-8') as f:
-            self._measure = f.read()
+            for i, row in enumerate(csv.reader(f)):
+                if i == 0:
+                    pass
+                else:
+                    l = float(row[0])
+                    R = float(row[1])
+                    T = float(row[2])
+                    self._measure[0].append((l, R))
+                    self._measure[1].append((l, T))
+
         self.measure_file = name
 
     def refresh_model_data(self):
@@ -91,7 +102,11 @@ class Backend:
         if self._structure:
             serie_R = compute_R(self._structure)
             serie_T = compute_T(self._structure)
-            data.append(("R", serie_R))
-            data.append(("T", serie_T))
+            data.append(("Rc", serie_R))
+            data.append(("Tc", serie_T))
+
+        if self._measure:
+            data.append(("Re", self._measure[0]))
+            data.append(("Te", self._measure[1]))
 
         return data

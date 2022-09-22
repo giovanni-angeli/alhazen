@@ -5,13 +5,21 @@
 
 import os
 import random
+import math
 
 def compute_R(json_structure):
 
-    out_data = [(i, .3 + i + .3 * random.random()) for i in range(100)]
-    return out_data 
+    def f(i):
+        return 50. * (0.5 + 0.5 * math.cos(0.005 * i)) + 5. * random.random()
 
+    out_data = [(i, f(i)) for i in range(270, 1100, 2)]
+
+    return out_data 
 def compute_T(json_structure):
 
-    out_data = [(i, .1 + i + .2 * random.random()) for i in range(100)]
+    def f(i):
+        return 50. * (0.5 + 0.5 * math.sin(0.005 * i)) + 5. * random.random()
+
+    out_data = [(i, f(i)) for i in range(270, 1100, 2)]
+
     return out_data 
