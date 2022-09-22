@@ -197,6 +197,8 @@ class Frontend(tornado.web.Application):
 
     async def refresh_data_graph(self, ws_socket, params):
 
+        data = self.backend.load_structure()
+        data = self.backend.load_measure()
         data = self.backend.refresh_model_data(params)
 
         line_chart = pygal.XY(

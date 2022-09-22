@@ -19,6 +19,7 @@ def compute_R(json_structure, params):
     out_data = [(i, f(i)) for i in range(270, 1100, 2)]
 
     return out_data 
+
 def compute_T(json_structure, params):
 
     fraction1 = json_structure.get('structure', {}).get("layer1", {}).get("fraction1", 30)

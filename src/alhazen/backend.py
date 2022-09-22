@@ -68,8 +68,10 @@ class Backend:
         logging.info(f"structure_files:{os.listdir(STRUCTURE_FILES_PATH)}")
         logging.info(f"measure_files:{os.listdir(MEASURE_FILES_PATH)}")
 
-    def load_structure(self, name):
+    def load_structure(self, name=None):
 
+        if name is None:
+            name =  self.structure_file
         logging.info(f"name:{name}")
 
         pth = os.path.join(STRUCTURE_FILES_PATH, name)
@@ -77,8 +79,10 @@ class Backend:
             self._structure = json.load(f)
         self.structure_file = name
 
-    def load_measure(self, name):
+    def load_measure(self, name=None):
 
+        if name is None:
+            name =  self.measure_file
         logging.info(f"name:{name}")
 
         self._measure = [[], []]
