@@ -1,0 +1,105 @@
+
+Dato un certo campione fisico su cui vengono fatte misure che producono
+__dati sperimentali__, questo viene rappresentato da una __struttura__.
+
+La misura produce riflettanza (R) e trasmittanza (T) per diversi valori
+della lunghezza d'onda (lambda).
+
+Una __struttura__ e` un descrizione (modello) del campione fisico mediante
+un certo numero di __strati__ (tipicamente 4, considerando anche i due
+strati semiinfiniti di aria sopra e sotto il campione; oltre all'aria,
+normalmente ci sono uno __strato_attivo__ e un substrato. Lo __strato
+attivo__ e` quello che sara` descritto dal __modello_ottico__).
+
+Ogni __strato__ e` costituito un __EMA__ (Effective Material Approximation)
+ed e` caratterizzato da __spessore__, __coerenza__, __rugosita`__
+
+Un __EMA__ e` una miscela di __materiali__ (massimo 3) ognuno con una certa
+__frazione__. La somma delle __frazioni_ deve essere 1 (o a 100 se in %).
+
+Ogni __materiale__ e` caratterizzato dal suo __indice_di_rifrazione__ (n,k)
+in funzione di __lambda__; la lista delle tuple (lambda_i,n_i,k_i) e`
+tipicamente contenuta in un file il cui nome identifica il __materiale__.
+
+Una __struttura__ si puo` schematizzare cosi`:
+
+structure:
+    [...]
+    layer_i:
+        name (unique id?)
+        active (bool)
+        thickness (float)
+        coherence (bool)
+        roughness (float)
+        medium1:
+            name (unique id?)
+            refractive index file path (str)
+            fraction (float)
+        medium2:
+            name (unique id?)
+            refractive index file path (str)
+            fraction (float)
+        medium3:
+            name (unique id?)
+            refractive index file path (str)
+            fraction (float)
+    [...]
+
+Data una __struttura__ e` possibile calcolare (R,T)=f(lambda) usando una
+Scattering Matrix (SM) definita e "immutabile" codificata in un programma
+python (ScatteringMatrix.py) che definisce una serie di funzioni (non
+classi).
+
+Nello schema attuale di alhazen si potrebbe:
+- identificare il set di parametri con il file dei __dati sperimentali__
+  (cioe`, eliminare i parametri e sostituirli con un campo nomefile)
+- associare al "modello" una __struttura__ (pre-esistente in libreria o
+  creata/modificata dall'utente) descritta in un file esterno, editabile
+  dall'utente in formato json, dict o ini (*).
+
+Data la __struttura__ e i __dati sperimentali__ (R,T)_e, per il momento si
+potrebbero implementare (**):
+- plot dei due set di dati (il plot deve essere aggiornato ogni volta che
+  cambio i parametri della struttura)
+- calcolo di __Chi2__ rispetto a R, T o entrambe (da scegliere con un checkbox)
+- (in un secondo momento) minimizzazione di Chi2 sul valore della thickness
+  dello strato "attivo"
+
+Il primo passo e` calcolare (R,T)_c con la ScatteringMatrix (***) e poi
+plottare i due set (R,T)_e e (R,T)_c.
+
+Il calcolo di __Chi2__ e` ovvio e puo` essere fatto "contemporaneamente" al
+plot (avendo scelto su quale parametro calcolarlo).
+
+Questo e` un primo passo che NON include quello che chiamo
+__modello_ottico__ (MO) che e` un modello per l'__indice_di_rifrazione__
+(n,k)=f(lambda) dello __strato_attivo__ della __struttura__.
+
+Il passo successivo e` quindi di includere il MO ma ancora senza
+minimizzazione.
+
+Il MO avra una maschera per inserire i suoi parametri. La lista dei
+parametri dipende dal modello scelto. Ogni volta che cambio i parametri,
+ricalcolo (n,k) dello __strato_attivo__ con il MO e quindi ricalcolo
+(R,T) con la SM e questo mi cambia il plot. Sarebbe iol caso di avviare il
+ricalcolo a richiesta (cioe` dopo che l'utente ha finito di modificare i
+parametri che vuole) e non alla modifica del valore nella maschera.
+
+
+
+==note==
+
+(*) e` fondamentale che "a regime" la struttura sia editabile attraverso una
+maschera (popup?)
+
+(**) domanda generale: cosa va modificato?
+- src/alhazen/backend (lettura dati, definizione modello e calcolo)
+- src/alhazen/frontend (render_* functions)
+- src/static/alhazen.js
+- src/static/template/index.html
+- src/static/alhazen.css
+Viene tutto scritto "a mano" o c'e` un framework (come p.es. django che crea
+il codice dalla struttura del database).
+
+(***) Questo calcolo va inserito in backend.py:refresh_model_data?
+
