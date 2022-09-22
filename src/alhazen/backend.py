@@ -102,8 +102,6 @@ class Backend:
 
     def refresh_model_data(self, params):
 
-        logging.info(f"params:{params}")
-
         data = []
         if self._structure:
             serie_R = compute_R(self._structure, params)

@@ -1,5 +1,13 @@
-<label for="thickness_active_layer">
-	thickness active layer (micron)
-</label>
-<input type='number' value=0 onchange="refresh_data_graph();" class="editable_parameter" name="thickness_active_layer">
-</input>
+<h3>edit params:</h3>
+<p>
+<label for="thickness_active_layer">thickness active layer (micron):</label>
+<input type='number' value=0 onchange="refresh_data_graph();" class="editable_parameter" name="thickness_active_layer"></input>
+</p>
+<p>
+<label for="path_to_auxiliary_file">path to auxiliary file:</label>
+<input type='text' value="" onchange="refresh_data_graph();" class="editable_parameter" name="path_to_auxiliary_file"></input>
+</p>
+<p>
+<label for="external_noise_factor">external noise factors:</label>
+<input type='text' value="0.2, 0.45, .67" onchange="refresh_data_graph();" class="editable_parameter" name="external_noise_factor"></input>
+</p>

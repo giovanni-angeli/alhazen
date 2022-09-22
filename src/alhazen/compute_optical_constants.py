@@ -6,8 +6,11 @@
 import os
 import random
 import math
+import logging
 
 def compute_R(json_structure, params):
+
+    logging.info(f"params:{params}")
 
     fraction1 = json_structure.get('structure', {}).get("layer1", {}).get("fraction1", 30)
     fraction1 = float(fraction1)
@@ -21,6 +24,8 @@ def compute_R(json_structure, params):
     return out_data 
 
 def compute_T(json_structure, params):
+
+    logging.info(f"params:{params}")
 
     fraction1 = json_structure.get('structure', {}).get("layer1", {}).get("fraction1", 30)
     fraction1 = float(fraction1)
