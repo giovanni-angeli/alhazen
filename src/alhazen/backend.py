@@ -81,7 +81,7 @@ class Backend:
 
         logging.info(f"name:{name}")
 
-        self._measure = [[], []] 
+        self._measure = [[], []]
         pth = os.path.join(MEASURE_FILES_PATH, name)
         with open(pth, encoding='utf-8') as f:
             for i, row in enumerate(csv.reader(f)):
@@ -96,12 +96,14 @@ class Backend:
 
         self.measure_file = name
 
-    def refresh_model_data(self):
+    def refresh_model_data(self, params):
+
+        logging.info(f"params:{params}")
 
         data = []
         if self._structure:
-            serie_R = compute_R(self._structure)
-            serie_T = compute_T(self._structure)
+            serie_R = compute_R(self._structure, params)
+            serie_T = compute_T(self._structure, params)
             data.append(("Rc", serie_R))
             data.append(("Tc", serie_T))
 

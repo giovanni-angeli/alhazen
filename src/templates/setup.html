@@ -4,24 +4,24 @@
 {% block article %}
 
 <div class="row"> 
+	<div class="col-10">
+		<input class="btn" type="button" name="install_templates_btn" onclick="install_templates();" value="install templates from template library"></input>
+		<label>(will overwrite existent copies)</label>
+	</div>
+</div>    
+<div class="row"> 
 	<hr></hr>
 </div>    
 <div class="row">
-	<div class="col-2">
-		<input class="btn" type="button" name="install_templates_btn" onclick="install_templates();" value="install templates from template library"></input>
-		 <br/>
-		<label>(will overwrite existent copies)</label>
-	</div>
 	<div class="col-4">
 		<div id="structure_file_list" class="file_list">    
 			{% if structure_file_list %}
 				<h3>structure files:</h3>
 				{% for f in structure_file_list %}
-				<br><span>{{ escape(str(f)) }}</span>
-				[ 
-				<a onclick="on_template_clicked('edit',   'structure', '{{ escape(str(f)) }}');">edit  </a> 
-				<a onclick="on_template_clicked('delete', 'structure', '{{ escape(str(f)) }}');">delete</a> 
-				<a onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">clone </a> ]
+				<br><span>{{ escape(str(f)) }}</span> 
+				<span class="small_btn" onclick="on_template_clicked('edit',   'structure', '{{ escape(str(f)) }}');">view/edit</span> 
+				<span class="small_btn" onclick="on_template_clicked('delete', 'structure', '{{ escape(str(f)) }}');">delete</span> 
+				<span class="small_btn" onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">clone </span> 
 				</br>
 				{% end %}
 			{% end %}
@@ -43,10 +43,10 @@
 			{% if measure_file_list %}
 				<h3>measure files:</h3>
 				{% for f in measure_file_list %}
-				<br><span>{{ escape(str(f)) }}</span>&nbsp;[<a onclick="on_template_clicked('edit', 'measure', '{{ escape(str(f)) }}');"
-					>edit</a>&nbsp;<a onclick="on_template_clicked('delete', 'measure', '{{ escape(str(f)) }}');"
-					>delete</a>&nbsp;<a onclick="on_template_clicked('clone',  'measure', '{{ escape(str(f)) }}');"
-					>clone</a>]
+				<br><span>{{ escape(str(f)) }}</span> 
+				<span class="small_btn" onclick="on_template_clicked('edit',   'measure', '{{ escape(str(f)) }}');">view/edit</span> 
+				<span class="small_btn" onclick="on_template_clicked('delete', 'measure', '{{ escape(str(f)) }}');">delete</span> 
+				<span class="small_btn" onclick="on_template_clicked('clone',  'measure', '{{ escape(str(f)) }}');">clone </span> 
 				</br>
 				{% end %}
 			{% end %}

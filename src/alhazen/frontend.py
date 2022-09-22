@@ -195,9 +195,9 @@ class Frontend(tornado.web.Application):
             logging.error(traceback.format_exc())
 
 
-    async def refresh_data_graph(self, ws_socket):
+    async def refresh_data_graph(self, ws_socket, params):
 
-        data = self.backend.refresh_model_data()
+        data = self.backend.refresh_model_data(params)
 
         line_chart = pygal.XY(
             width=900,
@@ -255,7 +255,7 @@ class Frontend(tornado.web.Application):
                     elif _action == 'clone':
                         _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
                         original = os.path.join(_pth, _file_name)
-                        target = '(copy)'.join(os.path.splitext(original))
+                        target = '.cpy'.join(os.path.splitext(original))
 
                         shutil.copyfile(original, target)
 
@@ -274,7 +274,7 @@ class Frontend(tornado.web.Application):
             elif message_dict.get("command") == "refresh_data_graph":
 
                 await self.send_message_to_UI("status_display", 'recalculating model, please wait...', ws_socket)
-                await self.refresh_data_graph(ws_socket)
+                await self.refresh_data_graph(ws_socket, params=message_dict.get("params", {}))
                 _msg = f"structure_file:{self.backend.structure_file}, measure_file:{self.backend.measure_file}"
                 await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket)
 
@@ -291,9 +291,9 @@ class Frontend(tornado.web.Application):
             logging.warning(traceback.format_exc())
             await self.send_message_to_UI("error_display", f"Exception:{e}", ws_socket)
 
-    async def send_message_to_UI(self, element_id, innerHTML, ws_client=None):
+    async def send_message_to_UI(self, element_id, innerHTML=None, ws_client=None, data=None):
 
-        msg = {"element_id": element_id, "innerHTML": innerHTML}
+        msg = {"element_id": element_id, "innerHTML": innerHTML, "data": data}
         msg = json.dumps(msg)
 
         if ws_client:

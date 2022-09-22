@@ -30,7 +30,12 @@ var on_file_selected = function (arg) {
 }
 
 var refresh_data_graph = function () {
-	var object = {"command": "refresh_data_graph", "params": null};
+    var params = {};
+    const editable_parameters = document.getElementsByClassName('editable_parameter');
+    for (let i = 0; i < editable_parameters.length; i++) {
+        params[editable_parameters[i].name] = editable_parameters[i].value;
+    };
+	var object = {"command": "refresh_data_graph", "params": params};
 	send_to_websocket_server(object);
 };
 
@@ -144,13 +149,25 @@ var on_ws_close = function (evt) {
 var on_ws_message = function (evt) {
 	try {
 		var data = JSON.parse(evt.data);            
-		//~ if ((data.innerHTML) && (data.element_id)) {
-		if ((data.innerHTML != null) && (data.element_id)) {
-			var el = document.getElementById(data.element_id)
-			if (el) { 
-				el.style.display = 'block';
-				el.innerHTML = data.innerHTML; 
-			}
+		//~ console.log(JSON.stringify(data));
+		//~ console.log(JSON.stringify(data.data));
+		//~ console.log(JSON.stringify(data.innerHTML));
+		//~ console.log(JSON.stringify(data.id));
+        var el = document.getElementById(data.element_id)
+        if (el) {
+            el.style.display = 'block';
+            if (data.innerHTML != null) {
+                if (el) { 
+                    el.innerHTML = data.innerHTML; 
+                }
+            } else if (data.data != null) {
+                var el = document.getElementById(data.element_id)
+                if (el) { 
+                    el.data = data.data; 
+                    el.width = 1200;
+                    el.height = 600;
+                }
+            }
 		}
 	} catch(err) {
 		error_handler("err:" + err);

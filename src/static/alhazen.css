@@ -48,14 +48,6 @@ header {
   padding: 8px;
   border: .1px solid lightgray;
 }
-input[type="number"] {
-   width:50px;
-   height:40px;
-}
-input[type=number]:hover::-webkit-inner-spin-button {  
-	width: 80px;
-	height: 40px;
-}
 
 .file_selector {
 	background-color: #FFFFFF;
@@ -67,6 +59,13 @@ input[type=number]:hover::-webkit-inner-spin-button {
 	padding: 8px;
   border: .01px solid lightgray;
 }
+
+.small_btn {
+	background-color: #FFFFEE;
+	padding: 2px;
+  border: .01px solid lightgray;
+}
+
 .file_list {
 	text-align: left;
 	padding: 4px;
