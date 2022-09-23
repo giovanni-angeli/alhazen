@@ -1,49 +1,37 @@
 {
     "structure": {
-        "layer1": {
-           "name": "TopMedium",
-           "fname1": "n/air.in3",
-           "fname2": "",
-           "fname3": "",
-           "fraction1": "100",
-           "fraction2": "0",
-           "fraction3": "0",
+
+        "TopMedium`": {
+           "fname1": "n/air.in3", "fname2": "", "fname3": "",
+           "fraction1": "100", "fraction2": "0", "fraction3": "0",
+
            "thickness": "0",
            "incoherence": "0",
            "roughness": "0"
         },
-        "layer2": {
-           "name": "TopMedium",
-           "fname1": "n/Jellison.in3",
-           "fname2": "",
-           "fname3": "",
-           "fraction1": "100",
-           "fraction2": "0",
-           "fraction3": "0",
+
+        "Jellison": {
+           "fname1": "n/Jellison.in3", "fname2": "", "fname3": "",
+           "fraction1": "100", "fraction2": "0", "fraction3": "0",
+
            "thickness": "3000",
            "incoherence": "0",
            "roughness": "0"
         },
-        "layer3": {
-           "name": "substrate",
-           "fname1": "n/Schott-1mm.in3",
-           "fname2": "",
-           "fname3": "",
-           "fraction1": "100",
-           "fraction2": "0",
-           "fraction3": "0",
+
+        "Substrate": {
+           "fname1": "n/Schott-1mm.in3", "fname2": "", "fname3": "",
+           "fraction1": "100", "fraction2": "0", "fraction3": "0",
+
            "thickness": "1e7",
            "incoherence": "1",
            "roughness": "0"
         },
-        "layer4": {
-           "name": "BottomMedium",
-           "fname1": "n/air.in3",
-           "fname2": "",
-           "fname3": "",
-           "fraction1": "100",
-           "fraction2": "0",
-           "fraction3": "0",
+
+        "BottomMedium": {
+           "fname1": "n/air.in3", "fname2": "", "fname3": "",
+           "fraction1": "100", "fraction2": "0", "fraction3": "0",
+
            "thickness": "0",
            "incoherence": "0",
            "roughness": "0"
