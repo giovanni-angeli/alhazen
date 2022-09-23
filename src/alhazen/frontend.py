@@ -62,7 +62,6 @@ class Setup(BaseRequestHandler):  # pylint: disable=too-few-public-methods
         ctx = {
             'page_name': 'Alhazen conf page',
             'page_links': [('/', 'graph page'),],
-            'ws_connection': True,
             'result_title': result_title,
             'results': results,
             'errors': errors,
@@ -110,7 +109,6 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
         ctx = {
             'page_name': 'Alhazen graph page',
             'page_links': [('/setup', 'conf page'),],
-            'ws_connection': True,
             'structure_file': self.parent.backend.structure_file,
             'measure_file': self.parent.backend.measure_file,
             'structure_file_list': structure_file_list,
@@ -197,41 +195,44 @@ class Frontend(tornado.web.Application):
 
     async def refresh_data_graph(self, ws_socket, params):
 
-        data = self.backend.load_structure()
-        data = self.backend.load_measure()
+        self.backend.load_structure()
+        self.backend.load_measure()
+
         data = self.backend.refresh_model_data(params)
 
-        line_chart = pygal.XY(
-            width=900,
-            height=500,
-            x_label_rotation=30,
-            dots_size=0.5,
-            stroke_style={'width': .5},
-            # ~ stroke=False,
-            # ~ show_dots=False,
-            # ~ show_legend=False,
-            human_readable=True,
-            legend_at_bottom=True,
-            legend_at_bottom_columns=len(data),
-            # ~ legend_box_size=40,
-            truncate_legend=40,
-        )
+        if data:
+            line_chart = pygal.XY(
+                width=900,
+                height=500,
+                x_label_rotation=30,
+                dots_size=0.5,
+                stroke_style={'width': .5},
+                # ~ stroke=False,
+                # ~ show_dots=False,
+                # ~ show_legend=False,
+                human_readable=True,
+                legend_at_bottom=True,
+                legend_at_bottom_columns=len(data),
+                # ~ legend_box_size=40,
+                truncate_legend=40,
+            )
 
-        line_chart.title = ''
-        line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0]) / 10))]
+            # ~ line_chart.title = f"params:{params}"
+            line_chart.title = ""
+            line_chart.x_labels = [i * 10 for i in range(0, int(len(data[0]) / 10))]
 
-        for line in data:
-            label, serie = line
-            line_chart.add(label, serie)
+            for line in data:
+                label, serie = line
+                line_chart.add(label, serie)
 
-        # ~ graph_svg = line_chart.render(is_unicode=True)
-        # ~ await self.send_message_to_UI("pygal_data_container", innerHTML=None, ws_client=ws_socket, data=graph_svg)
+            # ~ graph_svg = line_chart.render(is_unicode=True)
+            # ~ await self.send_message_to_UI("pygal_data_container", innerHTML=None, ws_client=ws_socket, data=graph_svg)
 
-        STATIC_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'static')
-        line_chart.render_to_file(STATIC_PATH + '/temp_chart.svg')
-        await self.send_message_to_UI("pygal_data_container", payload='/static/temp_chart.svg', ws_client=ws_socket, target='data')
+            STATIC_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'static')
+            line_chart.render_to_file(STATIC_PATH + '/temp_chart.svg')
+            await self.send_message_to_UI("pygal_data_container", payload='/static/temp_chart.svg', ws_client=ws_socket, target='data')
 
-        await self.send_message_to_UI("pygal_description_container", '', ws_socket)
+            await self.send_message_to_UI("pygal_description_container", '', ws_socket)
 
     async def handle_message_from_UI(self, ws_socket, message):
 
@@ -265,8 +266,6 @@ class Frontend(tornado.web.Application):
 
                         shutil.copyfile(original, target)
 
-
-
             elif message_dict.get("command") == "structure_selected":
 
                 _name = message_dict.get("params")
@@ -279,9 +278,12 @@ class Frontend(tornado.web.Application):
 
             elif message_dict.get("command") == "refresh_data_graph":
 
+                params = message_dict.get("params", {})
                 await self.send_message_to_UI("status_display", 'recalculating model, please wait...', ws_socket)
-                await self.refresh_data_graph(ws_socket, params=message_dict.get("params", {}))
-                _msg = f"structure_file:{self.backend.structure_file}, measure_file:{self.backend.measure_file}"
+                await self.refresh_data_graph(ws_socket, params=params)
+                _msg = f"structure_file:{self.backend.structure_file}"
+                _msg += f", measure_file:{self.backend.measure_file}"
+                _msg += f"<br>params:{params}"
                 await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket)
 
             else:

@@ -32,11 +32,20 @@ class Backend:
 
         self.settings = settings
 
+        for p in (DATA_PATH, STRUCTURE_FILES_PATH, MEASURE_FILES_PATH):
+            if not os.path.exists(p):
+                os.makedirs(p, exist_ok=True)
+
         self.structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
         self.measure_file_list = os.listdir(MEASURE_FILES_PATH)
 
         self.structure_file = self.structure_file_list[0] if self.structure_file_list else ''
         self.measure_file = self.measure_file_list[0] if self.measure_file_list else ''
+
+        logging.info(f"self.structure_file_list:{self.structure_file_list}.")
+        logging.info(f"self.measure_file_list  :{self.measure_file_list}  .")
+        logging.info(f"self.structure_file:{self.structure_file}.")
+        logging.info(f"self.measure_file  :{self.measure_file  }.")
 
         self._structure = {}
         self._measure = []
@@ -59,10 +68,6 @@ class Backend:
 
     def install_templates(self):
 
-        for p in (DATA_PATH, STRUCTURE_FILES_PATH, MEASURE_FILES_PATH):
-            if not os.path.exists(p):
-                os.makedirs(p)
-
         shutil.copytree(DATA_TEMPLATES_PATH, DATA_PATH, dirs_exist_ok=True)
 
         logging.info(f"structure_files:{os.listdir(STRUCTURE_FILES_PATH)}")
@@ -70,35 +75,37 @@ class Backend:
 
     def load_structure(self, name=None):
 
-        if name is None:
-            name =  self.structure_file
+        if name is None and self.structure_file:
+            name = self.structure_file
         logging.info(f"name:{name}")
 
-        pth = os.path.join(STRUCTURE_FILES_PATH, name)
-        with open(pth, encoding='utf-8') as f:
-            self._structure = json.load(f)
-        self.structure_file = name
+        if name:
+            pth = os.path.join(STRUCTURE_FILES_PATH, name)
+            with open(pth, encoding='utf-8') as f:
+                self._structure = json.load(f)
+            self.structure_file = name
 
     def load_measure(self, name=None):
 
-        if name is None:
-            name =  self.measure_file
+        if name is None and self.measure_file:
+            name = self.measure_file
         logging.info(f"name:{name}")
 
-        self._measure = [[], []]
-        pth = os.path.join(MEASURE_FILES_PATH, name)
-        with open(pth, encoding='utf-8') as f:
-            for i, row in enumerate(csv.reader(f)):
-                if i == 0:
-                    pass
-                else:
-                    l = float(row[0])
-                    R = float(row[1])
-                    T = float(row[2])
-                    self._measure[0].append((l, R))
-                    self._measure[1].append((l, T))
+        if name:
+            self._measure = [[], []]
+            pth = os.path.join(MEASURE_FILES_PATH, name)
+            with open(pth, encoding='utf-8') as f:
+                for i, row in enumerate(csv.reader(f)):
+                    if i == 0:
+                        pass
+                    else:
+                        l = float(row[0])
+                        R = float(row[1])
+                        T = float(row[2])
+                        self._measure[0].append((l, R))
+                        self._measure[1].append((l, T))
 
-        self.measure_file = name
+            self.measure_file = name
 
     def refresh_model_data(self, params):
 

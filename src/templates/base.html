@@ -10,21 +10,17 @@
 	<body>
 		<header>
 			<div class="row">
-				<div class="col-2">{{ page_name }}</div>
+				<div class="col-1">{{ page_name }}</div>
 				{% for l, n in page_links %}
 				<div class="col-1"><a href="{{ l }}">{{ n }}</a></div>
 				{% end %}
-			</div>    
-			<div class="row">
-				{% if ws_connection %}
-					<div class="col-8" id="ws_connection">
-						<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
-						<label for="port">port:</label><input type="text" id="port" value="8000"/>
-						<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
-						<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
-						<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
-					</div>
-				{% end %}
+				<div class="col-8" id="ws_connection">
+					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
+					<label for="port">port:</label><input type="text" id="port" value="8000"/>
+					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
+					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
+				</div>
 			</div>
 		</header>
 

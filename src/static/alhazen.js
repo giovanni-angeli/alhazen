@@ -17,33 +17,31 @@ var on_template_clicked = function(action, type, file_name) {
 }
 
 var on_file_selected = function (arg) {
-	var _params = '';
-    if (arg == 'structure') {
-        _params = document.getElementById("structure_selector").value;
-        _cmd = "structure_selected";
-    } else if (arg == 'measure') {
-        _params = document.getElementById("measure_selector").value;
-        _cmd = "measure_selected";
-    }
-    var _object = {"command": _cmd, "params": _params};
-	send_to_websocket_server(_object);
 	refresh_data_graph();
 }
 
 var refresh_data_graph = function () {
+
+    var _object = null;
+
+    _object = {"command": "structure_selected", "params": document.getElementById("structure_selector").value};
+    send_to_websocket_server(_object);
+    _object = {"command": "measure_selected", "params": document.getElementById("measure_selector").value};
+    send_to_websocket_server(_object);
+
     var params = {};
     const editable_parameters = document.getElementsByClassName('editable_parameter');
     for (let i = 0; i < editable_parameters.length; i++) {
         params[editable_parameters[i].name] = editable_parameters[i].value;
     };
-	var object = {"command": "refresh_data_graph", "params": params};
-	send_to_websocket_server(object);
+
+    object = {"command": "refresh_data_graph", "params": params};
+    send_to_websocket_server(object);
 };
 
 var install_templates = function () {
     var _object = {"command": "install_templates", "params": null};
 	send_to_websocket_server(_object);
-
     setTimeout(function() { location.reload(); }, 200);
 }
 
@@ -139,8 +137,8 @@ var on_ws_message = function (evt) {
         el[data.target] = data.payload; 
 	} catch(err) {
 		error_handler("err:" + err);
-        console.log("on_ws_message() " + data.element_id + ', '  + data.target + ', ' + data.payload);
 	}
+    console.log("on_ws_message() " + data.element_id + ', '  + data.target + ', ' + data.payload);
 }
 
 var init_wsocket = function (on_connect_call_back) {
