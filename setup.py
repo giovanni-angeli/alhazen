@@ -43,6 +43,7 @@ def main():
         data_files=[
             ('templates', list(glob.glob('src/templates/*'))),
             ('static', list(glob.glob('src/static/*'))),
+            ('data_templates', list(glob.glob('data_templates/*'))),
         ],
         include_package_data=True,
         scripts=[

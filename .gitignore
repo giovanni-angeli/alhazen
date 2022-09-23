@@ -24,4 +24,4 @@ dist
 *.igno.*
 *.ipynb_*
 
-*static/temp_chart.svg
+*temp_chart.svg*
