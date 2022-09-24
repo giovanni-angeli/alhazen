@@ -71,3 +71,12 @@ header {
 	padding: 4px;
   border: .01px solid lightgray;
 }
+
+#view_file_content {
+    background-color:#FFFFEE;
+    overflow: auto;
+    overflow-y: scroll;
+    max-height:400px;
+	text-align: left;
+	padding: 6px;
+}

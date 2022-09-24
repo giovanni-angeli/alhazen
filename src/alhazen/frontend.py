@@ -234,6 +234,22 @@ class Frontend(tornado.web.Application):
 
             await self.send_message_to_UI("pygal_description_container", '', ws_socket)
 
+    async def send_message_to_UI(self, element_id, payload, ws_client=None, target='innerHTML', class_name=None):
+
+        msg = {"element_id": element_id, 'target': target, 'payload': payload, 'class_name': class_name}
+        msg = json.dumps(msg)
+
+        if ws_client:
+            await ws_client.write_message(msg)
+            # ~ t_ = ws_client.write_message(msg)
+            # ~ asyncio.ensure_future(t_)
+
+        else:  # broadcast
+            for ws_ch in self.web_socket_channels:
+                await ws_ch.write_message(msg)
+                # ~ t_ = ws_ch.write_message(msg)
+                # ~ asyncio.ensure_future(t_)
+
     async def handle_message_from_UI(self, ws_socket, message):
 
         logging.debug(f"message({type(message)}):{message}")
@@ -244,21 +260,54 @@ class Frontend(tornado.web.Application):
 
                 self.backend.install_templates()
 
+            elif message_dict.get("command") == "save_template":
+
+                _type = message_dict.get("params", {}).get('type')
+                _file_name = message_dict.get("params", {}).get('file_name')
+                _file_content = message_dict.get("params", {}).get('file_content')
+                logging.debug(f"message_dict:{message_dict}"[:200])
+                _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
+                if _type == 'structure':
+                    _file_content = json.dumps(json.loads(_file_content), indent=2)
+                else:
+                    pass
+
+                with open(os.path.join(_pth, _file_name), 'w', encoding='utf-8') as f:
+                    f.write(_file_content)
+
+                await self.send_message_to_UI("status_display", f"file {_file_name} saved.", ws_socket)
+
             elif message_dict.get("command") == "on_template_clicked":
 
                 _action = message_dict.get("params", {}).get('action')
                 _type = message_dict.get("params", {}).get('type')
                 _file_name = message_dict.get("params", {}).get('file_name')
+                _file_content = message_dict.get("params", {}).get('file_content')
 
-                logging.warning(f"_type:{_type}, _file_name:{_file_name}")
+                logging.debug(f"message_dict:{message_dict}"[:200])
 
                 if _action and _type and _file_name:
                     if _action == 'delete':
                         _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
                         r = os.remove(os.path.join(_pth, _file_name)) 
                         logging.warning(f"r:{r}")
+
                     elif _action == 'edit':
-                        pass
+
+                        if _type == 'structure':
+                            with open(os.path.join(STRUCTURE_FILES_PATH, _file_name), encoding='utf-8') as f:
+                                _content = f.read()
+                                _content = json.dumps(json.loads(_content), indent=2)
+                                # ~ _content = "<br/>".join(_content.split('\n'))
+                        else:
+                            with open(os.path.join(MEASURE_FILES_PATH, _file_name), encoding='utf-8') as f:
+                                _content = f.read()
+                                # ~ _content = "<br/>".join(_content.split('\n'))
+
+                        await self.send_message_to_UI("view_file_name", _file_name, ws_socket, class_name="view_file_container")
+                        await self.send_message_to_UI("view_file_type", _type, ws_socket)
+                        await self.send_message_to_UI("view_file_content", _content, ws_socket)
+
                     elif _action == 'clone':
                         _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
                         original = os.path.join(_pth, _file_name)
@@ -298,19 +347,3 @@ class Frontend(tornado.web.Application):
         except Exception as e:
             logging.warning(traceback.format_exc())
             await self.send_message_to_UI("error_display", f"Exception:{e}", ws_socket)
-
-    async def send_message_to_UI(self, element_id, payload, ws_client=None, target='innerHTML'):
-
-        msg = {"element_id": element_id, 'target': target, 'payload': payload}
-        msg = json.dumps(msg)
-
-        if ws_client:
-            await ws_client.write_message(msg)
-            # ~ t_ = ws_client.write_message(msg)
-            # ~ asyncio.ensure_future(t_)
-
-        else:  # broadcast
-            for ws_ch in self.web_socket_channels:
-                await ws_ch.write_message(msg)
-                # ~ t_ = ws_ch.write_message(msg)
-                # ~ asyncio.ensure_future(t_)

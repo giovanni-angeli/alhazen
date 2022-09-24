@@ -22,6 +22,10 @@
 					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col-10" id="status_display"></div>
+				<div class="col-10" id="error_display" onclick="document.getElementById('error_display').style.display='none';"></div>
+			</div>
 		</header>
 
 		<article>
@@ -35,7 +39,7 @@
 			</div>
 			<div class="row" id="logger_area_container">
 				<div class="col-1" >
-					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_logger_area_view();">
+					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_element_view('logger_area');">
 					</input>
 					<input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
 					</input>

@@ -12,6 +12,16 @@
 <div class="row"> 
 	<hr></hr>
 </div>    
+<div class="row"> 
+	<div class="col-8">
+		<div class="view_file_container" hidden>
+			<span id="view_file_name" class="small_btn" onclick="toggle_element_view('view_file_content');"></span> 
+			<span id="view_file_type" hidden></span> 
+			<span class="small_btn" onclick="on_save_file_button_clicked();">save</span> 
+			<pre id="view_file_content" contenteditable="true"></pre>
+		</div>    
+	</div>    
+</div>    
 <div class="row">
 	<div class="col-4">
 		<div id="structure_file_list" class="file_list">    
@@ -22,6 +32,7 @@
 				<span class="small_btn" onclick="on_template_clicked('edit',   'structure', '{{ escape(str(f)) }}');">view/edit</span> 
 				<span class="small_btn" onclick="on_template_clicked('delete', 'structure', '{{ escape(str(f)) }}');">delete</span> 
 				<span class="small_btn" onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">clone </span> 
+				<span class="small_btn" onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">rename</span> 
 				</br>
 				{% end %}
 			{% end %}

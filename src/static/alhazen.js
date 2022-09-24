@@ -3,16 +3,27 @@ var ws_instance;
 var ws_on_connect_call_back;  
 
 
+var on_save_file_button_clicked = function() {
+    const file_name = document.getElementById("view_file_name").innerHTML;
+    const type = document.getElementById("view_file_type").innerHTML;
+    const file_content = document.getElementById("view_file_content").innerHTML  ;
+    //~ console.log("file_content: " + file_content);
+
+    if (confirm("confirm save: " + file_name + "?")) {
+        var params = {'file_content': file_content, 'type': type, 'file_name': file_name};
+        var object = {"command": "save_template", "params": params};
+        send_to_websocket_server(object);
+    }
+}
+
 var on_template_clicked = function(action, type, file_name) {
     if (confirm("confirm " + action + ": " + file_name + "?")) {
-        if (action == 'edit') {
-            alert("Sorry, action edit is not yet implemented.");
-            return;
-        };
         var object = {"command": "on_template_clicked", "params": {'action': action, 'type': type, 'file_name': file_name}};
         send_to_websocket_server(object);
 
-        setTimeout(function() { location.reload(); }, 200);
+        if (action != 'edit') {
+            setTimeout(function() { location.reload(); }, 200);
+        };
     };
 }
 
@@ -45,13 +56,13 @@ var install_templates = function () {
     setTimeout(function() { location.reload(); }, 200);
 }
 
-var logging = function(data){
-	console.log(data);
+var logging = function(message){
+	console.log(message);
 	var el = document.getElementById("logger_area");
 	if (el) {
 		let s = new Date().toLocaleString();
 		_ = el.innerHTML.substring(0, 10000);
-		el.innerHTML = "[" + s + "]" + data.substring(0, 100) + "\n" + _;
+		el.innerHTML = "[" + s + "]" + message.substring(0, 100) + "\n" + _;
 	}
 };
 
@@ -67,8 +78,8 @@ var clear_logger_area_view = function(){
 	}
 };
 
-var toggle_logger_area_view = function(){
-	var el = document.getElementById("logger_area");
+var toggle_element_view = function(id){
+	var el = document.getElementById(id);
 	if (el) {
 		if (el.style.display == 'block'){
 			el.style.display = 'none';
@@ -95,7 +106,7 @@ var send_to_websocket_server = function (object) {
 	if (ws_instance != null) {
 		try {
 			var msg_ = JSON.stringify(object);
-			logging("send_to_websocket_server() msg_:'" + msg_ + "'");
+			logging("send_to_websocket_server() msg_:'" + msg_.substring(0, 120) + "'");
 			ws_instance.send(msg_);
 		} catch(err) {
 			error_handler("err:" + err);
@@ -131,14 +142,22 @@ var on_ws_close = function (evt) {
 
 var on_ws_message = function (evt) {
 	try {
-		var data = JSON.parse(evt.data);            
-        var el = document.getElementById(data.element_id)
-        el.style.display = 'block';
+		const data = JSON.parse(evt.data);            
+        const el = document.getElementById(data.element_id)
+        //~ el.style.display = 'block';
+        el.style.visibility = "visible";
         el[data.target] = data.payload; 
+        if (data.class_name) {
+            const els = document.getElementsByClassName(data.class_name);
+            for (let i = 0; i < els.length; i++) {
+                els[i].style.visibility = "visible";
+                els[i].style.display = 'block';
+            };
+        }
+        logging("on_ws_message() " + data.element_id + ', ' + data.target + ', ' + data.class_name + ', ' + data.payload.substring(0, 120));
 	} catch(err) {
 		error_handler("err:" + err);
 	}
-    console.log("on_ws_message() " + data.element_id + ', '  + data.target + ', ' + data.payload);
 }
 
 var init_wsocket = function (on_connect_call_back) {
