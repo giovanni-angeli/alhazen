@@ -56,17 +56,12 @@ class Setup(BaseRequestHandler):  # pylint: disable=too-few-public-methods
     @staticmethod
     def __get_context(result_title, results, errors):
 
-        structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
-        measure_file_list = os.listdir(MEASURE_FILES_PATH)
-
         ctx = {
             'page_name': 'Alhazen conf page',
-            'page_links': [('/', 'graph page'),],
+            'page_links': [('/', 'graph page'), ],
             'result_title': result_title,
             'results': results,
             'errors': errors,
-            'structure_file_list': structure_file_list,
-            'measure_file_list': measure_file_list,
         }
 
         return ctx
@@ -108,7 +103,7 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
 
         ctx = {
             'page_name': 'Alhazen graph page',
-            'page_links': [('/setup', 'conf page'),],
+            'page_links': [('/setup', 'conf page'), ],
             'structure_file': self.parent.backend.structure_file,
             'measure_file': self.parent.backend.measure_file,
             'structure_file_list': structure_file_list,
@@ -184,21 +179,47 @@ class Frontend(tornado.web.Application):
 
             if BROWSER is not None:
                 logging.warning("starting browser ...")
-                try:
-                    webbrowser.get(BROWSER).open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
-                except BaseException:
-                    webbrowser.open('http://127.0.0.1:{}'.format(LISTEN_PORT), new=0)
+                urls = [
+                    f'http://127.0.0.1:{LISTEN_PORT}/setup',
+                    f'http://127.0.0.1:{LISTEN_PORT}']
+                for url in urls:
+                    try:
+                        webbrowser.get(BROWSER).open(url, new=0)
+                    except BaseException:
+                        webbrowser.open(url, new=0)
 
         except BaseException:  # pylint: disable=broad-except
             logging.error(traceback.format_exc())
 
+    async def refresh_file_lists(self, ws_socket, params):
+        structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
+        measure_file_list = os.listdir(MEASURE_FILES_PATH)
+        structure_file_list.sort()
+        measure_file_list.sort()
+        for name, list_, target in (
+                ('structure', structure_file_list, 'structure_file_list'),
+                ('measure', measure_file_list, 'measure_file_list')):
+
+            html_ = f"<h3>{name} files:</h3>"
+            for n, f in enumerate(list_):
+                col = "#F7FAF7" if n % 2 else "#EEEEEE"
+                html_ += f"""
+<div class="row" style="background-color:{col};">
+<span class="col-7">{str(f)}</span>\n
+<span class="small_btn col-1" onclick="on_template_clicked('edit',   '{str(name)}', '{str(f)}')">edit  </span>
+<span class="small_btn col-1" onclick="on_template_clicked('delete', '{str(name)}', '{str(f)}')">delete</span>
+<span class="small_btn col-1" onclick="on_template_clicked('clone',  '{str(name)}', '{str(f)}')">clone </span>
+</div>
+"""
+
+            await self.send_message_to_UI(target, html_, ws_socket)
 
     async def refresh_data_graph(self, ws_socket, params):
 
         self.backend.load_structure()
         self.backend.load_measure()
 
-        data = self.backend.refresh_model_data(params)
+        data, message = self.backend.refresh_model_data(params)
 
         if data:
             line_chart = pygal.XY(
@@ -232,7 +253,7 @@ class Frontend(tornado.web.Application):
             line_chart.render_to_file(STATIC_PATH + '/temp_chart.svg')
             await self.send_message_to_UI("pygal_data_container", payload='/static/temp_chart.svg', ws_client=ws_socket, target='data')
 
-            await self.send_message_to_UI("pygal_description_container", '', ws_socket)
+            await self.send_message_to_UI("pygal_description_container", message, ws_socket)
 
     async def send_message_to_UI(self, element_id, payload, ws_client=None, target='innerHTML', class_name=None):
 
@@ -259,6 +280,12 @@ class Frontend(tornado.web.Application):
             if message_dict.get("command") == "install_templates":
 
                 self.backend.install_templates()
+                await self.refresh_file_lists(ws_socket, params={})
+
+            elif message_dict.get("command") == "refresh_file_lists":
+
+                params = message_dict.get("params", {})
+                await self.refresh_file_lists(ws_socket, params=params)
 
             elif message_dict.get("command") == "save_template":
 
@@ -275,6 +302,7 @@ class Frontend(tornado.web.Application):
                 with open(os.path.join(_pth, _file_name), 'w', encoding='utf-8') as f:
                     f.write(_file_content)
 
+                await self.refresh_file_lists(ws_socket, params={})
                 await self.send_message_to_UI("status_display", f"file {_file_name} saved.", ws_socket)
 
             elif message_dict.get("command") == "on_template_clicked":
@@ -289,11 +317,10 @@ class Frontend(tornado.web.Application):
                 if _action and _type and _file_name:
                     if _action == 'delete':
                         _pth = STRUCTURE_FILES_PATH if _type == 'structure' else MEASURE_FILES_PATH
-                        r = os.remove(os.path.join(_pth, _file_name)) 
+                        r = os.remove(os.path.join(_pth, _file_name))
                         logging.warning(f"r:{r}")
 
                     elif _action == 'edit':
-
                         if _type == 'structure':
                             with open(os.path.join(STRUCTURE_FILES_PATH, _file_name), encoding='utf-8') as f:
                                 _content = f.read()
@@ -315,6 +342,8 @@ class Frontend(tornado.web.Application):
 
                         shutil.copyfile(original, target)
 
+                    await self.refresh_file_lists(ws_socket, params={})
+
             elif message_dict.get("command") == "structure_selected":
 
                 _name = message_dict.get("params")
@@ -332,7 +361,6 @@ class Frontend(tornado.web.Application):
                 await self.refresh_data_graph(ws_socket, params=params)
                 _msg = f"structure_file:{self.backend.structure_file}"
                 _msg += f", measure_file:{self.backend.measure_file}"
-                _msg += f"<br>params:{params}"
                 await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket)
 
             else:

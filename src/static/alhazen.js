@@ -4,11 +4,9 @@ var ws_on_connect_call_back;
 
 
 var on_save_file_button_clicked = function() {
-    const file_name = document.getElementById("view_file_name").innerHTML;
+    const file_name = document.getElementById("view_file_name").value;
     const type = document.getElementById("view_file_type").innerHTML;
-    const file_content = document.getElementById("view_file_content").innerHTML  ;
-    //~ console.log("file_content: " + file_content);
-
+    const file_content = document.getElementById("view_file_content").innerHTML;
     if (confirm("confirm save: " + file_name + "?")) {
         var params = {'file_content': file_content, 'type': type, 'file_name': file_name};
         var object = {"command": "save_template", "params": params};
@@ -21,15 +19,20 @@ var on_template_clicked = function(action, type, file_name) {
         var object = {"command": "on_template_clicked", "params": {'action': action, 'type': type, 'file_name': file_name}};
         send_to_websocket_server(object);
 
-        if (action != 'edit') {
-            setTimeout(function() { location.reload(); }, 200);
-        };
+        //~ if (action != 'edit') {
+            //~ setTimeout(function() { location.reload(); }, 200);
+        //~ };
     };
 }
 
 var on_file_selected = function (arg) {
 	refresh_data_graph();
 }
+
+var refresh_file_lists = function () {
+    object = {"command": "refresh_file_lists", "params": {}};
+    send_to_websocket_server(object);
+};
 
 var refresh_data_graph = function () {
 
@@ -51,9 +54,10 @@ var refresh_data_graph = function () {
 };
 
 var install_templates = function () {
-    var _object = {"command": "install_templates", "params": null};
-	send_to_websocket_server(_object);
-    setTimeout(function() { location.reload(); }, 200);
+    if (confirm("confirm install templates" + "?\n (will overwrite existent copies)")) {
+        var _object = {"command": "install_templates", "params": null};
+        send_to_websocket_server(_object);
+    }
 }
 
 var logging = function(message){
@@ -81,10 +85,13 @@ var clear_logger_area_view = function(){
 var toggle_element_view = function(id){
 	var el = document.getElementById(id);
 	if (el) {
-		if (el.style.display == 'block'){
-			el.style.display = 'none';
-		} else {
+		//~ if (el.style.display == 'block'){
+		if (el.style.visibility != "visible"){
 			el.style.display = 'block';
+            el.style.visibility = "visible";
+		} else {
+			el.style.display = 'none';
+            el.style.visibility = "hidden";
 		}
 	}
 };
@@ -144,7 +151,7 @@ var on_ws_message = function (evt) {
 	try {
 		const data = JSON.parse(evt.data);            
         const el = document.getElementById(data.element_id)
-        //~ el.style.display = 'block';
+        el.style.display = 'block';
         el.style.visibility = "visible";
         el[data.target] = data.payload; 
         if (data.class_name) {

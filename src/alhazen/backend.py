@@ -13,7 +13,7 @@ import json
 import traceback
 import csv
 
-from alhazen.compute_optical_constants import (compute_R, compute_T)
+from alhazen.compute_optical_constants import (compute_R, compute_T, get_description)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -120,4 +120,6 @@ class Backend:
             data.append(("Re", self._measure[0]))
             data.append(("Te", self._measure[1]))
 
-        return data
+        message = get_description(self._structure, params)
+
+        return data, message

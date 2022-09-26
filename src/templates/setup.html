@@ -12,30 +12,22 @@
 <div class="row"> 
 	<hr></hr>
 </div>    
-<div class="row"> 
-	<div class="col-8">
-		<div class="view_file_container" hidden>
-			<span id="view_file_name" class="small_btn" onclick="toggle_element_view('view_file_content');"></span> 
-			<span id="view_file_type" hidden></span> 
-			<span class="small_btn" onclick="on_save_file_button_clicked();">save</span> 
+<div class="row view_file_container" hidden> 
+	<div class="col-10">
+		<div class="row">
+			<span class="col-1 small_btn" style="float:left;margin:6px;" onclick="toggle_element_view('view_file_content');">hide/show</span> 
+			<textarea class="col-4" style=";" id="view_file_name" rows="1" cols="60"></textarea> 
+			<span class="col-1 small_btn" style="margin:6px;" onclick="on_save_file_button_clicked();">save</span> 
+			<span class="col-1" id="view_file_type" hidden></span> 
+		</div>
+		<div class="row">
 			<pre id="view_file_content" contenteditable="true"></pre>
-		</div>    
+		</div>
 	</div>    
 </div>    
 <div class="row">
-	<div class="col-4">
+	<div class="col-5">
 		<div id="structure_file_list" class="file_list">    
-			{% if structure_file_list %}
-				<h3>structure files:</h3>
-				{% for f in structure_file_list %}
-				<br><span>{{ escape(str(f)) }}</span> 
-				<span class="small_btn" onclick="on_template_clicked('edit',   'structure', '{{ escape(str(f)) }}');">view/edit</span> 
-				<span class="small_btn" onclick="on_template_clicked('delete', 'structure', '{{ escape(str(f)) }}');">delete</span> 
-				<span class="small_btn" onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">clone </span> 
-				<span class="small_btn" onclick="on_template_clicked('clone',  'structure', '{{ escape(str(f)) }}');">rename</span> 
-				</br>
-				{% end %}
-			{% end %}
 		</div>    
 		<hr></hr>
 		<div>
@@ -49,18 +41,8 @@
 			<input class="btn" type="button" onclick="document.forms['upload_structure_form'].submit();" value="upload"></input>
 		</div>    
 	</div>    
-	<div class="col-4">
+	<div class="col-5">
 		<div id="measure_file_list" class="file_list">    
-			{% if measure_file_list %}
-				<h3>measure files:</h3>
-				{% for f in measure_file_list %}
-				<br><span>{{ escape(str(f)) }}</span> 
-				<span class="small_btn" onclick="on_template_clicked('edit',   'measure', '{{ escape(str(f)) }}');">view/edit</span> 
-				<span class="small_btn" onclick="on_template_clicked('delete', 'measure', '{{ escape(str(f)) }}');">delete</span> 
-				<span class="small_btn" onclick="on_template_clicked('clone',  'measure', '{{ escape(str(f)) }}');">clone </span> 
-				</br>
-				{% end %}
-			{% end %}
 		</div>    
 		<hr></hr>
 		<div>
@@ -81,7 +63,7 @@
 
 
 <script>
-	init_wsocket();
+	init_wsocket(refresh_file_lists);
 </script>
 
 {% end %}
