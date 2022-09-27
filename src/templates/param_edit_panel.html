@@ -1,16 +1,28 @@
 <h3>edit params:</h3>
 
 <p>
+<label>wavelength interval (min,max):</label>
+<input type='text' value="200, 1100" onchange="refresh_data_graph();"
+class="editable_parameter" name="wl_range"></input>
+</p>
+
+<p>
+<label>number of plot points:</label>
+<input type='text' value="400" onchange="refresh_data_graph();"
+class="editable_parameter" name="wl_np"></input>
+</p>
+
+<p>
 <label>thickness of active layer (micron):</label>
 <input type='number' value=30 onchange="refresh_data_graph();" class="editable_parameter" name="thickness_active_layer"></input>
 </p>
 
-<p>
+<!--p>
 <label>path to auxiliary files:</label>
 <input type='text' value="" onchange="refresh_data_graph();" class="editable_parameter" name="path_to_auxiliary_file"></input>
-</p>
+</p-->
 
-<p>
+<!--p>
 <label>external noise factors:</label>
 <input type='text' value="0.2, 0.45, .67" onchange="refresh_data_graph();" class="editable_parameter" name="external_noise_factors"></input>
-</p>
+</p-->
