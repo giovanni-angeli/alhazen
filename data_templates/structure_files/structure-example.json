@@ -1,9 +1,9 @@
 {
-    "layer": [
+    "layers": [
 
         {
         "name": "TopMedium`",
-        "material": [
+        "materials": [
             { "name":"", "fname": "n/air.in3", "fraction": "100" },
             { "name":"", "fname": "", "fraction": "0" },
             { "name":"", "fname": "", "fraction": "0" }
@@ -14,8 +14,8 @@
         },
 
         {
-        "name": "Jellison`",
-        "material": [
+        "name": "ActiveLayer`",
+        "materials": [
             { "name":"", "fname": "n/Jellison.in3", "fraction": "100" },
             { "name":"", "fname": "", "fraction": "0" },
             { "name":"", "fname": "", "fraction": "0" }
@@ -27,7 +27,7 @@
 
         {
         "name": "Substrate`",
-        "material": [
+        "materials": [
             { "name":"", "fname": "n/Schott-1mm.in3", "fraction": "100" },
             { "name":"", "fname": "", "fraction": "0" },
             { "name":"", "fname": "", "fraction": "0" }
@@ -39,7 +39,7 @@
 
         {
         "name": "BottomMedium`",
-        "material": [
+        "materials": [
             { "name":"", "fname": "n/air.in3", "fraction": "100" },
             { "name":"", "fname": "", "fraction": "0" },
             { "name":"", "fname": "", "fraction": "0" }
