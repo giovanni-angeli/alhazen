@@ -1,42 +1,55 @@
 {
-    "structure": {
+    "structure": [
 
-        "TopMedium`": {
-           "fname1": "n/air.in3", "fname2": "", "fname3": "",
-           "fraction1": "100", "fraction2": "0", "fraction3": "0",
-
-           "thickness": "0",
-           "incoherence": "0",
-           "roughness": "0"
+        {
+        "name": "TopMedium`",
+        "material": [
+            { "name":"", "fname": "n/air.in3", "fraction": "100" },
+            { "name":"", "fname": "", "fraction": "0" },
+            { "name":"", "fname": "", "fraction": "0" }
+        ],
+        "thickness": "0",
+        "coherence": "0",
+        "roughness": "0"
         },
 
-        "Jellison": {
-           "fname1": "n/Jellison.in3", "fname2": "", "fname3": "",
-           "fraction1": "100", "fraction2": "0", "fraction3": "0",
-
-           "thickness": "3000",
-           "incoherence": "0",
-           "roughness": "0"
+        {
+        "name": "Jellison`",
+        "material": [
+            { "name":"", "fname": "n/Jellison.in3", "fraction": "100" },
+            { "name":"", "fname": "", "fraction": "0" },
+            { "name":"", "fname": "", "fraction": "0" }
+        ],
+        "thickness": "0",
+        "coherence": "1",
+        "roughness": "0"
         },
 
-        "Substrate": {
-           "fname1": "n/Schott-1mm.in3", "fname2": "", "fname3": "",
-           "fraction1": "100", "fraction2": "0", "fraction3": "0",
-
-           "thickness": "1e7",
-           "incoherence": "1",
-           "roughness": "0"
+        {
+        "name": "Substrate`",
+        "material": [
+            { "name":"", "fname": "n/Schott-1mm.in3", "fraction": "100" },
+            { "name":"", "fname": "", "fraction": "0" },
+            { "name":"", "fname": "", "fraction": "0" }
+        ],
+        "thickness": "0",
+        "coherence": "0",
+        "roughness": "0"
         },
 
-        "BottomMedium": {
-           "fname1": "n/air.in3", "fname2": "", "fname3": "",
-           "fraction1": "100", "fraction2": "0", "fraction3": "0",
-
-           "thickness": "0",
-           "incoherence": "0",
-           "roughness": "0"
+        {
+        "name": "BottomMedium`",
+        "material": [
+            { "name":"", "fname": "n/air.in3", "fraction": "100" },
+            { "name":"", "fname": "", "fraction": "0" },
+            { "name":"", "fname": "", "fraction": "0" }
+        ],
+        "thickness": "0",
+        "coherence": "0",
+        "roughness": "0"
         }
-    }
+
+    ]
 }
 
 
