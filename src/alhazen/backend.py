@@ -13,7 +13,7 @@ import json
 import traceback
 import csv
 
-from alhazen.compute_optical_constants import (compute_R, compute_T, get_description)
+from alhazen.compute_optical_constants import (compute_RT, get_description)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -111,8 +111,7 @@ class Backend:
 
         data = []
         if self._structure:
-            serie_R = compute_R(self._structure, params)
-            serie_T = compute_T(self._structure, params)
+            serie_R,serie_T = compute_RT(self._structure, params)
             data.append(("Rc", serie_R))
             data.append(("Tc", serie_T))
 
