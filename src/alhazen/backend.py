@@ -90,7 +90,6 @@ class Backend:
 
         if name is None and self.measure_file != 'None':
             name = self.measure_file
-        else:
         logging.info(f"name:{name}")
 
         self._measure = []
