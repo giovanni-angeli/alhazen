@@ -75,8 +75,13 @@ class Backend:
 
     def load_structure(self, name=None):
 
-        if name is None and self.structure_file:
+        if name is None and self.structure_file != 'None':
             name = self.structure_file
+        else:
+            # questo dovrebbe rimuovere _structure da self
+            delattr( self, '_structure' )
+            # qusto dovrebe uscire senza popolare _structure
+            return
         logging.info(f"name:{name}")
 
         if name:
@@ -87,8 +92,13 @@ class Backend:
 
     def load_measure(self, name=None):
 
-        if name is None and self.measure_file:
+        if name is None and self.measure_file != 'None':
             name = self.measure_file
+        else:
+            # questo dovrebbe rimuovere _measure da self
+            delattr( self, '_measure' )
+            # qusto dovrebe uscire senza popolare _measure
+            return
         logging.info(f"name:{name}")
 
         if name:
@@ -122,3 +132,4 @@ class Backend:
         message = get_description(self._structure, params)
 
         return data, message
+
