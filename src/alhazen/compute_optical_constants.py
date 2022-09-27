@@ -12,7 +12,7 @@ import numpy as np
 
 # local modules from "optical"
 import alhazen.optical_functions
-import alhazen.ScatteringMatrix
+# ~ import alhazen.ScatteringMatrix
 
 DEFAULT_NP = 400
 

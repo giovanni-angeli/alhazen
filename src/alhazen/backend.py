@@ -36,11 +36,11 @@ class Backend:
             if not os.path.exists(p):
                 os.makedirs(p, exist_ok=True)
 
-        self.structure_file_list = os.listdir(STRUCTURE_FILES_PATH)
-        self.measure_file_list = os.listdir(MEASURE_FILES_PATH)
+        self.structure_file_list = [''] + os.listdir(STRUCTURE_FILES_PATH)
+        self.measure_file_list = [''] + os.listdir(MEASURE_FILES_PATH)
 
-        self.structure_file = self.structure_file_list[0] if self.structure_file_list else ''
-        self.measure_file = self.measure_file_list[0] if self.measure_file_list else ''
+        self.structure_file =  ''
+        self.measure_file =  ''
 
         logging.info(f"self.structure_file_list:{self.structure_file_list}.")
         logging.info(f"self.measure_file_list  :{self.measure_file_list}  .")
@@ -79,11 +79,12 @@ class Backend:
             name = self.structure_file
         logging.info(f"name:{name}")
 
+        self.structure_file = name
+        self._structure = {}
         if name:
             pth = os.path.join(STRUCTURE_FILES_PATH, name)
             with open(pth, encoding='utf-8') as f:
                 self._structure = json.load(f)
-            self.structure_file = name
 
     def load_measure(self, name=None):
 
@@ -92,6 +93,8 @@ class Backend:
         else:
         logging.info(f"name:{name}")
 
+        self._measure = []
+        self.measure_file = name
         if name:
             self._measure = [[], []]
             pth = os.path.join(MEASURE_FILES_PATH, name)
@@ -105,8 +108,6 @@ class Backend:
                         T = float(row[2])
                         self._measure[0].append((l, R))
                         self._measure[1].append((l, T))
-
-            self.measure_file = name
 
     def refresh_model_data(self, params):
 
