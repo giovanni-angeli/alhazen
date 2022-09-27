@@ -52,6 +52,7 @@ def main():
         install_requires=[
             'tornado',
             'pygal',
+            'numpy',
         ],
     )
 
