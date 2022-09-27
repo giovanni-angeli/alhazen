@@ -11,8 +11,6 @@
 	<div class="col-2">
 		<div class="row" name="model_selector_container">
 			<div class="col-10">
-				<div> {% include "param_edit_panel.html" %} </div>    
-				<div><hr></hr></div>    
 				<h3>select a structure file:</h3>
 				<select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector">
 					{% for name in structure_file_list %}
@@ -34,6 +32,8 @@
 						{% end %}
 					{% end %}
 				</select>
+				<div><hr></hr></div>    
+				<div> {% include "param_edit_panel.html" %} </div>    
 				<div><hr></hr></div>    
 				<input type="submit" id="refresh_data_graph_btn" value="refresh graph (Alt+r)" accesskey="r" 
 					 class="file_selector" onclick="refresh_data_graph();">
