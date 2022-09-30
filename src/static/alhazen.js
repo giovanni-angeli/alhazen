@@ -43,14 +43,16 @@ var refresh_data_graph = function () {
     _object = {"command": "measure_selected", "params": document.getElementById("measure_selector").value};
     send_to_websocket_server(_object);
 
-    var params = {};
-    const editable_parameters = document.getElementsByClassName('editable_parameter');
-    for (let i = 0; i < editable_parameters.length; i++) {
-        params[editable_parameters[i].name] = editable_parameters[i].value;
-    };
-
-    object = {"command": "refresh_data_graph", "params": params};
-    send_to_websocket_server(object);
+    var plot_formData = new FormData(document.getElementById('plot_edit_panel_form'));
+    var model_formData = new FormData(document.getElementById('model_edit_panel_form'));
+    _object = {
+        "command": "refresh_data_graph", 
+        "params": {
+            'plot_edit_panel': Object.fromEntries(plot_formData.entries()),
+            'model_edit_panel': Object.fromEntries(model_formData.entries())
+        }
+    }
+    send_to_websocket_server(_object);
 };
 
 var install_templates = function () {

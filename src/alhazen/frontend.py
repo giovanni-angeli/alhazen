@@ -358,6 +358,7 @@ class Frontend(tornado.web.Application):
 
     async def _cmd_refresh_data_graph(self, params, ws_socket):  # pylint: disable=unused-private-member
 
+        logging.info(f"params:{json.dumps(params, indent=2)}")
         await self.refresh_data_graph(params, ws_socket)
 
     async def _cmd_save_template(self, params, ws_socket):  # pylint: disable=unused-private-member
