@@ -1,0 +1,22 @@
+<h3>plot params:</h4>
+<p>
+<label>wavelength interval (nm):<br />min, max</label>
+<input type='text' value="200, 1100" onchange="refresh_data_graph();" class="editable_parameter" name="wl_range"></input>
+</p>
+
+<p>
+<label>number of plot points:</label>
+<input type='text' value="400" onchange="refresh_data_graph();" class="editable_parameter" name="wl_np"></input>
+</p>
+
+<p>
+<label>variables to display:</label>
+<br />
+<label for="R">R:</label>
+<input type='checkbox' checked value="true"   onchange="refresh_data_graph();" class="editable_parameter" name="show_R" ></input>
+<label for="T">T:</label>
+<input type='checkbox' checked value="true" onchange="refresh_data_graph();" class="editable_parameter" name="show_T"></input>
+<label for="A">A:</label>
+<input type='checkbox' value="true" onchange="refresh_data_graph();" class="editable_parameter" name="show_A"></input>
+</p>
+
