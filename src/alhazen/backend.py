@@ -110,15 +110,30 @@ class Backend:
 
     def refresh_model_data(self, params):
 
+        show_R = True if params.get('plot_edit_panel').get('show_R') else False
+        show_T = True if params.get('plot_edit_panel').get('show_T') else False
+        show_A = True if params.get('plot_edit_panel').get('show_A') else False
+
         data = []
         if self._structure:
             serie_R,serie_T = compute_RT(self._structure, params)
-            data.append(("Rc", serie_R))
-            data.append(("Tc", serie_T))
+            if show_R: data.append(("Rc", serie_R))
+            if show_T: data.append(("Tc", serie_T))
+            if show_A:
+                serie_A = []
+                for R,T in zip(serie_R,serie_T):
+                    serie_A.append( (R[0], 1-(R[1]+T[1])) )
+                data.append(("Ac", serie_A))
 
         if self._measure:
-            data.append(("Re", self._measure[0]))
-            data.append(("Te", self._measure[1]))
+            if show_R: data.append(("Re", self._measure[0]))
+            if show_T: data.append(("Te", self._measure[1]))
+            if show_A:
+                serie_A = []
+                for R,T in zip(self._measure[0],self._measure[1]):
+                    serie_A.append( (R[0], 1-(R[1]+T[1])) )
+                data.append(("Ae", serie_A))
+
 
         message = get_description(self._structure, params)
 
