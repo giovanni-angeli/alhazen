@@ -23,7 +23,7 @@
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
-        "thickness": 0,
+        "thickness": 3000,
         "coherence": 1,
         "roughness": 0
         },
@@ -36,7 +36,7 @@
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
-        "thickness": 0,
+        "thickness": 1e7,
         "coherence": 0,
         "roughness": 0
         },
