@@ -7,12 +7,12 @@
         "active": false,
         "materials": [
             { "name":"air", "fname": "n/air.in3", "fraction": 100 },
-            { "name":"", "fname": "not_selected", "fraction": 0 },
-            { "name":"", "fname": "not_selected", "fraction": 0 }
+            { "name":"", "fname": "", "fraction": 0 },
+            { "name":"", "fname": "", "fraction": 0 }
         ],
         "thickness": 0,
         "coherence": 1,
-        "roughness": 0.0
+        "roughness": 0
         },
 
         {
@@ -20,12 +20,12 @@
         "active": true,
         "materials": [
             { "name":"", "fname": "n/Amorfh.in3", "fraction": 100 },
-            { "name":"", "fname": "not_selected", "fraction": 0 },
-            { "name":"", "fname": "not_selected", "fraction": 0 }
+            { "name":"", "fname": "", "fraction": 0 },
+            { "name":"", "fname": "", "fraction": 0 }
         ],
         "thickness": 950,
         "coherence": 1,
-        "roughness": 0.0
+        "roughness": 0
         },
 
         {
@@ -33,12 +33,12 @@
         "active": false,
         "materials": [
             { "name":"glass", "fname": "n/corning.in3", "fraction": 100 },
-            { "name":"", "fname": "not_selected", "fraction": 0 },
-            { "name":"", "fname": "not_selected", "fraction": 0 }
+            { "name":"", "fname": "", "fraction": 0 },
+            { "name":"", "fname": "", "fraction": 0 }
         ],
         "thickness": 1e7,
         "coherence": 0,
-        "roughness": 0.0
+        "roughness": 0
         },
 
         {
@@ -46,12 +46,12 @@
         "active": false,
         "materials": [
             { "name":"air", "fname": "n/air.in3", "fraction": 100 },
-            { "name":"", "fname": "not_selected", "fraction": 0 },
-            { "name":"", "fname": "not_selected", "fraction": 0 }
+            { "name":"", "fname": "", "fraction": 0 },
+            { "name":"", "fname": "", "fraction": 0 }
         ],
         "thickness": 0,
         "coherence": 1,
-        "roughness": 0.0
+        "roughness": 0
         }
 
     ]
