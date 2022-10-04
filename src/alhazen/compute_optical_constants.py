@@ -124,11 +124,11 @@ def compute_RT( json_structure, params ):
         # prepare output in the required format
         R = []
         for l,r in zip(wl,Ronly.tolist()):
-            R.append( (l,r) )
+            R.append( (l,r*100) )
 
         T = []
         for l,r in zip(wl,Tonly.tolist()):
-            T.append( (l,r) )
+            T.append( (l,r*100) )
 
 
     return R,T
