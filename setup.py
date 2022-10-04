@@ -44,7 +44,7 @@ def main():
             ('templates', list(glob.glob('src/templates/*'))),
             ('static', list(glob.glob('src/static/*'))),
             ('data_templates', list(glob.glob('data_templates/*'))),
-            ('refraction_index_collection', list(glob.glob('refraction_index_collection/*'))),
+            ('refractive_index_collection', list(glob.glob('refractive_index_collection/*'))),
         ],
         include_package_data=True,
         scripts=[
