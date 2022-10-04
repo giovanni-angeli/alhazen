@@ -47,16 +47,28 @@ def convert_structure( json_structure, params ):
         coherence = json_layer['coherence']
         roughness = json_layer['roughness']
 
+        here_ = os.path.dirname(os.path.abspath(__file__))
+        refraction_index_collection_prth = os.path.join(here_, '..', '..', 'refraction_index_collection')
+
         # L'istruzione qui sotto e` ricavata da optical.functions.OpenMultilayer()
         # Domande per Emanuele:
         # 1. perche' alcuni valori sono trasformati in stringhe? (thickness e roughness)
         # 2. le fractions sono numeri? NO: sono stringhe
         # 3. incoherent e` un numero? NO: e` una stringa
         # 4. perche; la thinckness e` /10?
-        opt_layer = alhazen.optical_functions.layer( name=name, \
-                           file1=materials[0]['fname'], file2=materials[1]['fname'],  file3=materials[2]['fname'], \
-                           fr1=str(materials[0]['fraction']), fr2=str(materials[1]['fraction']), fr3=str(materials[2]['fraction']), \
-                           thickness=str(thickness/10), incoherent="1" if coherence==0 else "0", roughness=str(roughness) )
+        kw_args = dict(
+            name=name,
+            file1=os.path.join(refraction_index_collection_prth, materials[0]['fname']),
+            file2=os.path.join(refraction_index_collection_prth, materials[1]['fname']),
+            file3=os.path.join(refraction_index_collection_prth, materials[2]['fname']),
+            fr1=str(materials[0]['fraction']),
+            fr2=str(materials[1]['fraction']),
+            fr3=str(materials[2]['fraction']),
+            thickness=str(thickness/10),
+            incoherent="1" if coherence==0 else "0",
+            roughness=str(roughness))
+
+        opt_layer = alhazen.optical_functions.layer(**kw_args)
 
         opt_structure.add(opt_layer)
 
