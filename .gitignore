@@ -25,3 +25,7 @@ dist
 *.ipynb_*
 
 *temp_chart.svg*
+
+.alhazen.history
+.todo
+.*.swp
