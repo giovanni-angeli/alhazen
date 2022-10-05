@@ -13,7 +13,7 @@ import json
 import traceback
 import csv
 
-from alhazen.compute_optical_constants import (compute_RT, get_description)
+from alhazen.compute_optical_properties import (compute_RT, get_description)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
