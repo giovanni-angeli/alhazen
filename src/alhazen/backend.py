@@ -39,8 +39,8 @@ class Backend:
         self.structure_file_list = [''] + os.listdir(STRUCTURE_FILES_PATH)
         self.measure_file_list = [''] + os.listdir(MEASURE_FILES_PATH)
 
-        self.structure_file =  ''
-        self.measure_file =  ''
+        self.structure_file = ''
+        self.measure_file = ''
 
         logging.info(f"self.structure_file_list:{self.structure_file_list}.")
         logging.info(f"self.measure_file_list  :{self.measure_file_list}  .")
@@ -65,13 +65,6 @@ class Backend:
         while True:
 
             await asyncio.sleep(5)
-
-    def install_templates(self):
-
-        shutil.copytree(DATA_TEMPLATES_PATH, DATA_PATH, dirs_exist_ok=True)
-
-        logging.info(f"structure_files:{os.listdir(STRUCTURE_FILES_PATH)}")
-        logging.info(f"measure_files:{os.listdir(MEASURE_FILES_PATH)}")
 
     def load_structure(self, name=None):
 
@@ -110,32 +103,34 @@ class Backend:
 
     def refresh_model_data(self, params):
 
-        show_R = True if params.get('plot_edit_panel').get('show_R') else False
-        show_T = True if params.get('plot_edit_panel').get('show_T') else False
-        show_A = True if params.get('plot_edit_panel').get('show_A') else False
+        show_R = params.get('plot_edit_panel').get('show_R')
+        show_T = params.get('plot_edit_panel').get('show_T')
+        show_A = params.get('plot_edit_panel').get('show_A')
 
         data = []
         if self._structure:
-            serie_R,serie_T = compute_RT(self._structure, params)
-            if show_R: data.append(("Rc", serie_R))
-            if show_T: data.append(("Tc", serie_T))
+            serie_R, serie_T = compute_RT(self._structure, params)
+            if show_R:
+                data.append(("Rc", serie_R))
+            if show_T:
+                data.append(("Tc", serie_T))
             if show_A:
                 serie_A = []
-                for R,T in zip(serie_R,serie_T):
-                    serie_A.append( (R[0], 1-(R[1]+T[1])) )
+                for R, T in zip(serie_R, serie_T):
+                    serie_A.append((R[0], 1 - (R[1] + T[1])))
                 data.append(("Ac", serie_A))
 
         if self._measure:
-            if show_R: data.append(("Re", self._measure[0]))
-            if show_T: data.append(("Te", self._measure[1]))
+            if show_R:
+                data.append(("Re", self._measure[0]))
+            if show_T:
+                data.append(("Te", self._measure[1]))
             if show_A:
                 serie_A = []
-                for R,T in zip(self._measure[0],self._measure[1]):
-                    serie_A.append( (R[0], 1-(R[1]+T[1])) )
+                for R, T in zip(self._measure[0], self._measure[1]):
+                    serie_A.append((R[0], 1 - (R[1] + T[1])))
                 data.append(("Ae", serie_A))
-
 
         message = get_description(self._structure, params)
 
         return data, message
-

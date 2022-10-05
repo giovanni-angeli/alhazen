@@ -1,23 +1,25 @@
-<h3>plot params:</h4>
-<form id="plot_edit_panel_form" action=";">
-<p>
-<label>wavelength interval (nm):<br />min, max</label>
-<input type='text' value="200, 1100" onchange="refresh_data_graph();" name="wl_range"></input>
-</p>
+<div class="params_panel">
+	<h3>plot params:</h4>
+	<form id="plot_edit_panel_form" action=";">
+		<p>
+			<label>wavelength interval (nm):<br />min, max</label>
+			<input type='text' value="200, 1100" onchange="refresh_data_graph();" name="wl_range"></input>
+		</p>
 
-<p>
-<label>number of plot points:</label>
-<input type='number' value=400 onchange="refresh_data_graph();" name="wl_np"></input>
-</p>
+		<p>
+			<label>number of plot points:</label>
+			<input type='number' value=400 onchange="refresh_data_graph();" name="wl_np"></input>
+		</p>
 
-<p>
-<label>variables to display:</label>
-<br />
-<label for="R">R:</label>
-<input type='checkbox' checked onchange="refresh_data_graph();" name="show_R" id="show_R" form="plot_edit_panel_form"></input>
-<label for="T">T:</label>
-<input type='checkbox' checked onchange="refresh_data_graph();" name="show_T"></input>
-<label for="A">A:</label>
-<input type='checkbox' onchange="refresh_data_graph();" name="show_A"></input>
-</p>
-</form>
+		<p>
+			<label>variables to display:</label>
+			<br />
+			<label for="R">R:</label>
+			<input type='checkbox' checked onchange="refresh_data_graph();" name="show_R" id="show_R" form="plot_edit_panel_form"></input>
+			<label for="T">T:</label>
+			<input type='checkbox' checked onchange="refresh_data_graph();" name="show_T"></input>
+			<label for="A">A:</label>
+			<input type='checkbox' onchange="refresh_data_graph();" name="show_A"></input>
+		</p>
+	</form>
+</div>

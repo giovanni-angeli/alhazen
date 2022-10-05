@@ -26,7 +26,11 @@ import tornado.options        # pylint: disable=import-error
 
 import pygal  # pylint: disable=import-error
 
-from alhazen.backend import (STRUCTURE_FILES_PATH, MEASURE_FILES_PATH)
+from alhazen.backend import (
+    STRUCTURE_FILES_PATH,
+    MEASURE_FILES_PATH,
+    DATA_TEMPLATES_PATH,
+    DATA_PATH)
 
 WS_URI = r'/websocket'
 LISTEN_PORT = 8000
@@ -353,12 +357,16 @@ class Frontend(tornado.web.Application):
 
     async def _cmd_install_templates(self, params, ws_socket):  # pylint: disable=unused-private-member, unused-argument
 
-        self.backend.install_templates()
+        shutil.copytree(DATA_TEMPLATES_PATH, DATA_PATH, dirs_exist_ok=True)
+
+        logging.info(f"structure_files:{os.listdir(STRUCTURE_FILES_PATH)}")
+        logging.info(f"measure_files:{os.listdir(MEASURE_FILES_PATH)}")
+
         await self.refresh_file_lists(ws_socket)
 
     async def _cmd_refresh_data_graph(self, params, ws_socket):  # pylint: disable=unused-private-member
 
-        logging.info(f"params:{json.dumps(params, indent=2)}")
+        logging.debug(f"params:{json.dumps(params, indent=2)}")
         await self.refresh_data_graph(params, ws_socket)
 
     async def _cmd_save_template(self, params, ws_socket):  # pylint: disable=unused-private-member

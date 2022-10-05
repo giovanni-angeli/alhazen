@@ -12,9 +12,10 @@ body {
 	background-color: #FFFF99;
 	padding: 10px;
 }
-#params_panel {
+.params_panel {
 	background-color: #EEEEEE;
 	padding: 10px;
+	text-align: left;
 }
 header {
 	color:#882222;
