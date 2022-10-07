@@ -7,98 +7,122 @@ import logging
 import os
 import numpy as np
 
-# local modules from "optical"
 import alhazen.ScatteringMatrix
 
-class Material:
-    '''
-    material is what a layer is made of
-    '''
-
-    REFRACTIVE_INDEX_DIR = '' # to be prepended to the filename of the
-                              # material needed by _refractive_index_read
-
-    def __init__(self, material):
-        self.name = material['name']
-        self.fname = material['fname']
-        self.description = material['description']
-        self.refractive_index = self._refractive_index_read()
-        self.wl_range = self._wl_range_get
-
-    def _refractive_index_read(self):
-        '''
-        read the file containing the refractive index (real and imaginary
-        parts) for a given material
-        '''
-        # open os.path.join(REFRACTIVE_INDEX_DIR,self.fname)
-        # read data into refractive_index
-        refractive_index = 0
-
-        return refractive_index
-
-    def _wl_range_get(self):
-        # from self.refractive_index find min and max for wl_nr, wl_ni
-        [ [wl_nr_min, wl_nr_max], [wl_ni_min, wl_ni_max] ] = [ [0,0], [0,0] ]
-        return [ [wl_nr_min, wl_nr_max], [wl_ni_min, wl_ni_max] ]
-
+MATERIAL_REFRACTIVE_INDEX_DIR = '.'
 
 class Layer:
 
     '''
-    layer is the basic element of a structure
+    Layer is the basic element of a Structure
     '''
 
     def __init__(self, json_layer):
         self.name = json_layer['name']
-        self.fname = json_layer['fname']
         self.active = json_layer['active']
-        self.material = []
-        for material in json_layer['materials']:
-            self.material.append( Material(material) )
+        self.material = json_layer['materials']
+        material_fraction_test =  sum([ material[i]['fraction'] for i in range( len(material) ) ])
+        if material_fraction_test != 100:
+            # info: material,fraction
+            # raise error: not 100%
+            pass
         self.thickness = json_layer['thickness']
         self.coherence = json_layer['coherence']
         self.roughness = json_layer['roughness']
 
     def refractive_index(self):
         '''
-        compute the refractive index of the layer applying the Effective
+        Computes the refractive index of the layer applying the Effective
         Material Approximation (EMA) on a wavelength grid wich is the
         intersection of all the wavelength grids of the materials.
         '''
-
-    def _EMA(self):
+        # call _material_refractive_index_read(material['fname']) for material in self.material
+        # define wavelength ranges and "grid" (_wl_grid)
+        # interpolate refractive indices onto wl_grid
+        # apply EMA formul
+        #  ... see optical.functions.EMA for details
         pass
 
-    def _common_wl_grid(self):
+    def set_thickness(self,thickness):
         '''
-        given the list of wls (both for nr and ni)
-        computes the two arrays which is the union of the lists of nr and
-        ni, respectively + global min and max value
+        Set self.thickness = thickness (from params) if the layer is active
         '''
+        #TODO: consider moving this to Structure as the "active layer" is
+        # more a property of the structure than of the layer.
+        if self.active and thickness > 0:
+            self.thickness = thickness
+        else:
+            if thickness <= 0:
+                # set back form.model_params.thickness to self.thickness
+                pass
+        pass
+
+    def _material_refractive_index_read(fname):
+        # open file fname
+        # read Nr -> [ (wl,nr), ...]
+        # read Ni -> [ (wl,nr), ...]
+        # return { 'real': Nr, 'imag': Ni } or set
+        #     self.material[i].refractive_index = { 'real': Nr, 'imag': Ni }
+        #     boh!
+        pass
+
+    def _wl_grid(self):
+        '''
+        Returns the list of wl_n* (for both nr and ni) as the union of the
+        lists of wl_nr and wl_ni, respectively + global min and max value,
+        where:
+        - wl_nr = [ self.material[i].refractive_index['real'][i][0] for i in range() ]
+        - wl_ni = [ self.material[i].refractive_index['imag'][i][1] for i in range() ]
+        '''
+        pass
+
+    def _EMA(self):
+        '''
+        Apply the EMA formula
+        '''
+        pass
 
 
 class Structure:
 
     '''
-    structure is an array of layers
+    Structure is an array of Layers
     '''
 
     DEFAULT_NP = 400 # needed to build the wavelength grid on which to
                      # compute RT
 
     def __init__(self, json_structure, params):
+        self.name = json_structure['name']
         self.layer = []
         for layer in json_structure['layers']:
             self.layer.append( Layer(layer) )
 
-        # get params
+    def _check(self):
+
+        # existence of zero or one active layer only
+        if self.layer[:].active.count('True') > 1:
+            # raise error
+            pass
 
     def compute_RT(self):
-        R = 0
-        T = 0
-        return R, T
+        '''
+        Interface to ScatteringMatrix.ComputeRT
+        '''
 
-    def _grid(self):
+    def set_thickness_active_layer(self,thickness)
+        '''
+        Set the thickness of active layer
+        '''
+        #for layer in self.layer:
+        #    if layer.active: layer.thickness = thickness
+        for i in range(len(self.layer)):
+            if self.layer[i].active: self.layer[i].thickness = thickness
+
+    def _grid(self, np):
+        '''
+        Creates a list of wavelength to compute Structure properties on
+        '''
         pass
 
 
@@ -110,6 +134,10 @@ def compute_RT( json_structure, params ):
 
     return R, T
 
+
+def compute_Chi( json_structure, experimental_data, params )
+    pass
+    
 
 def get_description(_structure, params):
 
