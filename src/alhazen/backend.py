@@ -128,7 +128,7 @@ class Backend:
             if show_A:
                 serie_A = []
                 for R, T in zip(self._measure[0], self._measure[1]):
-                    serie_A.append((R[0], 1 - (R[1] + T[1])))
+                    serie_A.append((R[0], 100 - (R[1] + T[1])))
                 data.append(("Ae", serie_A))
 
         message = get_description(self._structure, params)
