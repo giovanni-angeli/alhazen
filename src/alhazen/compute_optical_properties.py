@@ -2,14 +2,25 @@
 # pylint: disable=invalid-name
 # pylint: disable=logging-fstring-interpolation
 
-import logging
+#import logging
 
 import os
+
+import math
+import random
 import numpy as np
 
-import alhazen.ScatteringMatrix
+#import alhazen.ScatteringMatrix
 
-MATERIAL_REFRACTIVE_INDEX_DIR = '.'
+FAKE = True
+DEBUG = False
+
+DEFAULT_WL_RANGE = '200,1200'
+DEFAULT_NP = 400
+DEFAULT_THICKNESS_AL = -1
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+MATERIAL_REFRACTIVE_INDEX_DIR = os.path.join(HERE,'..','..','refractive_index_collection')
 
 class Layer:
 
@@ -17,18 +28,19 @@ class Layer:
     Layer is the basic element of a Structure
     '''
 
-    def __init__(self, json_layer):
-        self.name = json_layer['name']
-        self.active = json_layer['active']
-        self.material = json_layer['materials']
-        material_fraction_test =  sum([ material[i]['fraction'] for i in range( len(material) ) ])
+    def __init__(self, layer):
+        self.name = layer['name']
+        self.active = layer['active']
+        self.material = layer['materials']
+        material_fraction_test =  sum([ self.material[i]['fraction'] for i in range( len(self.material) ) ])
         if material_fraction_test != 100:
             # info: material,fraction
             # raise error: not 100%
             pass
-        self.thickness = json_layer['thickness']
-        self.coherence = json_layer['coherence']
-        self.roughness = json_layer['roughness']
+        self.material_refractive_index = []
+        self.thickness = layer['thickness']
+        self.coherence = layer['coherence']
+        self.roughness = layer['roughness']
 
     def refractive_index(self):
         '''
@@ -36,37 +48,62 @@ class Layer:
         Material Approximation (EMA) on a wavelength grid wich is the
         intersection of all the wavelength grids of the materials.
         '''
-        # call _material_refractive_index_read(material['fname']) for material in self.material
-        # define wavelength ranges and "grid" (_wl_grid)
-        # interpolate refractive indices onto wl_grid
-        # apply EMA formul
-        #  ... see optical.functions.EMA for details
-        pass
+        for material in self.material:
+            if material['fname']:
+                self.material_refractive_index.append( self._material_refractive_index_read(material['fname']) )
+        self.wl_grid = self._wl_grid_build()
 
-    def set_thickness(self,thickness):
-        '''
-        Set self.thickness = thickness (from params) if the layer is active
-        '''
-        #TODO: consider moving this to Structure as the "active layer" is
-        # more a property of the structure than of the layer.
-        if self.active and thickness > 0:
-            self.thickness = thickness
-        else:
-            if thickness <= 0:
-                # set back form.model_params.thickness to self.thickness
-                pass
-        pass
+        # TODO: add interpolazion of self.material_refractive_index onto wl_grid
 
-    def _material_refractive_index_read(fname):
-        # open file fname
-        # read Nr -> [ (wl,nr), ...]
-        # read Ni -> [ (wl,nr), ...]
-        # return { 'real': Nr, 'imag': Ni } or set
-        #     self.material[i].refractive_index = { 'real': Nr, 'imag': Ni }
-        #     boh!
-        pass
+        ri = []
+#        # per ogni punto della griglia
+#        for wl in self.wl_grid:
+#            nr = []
+#            ni = []
+#            for material in self.material:
+#                # nr.append(), ni.append <- interpola self.material_refractive_index onto self.grid
+#                pass
+#            # call _EMA(nr,ni)
+#            Nr.append( (wl,nr) )
+#            Ni.append( (wl,ni) )
+#
+#            ri.append =  self._EMA()
 
-    def _wl_grid(self):
+        return ri
+
+    def _material_refractive_index_read(self,fname):
+
+        # FIXME: encoding may be strange for these files: use some guess tool
+        with open( os.path.join(MATERIAL_REFRACTIVE_INDEX_DIR,fname), mode="r", encoding="utf-8" ) as f:
+
+            # WARNING: this is for the "optical" format
+            # skip header (fixed number of lines with no particular structure that can be recognised)
+
+            # first record contains the material name (not used)
+            #name = next(f)
+            next(f)
+
+            # second record contains min and max (global) wavelength
+            #wl_min, wl_max = next(f).split() # this should contain the min and max (global) wavelength
+            next(f)
+
+            # read real part: wavelength, refractive index
+            num_of_recs = int(next(f)) # number of records for the real part
+            Nr = []
+            for _ in range(num_of_recs):
+                wl,ri = next(f).split()
+                Nr.append( (float(wl),float(ri)) )
+
+            # read Ni -> [ (wl,nr), ...]
+            num_of_recs = int(next(f)) # number of records for the imag part
+            Ni = []
+            for _ in range(num_of_recs):
+                wl,ri = next(f).split()
+                Ni.append( (float(wl),float(ri)) )
+
+            return { 'real': Nr, 'imag': Ni }
+
+    def _wl_grid_build(self):
         '''
         Returns the list of wl_n* (for both nr and ni) as the union of the
         lists of wl_nr and wl_ni, respectively + global min and max value,
@@ -74,13 +111,44 @@ class Layer:
         - wl_nr = [ self.material[i].refractive_index['real'][i][0] for i in range() ]
         - wl_ni = [ self.material[i].refractive_index['imag'][i][1] for i in range() ]
         '''
-        pass
+        # extract temporary real and imag parts
+        _re = [ self.material_refractive_index[i]['real'] for i in range(len(self.material_refractive_index)) ]
+        _im = [ self.material_refractive_index[i]['imag'] for i in range(len(self.material_refractive_index)) ]
+
+        # build grids
+        wl_re_range = [ _re[i][j][0] for i in range(len(_re)) for j in range(len(_re[0][0])) ]
+        wl_im_range = [ _im[i][j][0] for i in range(len(_im)) for j in range(len(_im[0][0])) ]
+
+        # find global min and max
+        wl_global_min = max( wl_re_range + wl_im_range )
+        wl_global_max = min( wl_re_range + wl_im_range )
+
+        # add global min and max to grids
+        wl_re = wl_re_range + [wl_global_min,wl_global_max]
+        wl_im = wl_im_range + [wl_global_min,wl_global_max]
+
+        # TODO: sort and remove dupes
+
+        return wl_re, wl_im
 
     def _EMA(self):
         '''
         Apply the EMA formula
         '''
-        pass
+        return 0
+
+#    def set_thickness(self,thickness):
+#        '''
+#        Set self.thickness = thickness (from params) if the layer is active
+#        '''
+#        #TODO: consider moving this to Structure as the "active layer" is
+#        # more a property of the structure than of the layer.
+#        if self.active and thickness > 0:
+#            self.thickness = thickness
+#        else:
+#            if thickness <= 0:
+#                # TODO: set back form.model_params.thickness to self.thickness
+#                pass
 
 
 class Structure:
@@ -92,52 +160,98 @@ class Structure:
     DEFAULT_NP = 400 # needed to build the wavelength grid on which to
                      # compute RT
 
-    def __init__(self, json_structure, params):
-        self.name = json_structure['name']
+    def __init__(self, structure, params):
+        self.name = structure['name']
         self.layer = []
-        for layer in json_structure['layers']:
+        for layer in structure['layers']:
             self.layer.append( Layer(layer) )
+        self.thickness_active_layer = float(params['model_edit_panel'].get('thickness_active_layer', DEFAULT_THICKNESS_AL))
+        if not self._check():
+            # raise error
+            pass
 
     def _check(self):
 
         # existence of zero or one active layer only
-        if self.layer[:].active.count('True') > 1:
+        if [ self.layer[i].active for i in range( len(self.layer) )].count('True') > 1:
+            # info
             # raise error
             pass
 
-    def compute_RT(self):
+        # other possible tests
+
+        return True
+
+    def RT(self, params):
         '''
         Interface to ScatteringMatrix.ComputeRT
         '''
+        # - get grid params (range, num_of_points)
+        # - prepare grid: self._wl_grid( ... )
+        # - prepare list in the form to be used in # ScatteringMatrix.ComputeRT
+        # - set_thickness_active_layer
+        # - call ScatteringMatrix.ComputeRT( ... )
 
-    def set_thickness_active_layer(self,thickness)
+        # debug
+        for layer in self.layer:
+            layer.refractive_index()
+        return 0,0
+        # /debug
+
+    def set_thickness_active_layer(self,thickness):
         '''
         Set the thickness of active layer
         '''
         #for layer in self.layer:
         #    if layer.active: layer.thickness = thickness
         for i in range(len(self.layer)):
-            if self.layer[i].active: self.layer[i].thickness = thickness
+            if self.layer[i].active:
+                self.layer[i].thickness = thickness
 
-    def _grid(self, np):
+    def _grid(self,num_of_points):
         '''
         Creates a list of wavelength to compute Structure properties on
         '''
         pass
 
 
-def compute_RT( json_structure, params ):
+def compute_RT( structure, params ):
 
-    structure = Structure( json_structure, params )
+    structure = Structure( structure, params )
+    R, T = structure.RT(params)
+    if DEBUG:
+        print( 'structure: ',vars(structure) )
+        for layer in structure.layer:
+            print( 'structure.layer: ',vars(layer) )
+            print('layer.material_refractive_index: ',layer.material_refractive_index)
 
-    R, T = structure.compute_RT()
+
+    if FAKE:
+
+        # to plot fake until the real is not ready
+        def _wl_range(params):
+            wl_min, wl_max = [float(a) for a in params['plot_edit_panel'].get(
+                'wl_range', DEFAULT_WL_RANGE).split(',')]
+            wl_np = int(params['plot_edit_panel'].get('wl_np', DEFAULT_NP))
+            wl = np.linspace(wl_min, wl_max, wl_np)
+            return wl
+
+        thickness_active_layer = float(params['model_edit_panel'].get('thickness_active_layer',DEFAULT_THICKNESS_AL))
+        def _R(i):
+            return (0.5 + 0.5 * math.cos(thickness_active_layer * i)) + 5. * random.random()
+        def _T(i):
+            return (0.5 + 0.5 * math.sin(thickness_active_layer * i)) + 5. * random.random()
+
+        wl = _wl_range(params)
+        R = [ (i,_R(i)) for i in wl]
+        T = [ (i,_T(i)) for i in wl]
 
     return R, T
 
 
-def compute_Chi( json_structure, experimental_data, params )
+def compute_Chi( structure, experimental_data, params ):
     pass
-    
+
 
 def get_description(_structure, params):
 
