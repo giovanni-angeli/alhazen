@@ -6,7 +6,7 @@
         "name": "TopMedium",
         "active": false,
         "materials": [
-            { "name":"air", "fname": "n/air.in3", "fraction": 100 },
+            { "name":"air", "fname": "air.in3", "fraction": 100 },
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
@@ -19,7 +19,7 @@
         "name": "a-Si",
         "active": true,
         "materials": [
-            { "name":"", "fname": "n/Amorfh.in3", "fraction": 100 },
+            { "name":"", "fname": "Amorfh.in3", "fraction": 100 },
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
@@ -32,7 +32,7 @@
         "name": "glass",
         "active": false,
         "materials": [
-            { "name":"glass", "fname": "n/corning.in3", "fraction": 100 },
+            { "name":"glass", "fname": "corning.in3", "fraction": 100 },
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
@@ -45,7 +45,7 @@
         "name": "BottomMedium",
         "active": false,
         "materials": [
-            { "name":"air", "fname": "n/air.in3", "fraction": 100 },
+            { "name":"air", "fname": "air.in3", "fraction": 100 },
             { "name":"", "fname": "", "fraction": 0 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
