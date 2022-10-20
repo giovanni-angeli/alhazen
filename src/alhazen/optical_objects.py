@@ -11,14 +11,15 @@ import json # this is only for main() (test function)
 from math import pi, exp
 from scipy.interpolate import interp1d
 
-
-# This is the path for the material database. TODO: Does it go here?
-MATERIAL_REFRACTIVE_INDEX_DIR = '.'
+HERE = os.path.dirname(os.path.abspath(__file__))
+MATERIAL_REFRACTIVE_INDEX_DIR = os.path.join(HERE,'..','..','refractive_index_collection')
+STRUCTURE_DIR = os.path.join(HERE,'..','..','data_templates','structure_files')
+STRUCTURE_FILE = 'structure-template.json'
 
 class Material():
     '''
     Material is the component of an Effective Material Approximation (EMA)
-    that includes upt to three materials.
+    that includes up to three materials.
     Material is characterized by its Refractive Index (RI) that is stored in a file.
     Material has a name (first record of the file).
     Given a Material, the RI can be recomputed (interpolated) on a common
@@ -44,10 +45,8 @@ class Material():
         self.file_name = file_name
         # QUESTION: does the following makes sense in __init__
         #           (i.e., defining a property through a call to a private method)
+        # QUESTION: is it necessary to define a property name?
         self.name = self._get_name()
-        # QUESTION: does the following makes sense in __init__
-        #           (i.e., defining a property through a call to a private method)
-        self.refractive_index_original = self._get_refractive_index()
         self.modeled = modeled
 
     def _get_name(self):
@@ -61,7 +60,7 @@ class Material():
 
             return name
 
-    def _get_refractive_index(self):
+    def get_refractive_index(self):
         '''
         Refractive index as read from file. List of wavelengths for real and
         imaginary parts are different in principle; this is why it is
@@ -100,23 +99,25 @@ class Material():
 
             return { 'real': RI_r, 'imag': RI_i }
 
-    def refractive_index_common(self):
+    def refractive_index(self):
         '''
         Refractive index interpolated on common grid
         WARNING: returned RI has a different form with respect to refractive_index_original
         '''
 
+        refractive_index_original = self.get_refractive_index()
+
         # length of real and imaginary parts
-        Nr = len(self.refractive_index_original['real'])
-        Ni = len(self.refractive_index_original['imag'])
+        Nr = len(refractive_index_original['real'])
+        Ni = len(refractive_index_original['imag'])
 
         # extract grids for real and imaginary parts
-        _wl_r = [ self.refractive_index_original['real'][i][0] for i in range(Nr) ]
-        _wl_i = [ self.refractive_index_original['imag'][i][0] for i in range(Ni) ]
+        _wl_r = [ refractive_index_original['real'][i][0] for i in range(Nr) ]
+        _wl_i = [ refractive_index_original['imag'][i][0] for i in range(Ni) ]
 
         # extract values for real and imaginary parts
-        _RI_r = [ self.refractive_index_original['real'][i][1] for i in range(Nr) ]
-        _RI_i = [ self.refractive_index_original['imag'][i][1] for i in range(Ni) ]
+        _RI_r = [ refractive_index_original['real'][i][1] for i in range(Nr) ]
+        _RI_i = [ refractive_index_original['imag'][i][1] for i in range(Ni) ]
 
         # build interpolation functions (use scipy)
         # IMPORTANT: must be "linear" to avoid messing with data; if linear,
@@ -221,7 +222,8 @@ class Layer():
 
         # if one component only: layer.refractive_index = material_refractive_index
         if len(self.component) == 1:
-            return self.component[0][0].refractive_index_common()
+            #return self.component[0][0].refractive_index_common()
+            return self.component[0][0].refractive_index()
         # - build common grid for all the 2 or 3 components present in the
         #   layer and get refractive index for each material
         _wl = []
@@ -297,26 +299,25 @@ class Structure():
 
 def test():
 
-    STRUCTURE_FILE = 'structure-template++.json'
-
-    with open(STRUCTURE_FILE, encoding='utf-8') as f:
+    with open(os.path.join(STRUCTURE_DIR,STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
         structure = Structure(json_structure)
 
+        print()
+        print('----')
+        print( 'structure: ',vars(structure) )
+        print('----')
 
+        for i,l in enumerate(structure.layer):
+            print( f"layer {i}: {vars(l)}" )
+            for m,f in structure.layer[i].component:
+                print( f"\tmaterial: {vars(m)}" )
+                print( f"\tfraction: {f}" )
+            print( f"\trefractive index: {l.refractive_index()}" )
+        print('----')
+        print()
 
-    print()
-    print( 'structure: ',vars(structure) )
-    print('----')
-
-    for i,l in enumerate(structure.layer):
-        print(i,l)
-        print( f"layer {i}: {vars(l)}" )
-        for m,f in structure.layer[i].component:
-            print( f"\tmaterial: {vars(m)}" )
-            print( f"\tfraction: {f}" )
-        print( f"layer {i}: refractive index: {l.refractive_index()}" )
-    print('----')
+    # TODO: add plots
 
 if __name__ == '__main__':
     test()
