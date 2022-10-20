@@ -7,14 +7,12 @@
 
 
 import os
-
-# this is only for main() (test function)
-import json
-
+import json # this is only for main() (test function)
+from math import pi, exp
 from scipy.interpolate import interp1d
 
 
-# This is the path for the material database. Does it goes here?
+# This is the path for the material database. TODO: Does it go here?
 MATERIAL_REFRACTIVE_INDEX_DIR = '.'
 
 class Material():
@@ -175,9 +173,55 @@ class Layer():
         Material Approximation applied to self.component
         '''
 
+        # taken from optical.functions (almost) as it is
+        def _EMA( refractive_index, fraction ):
+            '''
+            This is called only when len(RI) == 2 or 3 but needs the full
+            length ri and fr
+            '''
+
+            # init working vars:
+            # - fr
+            fr = [0,0,0]
+            fr[0:len(fraction)] = fraction
+            # - ri
+            ri = [ complex(0) for _ in range(3) ]
+            ri[0:len(RI)] = refractive_index
+            # - ri^2
+            ri2 = [ ri[i]**2 for i in enumerate(ri) ]
+
+            nguess=fr[0]*ri[0]+fr[1]*ri[1]+fr[2]*ri[2]
+            a = -4
+            b = fr[0]*( 4*ri2[0] -2*(ri2[1]+ri2[2] )) \
+               +fr[1]*( 4*ri2[1] -2*(ri2[0]+ri2[2] )) \
+               +fr[2]*( 4*ri2[2] -2*(ri2[0]+ri2[1] ))
+            c = fr[0]*( 2*ri2[0]*(ri2[1]+ri2[2]) -ri2[1]*ri2[2] ) \
+               +fr[1]*( 2*ri2[1]*(ri2[0]+ri2[2]) -ri2[0]*ri2[2] ) \
+               +fr[2]*( 2*ri2[2]*(ri2[0]+ri2[1]) -ri2[0]*ri2[1] )
+            d = (fr[0]+fr[1]+fr[2])*(ri2[0]*ri2[1]*ri2[2])
+            e = _root3(a,b,c,d)
+            pn = [e[0]**(0.5),e[1]**(0.5),e[2]**(0.5)]
+            distance = [abs(pn[0]-nguess), abs(pn[1]-nguess), abs(pn[2]-nguess)]
+            return pn[distance.index(min(distance))]
+
+        # taken from optical.functions as it is
+        def _root3(a,b,c,d):
+            #finds roots of eq ax^3+bx^2+cx+d=0
+            a,b,c=b/a,c/a,d/a
+            p=(-a**2)/3+b
+            q=(2*a**3)/27-a*b/3+c
+            u1=(-q/2+((q**2)/4+(p**3)/27)**(0.5))**(1.0/3)
+            u,x=[],[]
+            u.append(u1)#there are 3 roots for u
+            u.append(u1*exp(2*pi/3*1j))
+            u.append(u1*exp(4*pi/3*1j))
+            for i in range(3):
+                x.append(u[i]-p/(3*u[i])-a/3)
+            return x
+
         # if one component only: layer.refractive_index = material_refractive_index
         if len(self.component) == 1:
-            return self.component[0].refractive_index_common
+            return self.component[0][0].refractive_index_common()
         # - build common grid for all the 2 or 3 components present in the
         #   layer and get refractive index for each material
         _wl = []
@@ -221,40 +265,11 @@ class Layer():
             RI.append( [ complex(r,i) for r,i in zip(RI_r,RI_i) ] )
 
         # - for each point in the wl grid compute EMA
+        out = []
         for i in enumerate(wl):
-            self._EMA( RI[:][i],fraction )
-            # TODO: ogni risultato va messo in coppia con wl e appeso alla lista di output
+            out.append( wl[i],_EMA( RI[:][i],fraction ) )
 
-        return False
-
-    def _EMA( self,RI,fraction ):
-
-        ri = [0,0,0]
-        ri[0:len(RI)] = RI
-
-        fr = [0,0,0]
-        fr[0:len(fraction)] = fraction
-
-        ri2 = [ ri[i]**2 for i in enumerate(ri) ]
-
-        nguess=fr[0]*ri[0]+fr[1]*ri[1]+fr[2]*ri[2]
-        a = -4
-        b = fr[0]*(4*ri2[0]-2*(ri2[1]+ri2[2])) \
-           +fr[1]*(4*ri2[1]-2*(ri2[0]+ri2[2])) \
-           +fr[2]*(4*ri2[2]-2*(ri2[0]+ri2[1]))
-        c = fr[0]*(2*ri2[0]*(ri2[1]+ri2[2])-ri2[1]*ri2[2]) \
-           +fr[1]*(2*ri2[1]*(ri2[0]+ri2[2])-ri2[0]*ri2[2]) \
-           +fr[2]*(2*ri2[2]*(ri2[0]+ri2[1])-ri2[0]*ri2[1])
-        d = (fr[0]+fr[1]+fr[2])*(ri2[0]*ri2[1]*ri2[2])
-        e = self.root3(a,b,c,d)
-        pn = [e[0]**(0.5),e[1]**(0.5),e[2]**(0.5)]
-        distance = [abs(pn[0]-nguess), abs(pn[1]-nguess), abs(pn[2]-nguess)]
-        return pn[distance.index(min(distance))]
-
-    def root3(self,a,b,c,d):
-        # TODO: implement root3
-        res = a*b*c*d
-        return [res,res,res]
+        return out
 
 #    def read():
 #
@@ -280,34 +295,28 @@ class Structure():
 #
 
 
-def main():
+def test():
 
-    with open('structure-template++.json', encoding='utf-8') as f:
+    STRUCTURE_FILE = 'structure-template++.json'
+
+    with open(STRUCTURE_FILE, encoding='utf-8') as f:
         json_structure = json.load(f)
         structure = Structure(json_structure)
 
-    print( 'structure: ',vars(structure.layer[0]) )
+
+
     print()
+    print( 'structure: ',vars(structure) )
+    print('----')
 
-    print( 'first layer: ',vars(structure.layer[0]) )
-    print()
-
-#    print( 'first material of first layer: ',vars(structure.layer[0].component[0]) )
-#    print( 'first material of first layer: ',
-#           vars(structure.layer[0].component[0]['material_file_name']) )
-#    print()
-    print( 'first material of first layer: ',vars(structure.layer[0].component[0][0]) )
-    print( 'first fraction of first material of first layer: ',structure.layer[0].component[0][1] )
-    print( structure.layer[0].component[0][0].refractive_index_original )
-    print( 'RI common: ',structure.layer[0].component[0][0].refractive_index_common() )
-
-#    material = structure.layer[0].component[0][0]
-#    fraction = structure.layer[0].component[0][1]
-#    print( material.name, fraction )
-
-#    structure.layer[0].component[0][0].modeled = True
-#    material = structure.layer[0].component[0][0]
-#    print( material.modeled )
+    for i,l in enumerate(structure.layer):
+        print(i,l)
+        print( f"layer {i}: {vars(l)}" )
+        for m,f in structure.layer[i].component:
+            print( f"\tmaterial: {vars(m)}" )
+            print( f"\tfraction: {f}" )
+        print( f"layer {i}: refractive index: {l.refractive_index()}" )
+    print('----')
 
 if __name__ == '__main__':
-    main()
+    test()
