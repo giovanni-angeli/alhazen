@@ -237,7 +237,7 @@ class Layer():
             fraction.append(c[1]) # fraction is needed for EMA calclations
 
             # How the instruction below works:
-            # xxx is a list of couples
+            # 0. xxx is a list of couples
             # 1. res = zip(*xxx) # 'un'zipped object
             # 2. res = list( res ) # transform to a list (a list of two tuples)
             # 3. res = res[0] # take the first element which is a tuple
@@ -273,12 +273,15 @@ class Layer():
 
         return out
 
-#    def read():
-#
-#    def write():
-#
-#    def edit():
-#
+    def read(self):
+        pass
+
+    def write(self):
+        pass
+
+    def edit(self):
+        pass
+
 
 
 class Structure():
@@ -289,12 +292,18 @@ class Structure():
         self.description = json_structure['description']
         self.layer = [ Layer(l) for l in json_structure['layers'] ]
 
-#    def read():
-#
-#    def write():
-#
-#    def edit():
-#
+    def compute_RT(self):
+        pass
+
+    def read(self):
+        pass
+
+    def write(self):
+        pass
+
+    def edit(self):
+        pass
+
 
 
 def test():
