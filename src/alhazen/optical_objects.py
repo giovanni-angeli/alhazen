@@ -311,9 +311,6 @@ if __name__ == '__main__':
     import json # this used only when testing (__main__)
     import numpy as np # this used only when testing (__main__)
     import matplotlib.pyplot as plt
-# TODO: per scompattare RI, si puo` usare zip(*...) o trasformarlo in
-# np.array ma ATTENZIONE: np.array mi crea un complesso anche per la
-# wavelength!
 
     with open(os.path.join(STRUCTURE_DIR,STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
@@ -330,13 +327,22 @@ if __name__ == '__main__':
             for m,f in structure.layer[i].component:
                 print( f"\tmaterial: {vars(m)}" )
                 print( f"\tfraction: {f}" )
+            # 1
             #print( f"\trefractive index (as it is): {l.refractive_index()}" )
+
+            # 2
             wl,ri = zip(*l.refractive_index())
-            print( f"\trefractive index (unzip): {wl,ri}" )
-            plt.plot(wl,[ _.real for _ in ri] )
+            #print( f"\trefractive index (unzip): {wl,ri}" )
+
+            plt.plot(wl,[ _.real for _ in ri],label='n' )
+            plt.plot(wl,[ _.imag for _ in ri],label='k' )
+            plt.xlabel('wavelength (nm)')
+            plt.ylabel('n, k')
+            plt.title(l.name)
+            plt.legend()
             plt.show()
-            plt.plot(wl,[ _.imag for _ in ri] )
-            plt.show()
+
+            # 3
             #print( f"\trefractive index (np.array): {np.array(l.refractive_index())}" )
         print('----')
         print()
