@@ -7,19 +7,18 @@
 
 
 import os
-import json # this is only for main() (test function)
 from math import pi, exp
 from scipy.interpolate import interp1d
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MATERIAL_REFRACTIVE_INDEX_DIR = os.path.join(HERE,'..','..','refractive_index_collection')
 STRUCTURE_DIR = os.path.join(HERE,'..','..','data_templates','structure_files')
-STRUCTURE_FILE = 'structure-template.json'
+STRUCTURE_FILE = 'structure-test.json'
 
 class Material():
     '''
     Material is the component of an Effective Material Approximation (EMA)
-    that includes up to three materials.
+        that includes up to three materials.
     Material is characterized by its Refractive Index (RI) that is stored in a file.
     Material has a name (first record of the file).
     Given a Material, the RI can be recomputed (interpolated) on a common
@@ -45,7 +44,7 @@ class Material():
         self.file_name = file_name
         # QUESTION: does the following makes sense in __init__
         #           (i.e., defining a property through a call to a private method)
-        # QUESTION: is it necessary to define a property name?
+        # QUESTION: is it really necessary to define the property "name"?
         self.name = self._get_name()
         self.modeled = modeled
 
@@ -119,11 +118,12 @@ class Material():
         _RI_r = [ refractive_index_original['real'][i][1] for i in range(Nr) ]
         _RI_i = [ refractive_index_original['imag'][i][1] for i in range(Ni) ]
 
-        # build interpolation functions (use scipy)
-        # IMPORTANT: must be "linear" to avoid messing with data; if linear,
-        #   any further linear interpolation will not change anything.
-        #   Moreover, typical refractive index files are given on a very
-        #   fine wavelenght grid so that linear interpolation is enough.
+        # build interpolation functions (use scipy.interpolate)
+        # IMPORTANT: **kind must be "linear"** to avoid messing with data;
+        #   if linear, any further linear interpolation will not change
+        #   anything. Moreover, typical refractive index files are given on
+        #   a very fine wavelenght grid so that linear interpolation is
+        #   enough.
         _interp_r = interp1d( _wl_r,_RI_r, kind='linear', fill_value='extrapolate')
         _interp_i = interp1d( _wl_i,_RI_i, kind='linear', fill_value='extrapolate')
 
@@ -181,6 +181,21 @@ class Layer():
             length ri and fr
             '''
 
+            # taken from optical.functions as it is
+            def _root3(a,b,c,d):
+                #finds roots of eq ax^3+bx^2+cx+d=0
+                a,b,c=b/a,c/a,d/a
+                p=(-a**2)/3+b
+                q=(2*a**3)/27-a*b/3+c
+                u1=(-q/2+((q**2)/4+(p**3)/27)**(0.5))**(1.0/3)
+                u,x=[],[]
+                u.append(u1)#there are 3 roots for u
+                u.append(u1*exp(2*pi/3*1j))
+                u.append(u1*exp(4*pi/3*1j))
+                for i in range(3):
+                    x.append(u[i]-p/(3*u[i])-a/3)
+                return x
+
             # init working vars:
             # - fr
             fr = [0,0,0]
@@ -204,21 +219,6 @@ class Layer():
             pn = [e[0]**(0.5),e[1]**(0.5),e[2]**(0.5)]
             distance = [abs(pn[0]-nguess), abs(pn[1]-nguess), abs(pn[2]-nguess)]
             return pn[distance.index(min(distance))]
-
-        # taken from optical.functions as it is
-        def _root3(a,b,c,d):
-            #finds roots of eq ax^3+bx^2+cx+d=0
-            a,b,c=b/a,c/a,d/a
-            p=(-a**2)/3+b
-            q=(2*a**3)/27-a*b/3+c
-            u1=(-q/2+((q**2)/4+(p**3)/27)**(0.5))**(1.0/3)
-            u,x=[],[]
-            u.append(u1)#there are 3 roots for u
-            u.append(u1*exp(2*pi/3*1j))
-            u.append(u1*exp(4*pi/3*1j))
-            for i in range(3):
-                x.append(u[i]-p/(3*u[i])-a/3)
-            return x
 
         # if one component only: layer.refractive_index = material_refractive_index
         if len(self.component) == 1:
@@ -306,7 +306,14 @@ class Structure():
 
 
 
-def test():
+if __name__ == '__main__':
+
+    import json # this used only when testing (__main__)
+    import numpy as np # this used only when testing (__main__)
+    import matplotlib.pyplot as plt
+# TODO: per scompattare RI, si puo` usare zip(*...) o trasformarlo in
+# np.array ma ATTENZIONE: np.array mi crea un complesso anche per la
+# wavelength!
 
     with open(os.path.join(STRUCTURE_DIR,STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
@@ -318,15 +325,20 @@ def test():
         print('----')
 
         for i,l in enumerate(structure.layer):
+            print()
             print( f"layer {i}: {vars(l)}" )
             for m,f in structure.layer[i].component:
                 print( f"\tmaterial: {vars(m)}" )
                 print( f"\tfraction: {f}" )
-            print( f"\trefractive index: {l.refractive_index()}" )
+            #print( f"\trefractive index (as it is): {l.refractive_index()}" )
+            wl,ri = zip(*l.refractive_index())
+            print( f"\trefractive index (unzip): {wl,ri}" )
+            plt.plot(wl,[ _.real for _ in ri] )
+            plt.show()
+            plt.plot(wl,[ _.imag for _ in ri] )
+            plt.show()
+            #print( f"\trefractive index (np.array): {np.array(l.refractive_index())}" )
         print('----')
         print()
 
     # TODO: add plots
-
-if __name__ == '__main__':
-    test()
