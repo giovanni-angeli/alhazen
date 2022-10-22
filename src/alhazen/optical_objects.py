@@ -7,7 +7,7 @@
 
 
 import os
-from math import pi, exp
+from numpy import pi, exp
 from scipy.interpolate import interp1d
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -132,7 +132,7 @@ class Material():
         # interpolate real and imaginary parts on the common grid
         RI_r = _interp_r( wl_common )
         RI_i = _interp_i( wl_common )
-        RI = [ complex( RI_r[i], RI_i[i] ) for i in range( len(wl_common) ) ]
+        RI = [ complex(r,i) for r,i in zip(RI_r,RI_i) ]
 
         return list( zip(wl_common,RI) )
 
@@ -203,7 +203,7 @@ class Layer():
             ri = [ complex(0) for _ in range(3) ]
             ri[0:len(RI)] = refractive_index
             # - ri^2
-            ri2 = [ ri[i]**2 for i in enumerate(ri) ]
+            ri2 = [ ri[i]**2 for i in range(len(ri)) ]
 
             nguess=fr[0]*ri[0]+fr[1]*ri[1]+fr[2]*ri[2]
             a = -4
@@ -220,9 +220,11 @@ class Layer():
             return pn[distance.index(min(distance))]
 
         # if one component only: layer.refractive_index = material_refractive_index
-        if len(self.component) == 1:
+        Ncomp = len(self.component)
+        if Ncomp == 1:
             #return self.component[0][0].refractive_index_common()
             return self.component[0][0].refractive_index()
+        # else:
         # - build common grid for all the 2 or 3 components present in the
         #   layer and get refractive index for each material
         _wl = []
@@ -243,22 +245,23 @@ class Layer():
             # a. list( res ) # turn the tuple to a list
 
             # get wavelength list of i-th component ...
-            _wl.append( list( list(zip(*material.refractive_index))[0]) )
+            _wl_tmp = list( list(zip(*material.refractive_index()))[0] )
+            _wl.append( _wl_tmp )
             # ... and add it to the commong grid
-            wl.extend( _wl ) # is this equivalent to: wl += _wl ?
+            wl.extend( _wl_tmp ) # is this equivalent to: wl += _wl ?
 
             # get refractive index for i-th material
-            _RI.append( list( list(zip(*material.refractive_index))[1] ) )
+            _RI.append( list( list(zip(*material.refractive_index()))[1] ) )
 
         # - remove dupes and sort common grid
-        wl = sorted( list( set(_wl) ) )
+        wl = sorted( list( set(wl) ) )
 
         # - for each material, interpolate RI on the common grid
         RI = []
-        for i in enumerate(_wl):
+        for i in range(Ncomp):
             # create interpolation functions
-            _interp_r = interp1d( _wl[i],_RI[i].real, kind='linear', fill_value='extrapolate')
-            _interp_i = interp1d( _wl[i],_RI[i].imag, kind='linear', fill_value='extrapolate')
+            _interp_r = interp1d( _wl[i],[ _.real for _ in _RI[i] ], kind='linear', fill_value='extrapolate' )
+            _interp_i = interp1d( _wl[i],[ _.imag for _ in _RI[i] ], kind='linear', fill_value='extrapolate' )
             # interpolate on the new common grid
             RI_r = _interp_r(wl)
             RI_i = _interp_i(wl)
@@ -267,8 +270,8 @@ class Layer():
 
         # - for each point in the wl grid compute EMA
         out = []
-        for i in enumerate(wl):
-            out.append( wl[i],_EMA( RI[:][i],fraction ) )
+        for i in range(len(wl)):
+            out.append( ( wl[i],_EMA( [ RI[j][i] for j in range(Ncomp) ],fraction ) ) )
 
         return out
 
