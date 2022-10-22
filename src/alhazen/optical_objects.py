@@ -13,7 +13,6 @@ from scipy.interpolate import interp1d
 HERE = os.path.dirname(os.path.abspath(__file__))
 MATERIAL_REFRACTIVE_INDEX_DIR = os.path.join(HERE,'..','..','refractive_index_collection')
 STRUCTURE_DIR = os.path.join(HERE,'..','..','data_templates','structure_files')
-STRUCTURE_FILE = 'structure-test.json'
 
 class Material():
     '''
@@ -312,6 +311,8 @@ if __name__ == '__main__':
     import numpy as np # this used only when testing (__main__)
     import matplotlib.pyplot as plt
 
+    STRUCTURE_FILE = 'structure-test.json'
+
     with open(os.path.join(STRUCTURE_DIR,STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
         structure = Structure(json_structure)
@@ -327,6 +328,7 @@ if __name__ == '__main__':
             for m,f in structure.layer[i].component:
                 print( f"\tmaterial: {vars(m)}" )
                 print( f"\tfraction: {f}" )
+
             # 1
             #print( f"\trefractive index (as it is): {l.refractive_index()}" )
 
@@ -338,12 +340,13 @@ if __name__ == '__main__':
             plt.plot(wl,[ _.imag for _ in ri],label='k' )
             plt.xlabel('wavelength (nm)')
             plt.ylabel('n, k')
-            plt.title(l.name)
+            plt.title(f'{structure.name} - layer {i}: {l.name}')
             plt.legend()
             plt.show()
 
             # 3
             #print( f"\trefractive index (np.array): {np.array(l.refractive_index())}" )
+
         print('----')
         print()
 
