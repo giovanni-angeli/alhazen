@@ -16,13 +16,26 @@
         "roughness": 0
         },
         {
-        "name": "silicon",
-        "description": "silicon layer",
+        "name": "EMA",
+        "description": "EMA layer",
         "active": true,
         "components": [
-            { "material_file_name": "silicon.in3", "fraction": 100 },
-            { "material_file_name": ""           , "fraction":   0 },
+            { "material_file_name": "silicon.in3", "fraction":  50 },
+            { "material_file_name": "quartz.in3" , "fraction":  50 },
             { "material_file_name": ""           , "fraction":   0 }
+        ],
+        "thickness": 0,
+        "coherence": 1,
+        "roughness": 0
+        },
+        {
+        "name": "amorph",
+        "description": "amorph layer",
+        "active": true,
+        "components": [
+            { "material_file_name": "Amorfh.in3", "fraction": 100 },
+            { "material_file_name": ""          , "fraction":   0 },
+            { "material_file_name": ""          , "fraction":   0 }
         ],
         "thickness": 0,
         "coherence": 1,
