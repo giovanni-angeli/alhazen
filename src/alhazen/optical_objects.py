@@ -299,7 +299,17 @@ class Structure():
         self.description = json_structure['description']
         self.layer = [ Layer(l) for l in json_structure['layers'] ]
 
-    def compute_RT(self):
+    def _common_grid(self):
+        '''
+        di nuovo devo calcolare una griglia comune, questa volta a tutti i
+        layers, forse sarebbe meglio usare una funzione comune a tutte le
+        classi? argomento: lista di "griglie", return, gliglia unica sorted
+        '''
+        pass
+
+    def compute_RT(self, params):
+        # get incidence angle from params
+        # PrepareList: interpolate RI
         pass
 
     def read(self):
