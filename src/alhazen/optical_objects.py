@@ -110,12 +110,12 @@ class Material():
         Ni = len(refractive_index_original['imag'])
 
         # extract grids for real and imaginary parts
-        _wl_r = [ refractive_index_original['real'][i][0] for i in range(Nr) ]
-        _wl_i = [ refractive_index_original['imag'][i][0] for i in range(Ni) ]
+        wl_r = [ refractive_index_original['real'][i][0] for i in range(Nr) ]
+        wl_i = [ refractive_index_original['imag'][i][0] for i in range(Ni) ]
 
         # extract values for real and imaginary parts
-        _RI_r = [ refractive_index_original['real'][i][1] for i in range(Nr) ]
-        _RI_i = [ refractive_index_original['imag'][i][1] for i in range(Ni) ]
+        RI_r = [ refractive_index_original['real'][i][1] for i in range(Nr) ]
+        RI_i = [ refractive_index_original['imag'][i][1] for i in range(Ni) ]
 
         # build interpolation functions (use scipy.interpolate)
         # IMPORTANT: **kind must be "linear"** to avoid messing with data;
@@ -123,18 +123,16 @@ class Material():
         #   anything. Moreover, typical refractive index files are given on
         #   a very fine wavelenght grid so that linear interpolation is
         #   enough.
-        _interp_r = interp1d( _wl_r,_RI_r, kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d( _wl_i,_RI_i, kind='linear', fill_value='extrapolate')
+        _interp_r = interp1d( wl_r,RI_r, kind='linear', fill_value='extrapolate')
+        _interp_i = interp1d( wl_i,RI_i, kind='linear', fill_value='extrapolate')
 
         # build common grid: union of grids for real and imaginary parts, sorted
-        wl_common = sorted( list( set(_wl_r) | set(_wl_i) ) )
+        wl = sorted( list( set(wl_r) | set(wl_i) ) )
 
-        # interpolate real and imaginary parts on the common grid
-        RI_r = _interp_r( wl_common )
-        RI_i = _interp_i( wl_common )
-        RI = [ complex(r,i) for r,i in zip(RI_r,RI_i) ]
+        # interpolate real and imaginary parts on the common grid and pack'em
+        RI = [ complex(r,i) for r,i in zip(_interp_r( wl ),_interp_i( wl )) ]
 
-        return list( zip(wl_common,RI) )
+        return list( zip(wl,RI) )
 
 #    def read():
 #
@@ -219,49 +217,51 @@ class Layer():
             distance = [abs(pn[0]-nguess), abs(pn[1]-nguess), abs(pn[2]-nguess)]
             return pn[distance.index(min(distance))]
 
+        N_comp = len(self.component)
         # if one component only: layer.refractive_index = material_refractive_index
-        Ncomp = len(self.component)
-        if Ncomp == 1:
-            #return self.component[0][0].refractive_index_common()
+        if N_comp == 1:
             return self.component[0][0].refractive_index()
         # else:
-        # - build common grid for all the 2 or 3 components present in the
-        #   layer and get refractive index for each material
-        _wl = []
-        _RI = []
+        # - build common grid for all of the 2 or 3 components present in
+        #   the layer and get refractive index for each material
+        wl_comp = []
+        RI_comp = []
         fraction = []
         wl = []
         for i,c in enumerate(self.component):
-            material = c[0]
-            # the above is just for readability: remember that c[0] is the material object
+            # this is just for readability: remember that c[0] is the material object
             #   while c[1] is its fraction
+            material = c[0]
             fraction.append(c[1]) # fraction is needed for EMA calclations
 
             # How the instruction below works:
-            # 0. xxx is a list of couples
-            # 1. res = zip(*xxx) # 'un'zipped object
+            # 0. xxx is a list of couples (tuples)
+            # 1. res = zip(*xxx) un'zipped object: '*' unpack the xxx
+            #    into positional arguments
             # 2. res = list( res ) # transform to a list (a list of two tuples)
             # 3. res = res[0] # take the first element which is a tuple
             # a. list( res ) # turn the tuple to a list
 
             # get wavelength list of i-th component ...
-            _wl_tmp = list( list(zip(*material.refractive_index()))[0] )
-            _wl.append( _wl_tmp )
+            RI_unzip = list(zip(*material.refractive_index()))
+            wl_comp.append( list( RI_unzip[0] ) )
             # ... and add it to the commong grid
-            wl.extend( _wl_tmp ) # is this equivalent to: wl += _wl ?
+            wl.extend( wl_comp[-1] ) # is this equivalent to: wl += wl_comp ?
 
             # get refractive index for i-th material
-            _RI.append( list( list(zip(*material.refractive_index()))[1] ) )
+            RI_comp.append( list( RI_unzip[1] ) )
 
         # - remove dupes and sort common grid
         wl = sorted( list( set(wl) ) )
 
         # - for each material, interpolate RI on the common grid
         RI = []
-        for i in range(Ncomp):
+        for i in range(N_comp):
             # create interpolation functions
-            _interp_r = interp1d( _wl[i],[ _.real for _ in _RI[i] ], kind='linear', fill_value='extrapolate' )
-            _interp_i = interp1d( _wl[i],[ _.imag for _ in _RI[i] ], kind='linear', fill_value='extrapolate' )
+            _interp_r = interp1d( wl_comp[i],[ _.real for _ in RI_comp[i] ], \
+                        kind='linear', fill_value='extrapolate' )
+            _interp_i = interp1d( wl_comp[i],[ _.imag for _ in RI_comp[i] ], \
+                        kind='linear', fill_value='extrapolate' )
             # interpolate on the new common grid
             RI_r = _interp_r(wl)
             RI_i = _interp_i(wl)
@@ -270,8 +270,8 @@ class Layer():
 
         # - for each point in the wl grid compute EMA
         out = []
-        for i in range(len(wl)):
-            out.append( ( wl[i],_EMA( [ RI[j][i] for j in range(Ncomp) ],fraction ) ) )
+        for i,_wl in enumerate(wl):
+            out.append( ( _wl,_EMA( [ RI[j][i] for j in range(N_comp) ],fraction ) ) )
 
         return out
 
@@ -290,6 +290,11 @@ class Structure():
 
     def __init__( self, json_structure ):
 
+        '''
+        Bisogna prevedere di poterla creare da un file?
+        E anche di crearne una vuota da editare?
+        '''
+
         self.name = json_structure['name']
         self.description = json_structure['description']
         self.layer = [ Layer(l) for l in json_structure['layers'] ]
@@ -298,12 +303,28 @@ class Structure():
         pass
 
     def read(self):
+        '''
+        Read from file?
+        Ma non ha senso se la costruisco da una json_structure!
+        Dobbiamo forse spostare la lettura della json_structure qui e
+        passare il nome del file alla __init__?
+        '''
         pass
 
     def write(self):
+        '''
+        Write (the edited) structure to a file
+        '''
         pass
 
     def edit(self):
+        '''
+        should implement functions for used in frontend for editing:
+        - add a blank layer
+        - add a copy of a layer
+        - N-plicate selected layers (for, e.g., Bragg mirrors)
+        - ...
+        '''
         pass
 
 
@@ -311,7 +332,7 @@ class Structure():
 if __name__ == '__main__':
 
     import json # this used only when testing (__main__)
-    import numpy as np # this used only when testing (__main__)
+    #import numpy as np # this used only when testing (__main__)
     import matplotlib.pyplot as plt
 
     STRUCTURE_FILE = 'structure-test.json'
