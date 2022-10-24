@@ -7,9 +7,7 @@
         "description": "semiinfinite layer of air above the structure",
         "active": false,
         "components": [
-            { "material_file_name": "air.in3", "fraction": 100 },
-            { "material_file_name": ""       , "fraction":   0 },
-            { "material_file_name": ""       , "fraction":   0 }
+            { "material_file_name": "air.in3", "fraction": 100 }
         ],
         "thickness": 0,
         "coherence": 1,
@@ -21,8 +19,7 @@
         "active": true,
         "components": [
             { "material_file_name": "silicon.in3", "fraction":  50 },
-            { "material_file_name": "quartz.in3" , "fraction":  50 },
-            { "material_file_name": ""           , "fraction":   0 }
+            { "material_file_name": "quartz.in3" , "fraction":  50 }
         ],
         "thickness": 0,
         "coherence": 1,
@@ -33,10 +30,7 @@
         "description": "amorph layer",
         "active": true,
         "components": [
-            { "material_file_name": "Amorfh.in3", "fraction": 100 },
-            { "material_file_name": ""          , "fraction":   0 },
-            { "material_file_name": ""          , "fraction":   0 }
-        ],
+            { "material_file_name": "Amorfh.in3", "fraction": 100 }        ],
         "thickness": 0,
         "coherence": 1,
         "roughness": 0
@@ -46,10 +40,7 @@
         "description": "semiinfinite layer of air below the structure",
         "active": false,
         "components": [
-            { "material_file_name": "air.in3", "fraction": 100 },
-            { "material_file_name": ""       , "fraction":   0 },
-            { "material_file_name": ""       , "fraction":   0 }
-        ],
+            { "material_file_name": "air.in3", "fraction": 100 }        ],
         "thickness": 0,
         "coherence": 1,
         "roughness": 0
