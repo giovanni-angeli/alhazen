@@ -14,8 +14,6 @@ import numpy as np
 import alhazen.optical_functions
 import alhazen.ScatteringMatrix
 
-FAKE_RUN = False
-
 DEFAULT_THICKNESS_AL = -1
 DEFAULT_WL_RANGE = "200,1100"  # TODO: ask Emanuele for a proper value
 DEFAULT_NP = 400  # TODO: ask Emanuele for a proper value
@@ -104,8 +102,6 @@ def compute_RT(json_structure, params):
     # opt_structure.lmin and opt_structure.lmax
     alhazen.optical_functions.CheckWaveRange(opt_structure)
 
-    # Domanda per Emanuele: ci sono altre chiamate necessarie?
-
     # wavelength list to compute R,T
     wl = wl_range(opt_structure, params)
 
@@ -117,9 +113,9 @@ def compute_RT(json_structure, params):
 
     Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
         alhazen.optical_functions.PrepareList(opt_structure, wl), wl, incidence_angle)
-    # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray with
+    # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray
     # containing R and T only (not the wavelength); need to be processed
-    # befort return
+    # before return
 
     # prepare output in the required format
     R = []
