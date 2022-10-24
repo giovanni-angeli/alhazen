@@ -199,7 +199,7 @@ class Layer():
             fr[0:len(fraction)] = fraction
             # - ri
             ri = [ complex(0) for _ in range(3) ]
-            ri[0:len(RI)] = refractive_index
+            ri[0:len(refractive_index)] = refractive_index
             # - ri^2
             ri2 = [ ri[i]**2 for i in range(len(ri)) ]
 
