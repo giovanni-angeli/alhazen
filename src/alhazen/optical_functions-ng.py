@@ -26,12 +26,17 @@ DEFAULT_NP = 400  # TODO: ask Emanuele for a proper value
 
 
 def material_refractive_index_read(fname):
+    '''
+    Reads from fname the refractive index of the material "addressed" by
+    fname itself. Returns the content of the file as dictionary with
+    separated 'real' and 'imaginary' parts (see return statement)
+    '''
 
     # FIXME: encoding can be strange for these files: use some guess tool
     with open(os.path.join(REFRACTIVE_INDEX_DIR, fname),
               mode='r', encoding='utf-8') as fp:
 
-        # WARNING: this is for the "optical" format!
+        # WARNING: this is for files in the "optical" format!
 
         # skip header (fixed number of lines with no particular structure that can be recognised)
         #   first record contains the material name (not used here)
@@ -57,10 +62,15 @@ def material_refractive_index_read(fname):
             wl_i.append(float(wl))
             ri_i.append(float(ri))
 
+        # TODO: discuss this format with Giovanni
         return dict(real=dict(wl=wl_r, ri=ri_r), imag=dict(wl=wl_i, ri=ri_i))
 
 
 def wl_grid(wl):
+    '''
+    Given a list of lists (wavelengths in this context), returns a list
+    containing the sorted union of the input lists
+    '''
 
     wl_set = set()
     for _wl in wl:
@@ -69,8 +79,15 @@ def wl_grid(wl):
 
 
 def material_refractive_index(fname):
+    '''
+    Given fname containing the refractive index of the material "addressed"
+    by fname itself, build a target wl list based on the wl lists for
+    real and imaginary parts and intepolates refractive index on this target
+    grid. Returns the refractive index for the material in "standard" format
+    (standard in this context).
+    '''
 
-    # read data from refractive index file
+    # get data from refractive index file
     mri = material_refractive_index_read(fname)
 
     # build interpolation functions (from scipy.interpolate)
@@ -82,22 +99,25 @@ def material_refractive_index(fname):
     # build the target grid
     wl = wl_grid([mri['real']['wl'], mri['imag']['wl']])
 
-    # iterpolate over the target grid
+    # iterpolate on the target grid
     RI_r = _interp_r(wl).tolist()
     RI_i = _interp_i(wl).tolist()
 
-    # build complex refractive index
-    #RI = [complex(r, i) for r, i in zip(_interp_r(wl), _interp_i(wl))]
-
-    # return dict(wl=wl, RI=RI)
     return dict(wl=wl, ri=dict(real=RI_r, imag=RI_i))
 
 
 def compute_EMA(refractive_index, fraction):
+    '''
+    Given a list of refractive indices in "standard" format, returns the refractive index of the
+    layer computed using the Effective Material Approximation (EMA)
+    [TODO: add reference]
+    '''
 
     # taken from optical.functions as it is
     def _root3(a, b, c, d):
-        # finds roots of eq ax^3+bx^2+cx+d=0
+        '''
+        Finds the roots of equation ax^3+bx^2+cx+d=0
+        '''
         a, b, c = b/a, c/a, d/a
         p = (-a**2)/3+b
         q = (2*a**3)/27-a*b/3+c
@@ -111,16 +131,17 @@ def compute_EMA(refractive_index, fraction):
         return x
 
     # initialize working vars:
+    # - verify consistency of input
     if len(fraction) != len(refractive_index):
         raise Exception("Error in EMA number of components definition")
-    # fill the missing third component (if necessary)
-    # - fr
+    # - fill the missing third component (if necessary)
+    #   - fr
     fr = [0, 0, 0]
     fr[0:len(fraction)] = fraction
-    # - ri
+    #   - ri
     ri = [complex(0) for _ in range(3)]
     ri[0:len(refractive_index)] = refractive_index
-    # compute auxiliaty var ri2 = ri**2
+    # - compute auxiliaty var ri2 = ri**2
     ri2 = [ri[i]**2 for i in range(len(ri))]
 
     nguess = fr[0]*ri[0]+fr[1]*ri[1]+fr[2]*ri[2]
@@ -135,10 +156,16 @@ def compute_EMA(refractive_index, fraction):
     e = _root3(a, b, c, d)
     pn = [e[0]**(0.5), e[1]**(0.5), e[2]**(0.5)]
     distance = [abs(pn[0]-nguess), abs(pn[1]-nguess), abs(pn[2]-nguess)]
+
     return pn[distance.index(min(distance))]
 
-
 def layer_refractive_index(json_layer):
+    '''
+    Given a layer in json format, computes the refractive index of the layer
+    (either the RI of the material if only one component, or the EMA of the two or
+    three materials composing the layer) on a wl list, union of the wl lists
+    of the materials composing the layer.
+    '''
 
     Nc = len(json_layer['components'])
     if Nc == 1:
@@ -209,6 +236,9 @@ def prepare_ScatteringMatrix_input(json_structure, RI, wl):
     return SM_structure
 
 def wl_range(RI, params):
+    '''
+    Builds the targe wl grid for output.
+    '''
 
     # TODO: implement 'auto' option (ignore user provided min and max)
 
@@ -248,7 +278,7 @@ def compute_RT(json_structure, RI, params):
     incidence_angle = np.pi/180 * \
         float(params['model_edit_panel']['incidence_angle'])
 
-    Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
+    Ronly, Tonly = ScatteringMatrix.ComputeRT(
         SM_structure, wl, incidence_angle)
     # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray
     # containing R and T only (not the wavelength); need to be processed
