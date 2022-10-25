@@ -179,23 +179,20 @@ def layer_refractive_index(json_layer):
     return dict(wl=wl, ri=dict(real=[_.real for _ in ema], imag=[_.imag for _ in ema]))
 
 
-def prepare_ScatteringMatrix_input(json_structure, wl):
+def prepare_ScatteringMatrix_input(json_structure, RI, wl):
     '''
     This is (more or less) equivalent to optical.functions.PrepareList
     '''
 
     SM_structure = []
     ri = []
-    for layer in json_structure['layers']:
-
-        # get refractive index
-        lri = layer_refractive_index(layer)
+    for i,layer in enumerate(json_structure['layers']):
 
         # interpolate and arrange ri as complex
         # - build interpolate functions
-        _interp_r = interp1d(lri['wl'], lri['ri']['real'],
+        _interp_r = interp1d(RI[i]['wl'], RI[i]['ri']['real'],
                              kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(lri['wl'], lri['ri']['imag'],
+        _interp_i = interp1d(RI[i]['wl'], RI[i]['ri']['imag'],
                              kind='linear', fill_value='extrapolate')
 
         # interpolate and arrange ri as complex
@@ -211,23 +208,13 @@ def prepare_ScatteringMatrix_input(json_structure, wl):
 
     return SM_structure
 
-def wl_range(json_structure, params):
+def wl_range(RI, params):
 
     # TODO: implement 'auto' option (ignore user provided min and max)
 
     wl_global = []
-    for layer in json_structure['layers']:
-
-        # WARNING: this implies computing again the refractive index of the
-        #   structure.
-        # FIXME: avoid it (e.g., by creating a Structure class to store the
-        #   computed properties
-
-        # get refractive index
-        lri = layer_refractive_index(layer)
-
-        # build global wl of the structure
-        wl_global.extend(lri['wl'])
+    for ri in RI:
+        wl_global.extend(ri['wl'])
 
     # find global min and max wl and set json_dictionary propery
     s_wl_min = min(wl_global)
@@ -249,13 +236,13 @@ def wl_range(json_structure, params):
 
     return wl
 
-def compute_RT(json_structure, params):
+def compute_RT(json_structure, RI, params):
 
-    # TODO: prepare grid (auto: common grid to all the layers; manual min,max,Np)
-    wl = wl_range(json_structure, params)
+    # prepare target grid
+    wl = wl_range( RI, params )
 
     # prepare structure data
-    SM_structure = prepare_ScatteringMatrix_input(json_structure, wl)
+    SM_structure = prepare_ScatteringMatrix_input(json_structure, RI, wl)
 
     # get incidence angle in degrees and convert it into radians
     incidence_angle = np.pi/180 * \
@@ -290,7 +277,8 @@ if __name__ == '__main__':
 
     STRUCTURE_FILE = 'structure-test.json'
 
-    params={'plot_edit_panel': {'wl_range': '200, 1100', 'wl_np': '400', 'show_R': 'on', 'show_T': 'on'}, 'model_edit_panel': {'thickness_active_layer': '-1', 'incidence_angle': '0'}}
+    params={'plot_edit_panel': {'wl_range': '200, 1100', 'wl_np': '400', 'show_R': 'on', 'show_T': 'on'},
+            'model_edit_panel': {'thickness_active_layer': '-1', 'incidence_angle': '0'} }
 
     with open(os.path.join(STRUCTURE_DIR, STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
@@ -298,22 +286,23 @@ if __name__ == '__main__':
 #    # add "properties" to structure
 #    json_structure = dict_extend( json_structure, {'wl_min': None, 'wl_max': None} )
 
+    RI = []
     for i, layer in enumerate(json_structure['layers']):
 
         #print(f"layer: {layer['name']}")
 
-        RI = layer_refractive_index(layer)
-        #print(f"- refractive index: {RI}")
+        RI.append(layer_refractive_index(layer))
+        #print(f"- refractive index: {RI[i]}")
 
         # TODO: test interpolation by plotting also original values from file
 
-        plt.plot(RI['wl'], RI['ri']['real'], label='n')
-        plt.plot(RI['wl'], RI['ri']['imag'], label='k')
+        plt.plot(RI[i]['wl'], RI[i]['ri']['real'], label='n')
+        plt.plot(RI[i]['wl'], RI[i]['ri']['imag'], label='k')
         plt.xlabel('wavelength (nm)')
         plt.ylabel('n, k')
         plt.title(f"{json_structure['name']} - layer {i}: {layer['name']}")
         plt.legend()
         plt.show()
 
-    R,T = compute_RT(json_structure, params)
+    R,T = compute_RT(json_structure, RI, params)
 
