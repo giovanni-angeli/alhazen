@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.interpolate import interp1d
 
-#import alhazen.ScatteringMatrix as SM
+import alhazen.ScatteringMatrix
 
 # paths
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -248,8 +248,6 @@ def prepare_ScatteringMatrix_input(json_structure, params):
     # prepare target grid
     wl = wl_range( _wl, params )
 
-    #print(f'debug:prepare_ScatteringMatrix_input:input:wl: {wl}')
-
     SM_structure = []
     for i,layer in enumerate(json_structure['layers']):
 
@@ -264,7 +262,6 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         ri_r = _interp_r(wl).tolist()
         ri_i = _interp_i(wl).tolist()
         ri = [complex(r, i) for r, i in zip(ri_r, ri_i)]
-        #print(f'debug: prepare_ScatteringMatrix_input:len(ri): {len(ri)}')
 
         # convert coherence (bool) to incoherent (int)
         incoherent = 1 if layer['coherence'] == 0 else 0
@@ -283,12 +280,7 @@ def compute_RT(json_structure, params):
     incidence_angle = np.pi/180 * \
         float(params['model_edit_panel']['incidence_angle'])
 
-    ## FIXME: quello che entra qui e` sbagliato
-    #for i,zaq in enumerate(SM_structure):
-    #    print(f'debug:compute_RT:PrepareList: layer[{i}]:\n- thickness {zaq[0]}\n- RI: {zaq[1][0], zaq[1][-1]}\n- incoherent: {zaq[2]}\n- roughness: {zaq[3]}')
-
-    #Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
-    Ronly, Tonly = SM.ComputeRT(
+    Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
         SM_structure, wl, incidence_angle)
     # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray
     # containing R and T only (not the wavelength); need to be processed
@@ -313,68 +305,4 @@ def get_description(_structure, params):
         message += f"{k} {v.get('thickness')}(µ), "
 
     return message
-
-if __name__ == '__main__':
-
-    import json
-    import matplotlib.pyplot as plt
-
-    from pprint import pprint
-
-    import ScatteringMatrix as SM
-
-    STRUCTURE_FILE = 'structure-test-wo_ema.json'
-
-    params={'plot_edit_panel': {'wl_range': '200, 1100', 'wl_np': '400', 'show_R': 'on', 'show_T': 'on'},
-            'model_edit_panel': {'thickness_active_layer': '-1', 'incidence_angle': '0'} }
-
-    with open(os.path.join(STRUCTURE_DIR, STRUCTURE_FILE), encoding='utf-8') as f:
-        json_structure = json.load(f)
-
-    for i,layer in enumerate(json_structure['layers']):
-        print('----------------------------------')
-        print(f"layer [{i}]: {layer}")
-
-        for j,component in enumerate(layer['components']):
-            print(f"\t component {[j]}: {component}")
-
-            fname = component['material_file_name']
-            print(f"\t\tmateria:RI:read: {len(material_refractive_index_read(fname)['real'])} records for real part")
-            print(f"\t\tmateria:RI:read: {len(material_refractive_index_read(fname)['imag'])} records for imag part")
-            #pprint(material_refractive_index_read(fname),sort_dicts=False)
-
-            print(f"\t\tmaterial:RI:interp: {len(material_refractive_index(fname))} records for complex RI")
-            #pprint(material_refractive_index(fname))
-
-        print(f"\tlayer:RI: {len(layer_refractive_index(layer))} records")
-        #pprint(layer_refractive_index(layer))
-
-    wl,SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
-    #pprint(wl)
-    #pprint(SM_structure)
-
-    R,T = compute_RT(json_structure, params)
-
-    #pprint(R)
-    #pprint(T)
-
-#
-#        #print(f"layer: {layer['name']}")
-#
-#        RI.append(layer_refractive_index(layer))
-#        #print(f"- refractive index: {RI[i]}")
-#
-#        # TODO: test interpolation by plotting also original values from file
-#
-#        plt.plot(RI[i]['wl'], RI[i]['ri']['real'], label='n')
-#        plt.plot(RI[i]['wl'], RI[i]['ri']['imag'], label='k')
-#        plt.xlabel('wavelength (nm)')
-#        plt.ylabel('n, k')
-#        plt.title(f"{json_structure['name']} - layer {i}: {layer['name']}")
-#        plt.legend()
-#        plt.show()
-#
-#    R,T = compute_RT(json_structure, RI, params)
-else:
-    import alhazen.ScatteringMatrix as SM
 
