@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.interpolate import interp1d
 
-#import alhazen.ScatteringMatrix
+#import alhazen.ScatteringMatrix as SM
 
 # paths
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -255,9 +255,9 @@ def prepare_ScatteringMatrix_input(json_structure, params):
 
         # interpolate and arrange ri as complex
         # - build interpolate functions
-        _interp_r = interp1d(_wl[i], _ri[i],
+        _interp_r = interp1d(_wl[i], [ _.real for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(_wl[i], _ri[i],
+        _interp_i = interp1d(_wl[i], [ _.imag for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
 
         # interpolate and arrange ri as complex
@@ -269,7 +269,7 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         # convert coherence (bool) to incoherent (int)
         incoherent = 1 if layer['coherence'] == 0 else 0
 
-        SM_structure.append([float(layer['thickness']), ri,
+        SM_structure.append([float(layer['thickness'])/10, ri,
                           incoherent, float(layer['roughness'])])
 
     return wl,SM_structure
@@ -288,7 +288,7 @@ def compute_RT(json_structure, params):
     #    print(f'debug:compute_RT:PrepareList: layer[{i}]:\n- thickness {zaq[0]}\n- RI: {zaq[1][0], zaq[1][-1]}\n- incoherent: {zaq[2]}\n- roughness: {zaq[3]}')
 
     #Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
-    Ronly, Tonly = ScatteringMatrix.ComputeRT(
+    Ronly, Tonly = SM.ComputeRT(
         SM_structure, wl, incidence_angle)
     # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray
     # containing R and T only (not the wavelength); need to be processed
@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
     from pprint import pprint
 
-    import ScatteringMatrix
+    import ScatteringMatrix as SM
 
     STRUCTURE_FILE = 'structure-test-wo_ema.json'
 
@@ -331,7 +331,6 @@ if __name__ == '__main__':
     with open(os.path.join(STRUCTURE_DIR, STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
 
-#    RI = []
     for i,layer in enumerate(json_structure['layers']):
         print('----------------------------------')
         print(f"layer [{i}]: {layer}")
@@ -354,7 +353,10 @@ if __name__ == '__main__':
     #pprint(wl)
     #pprint(SM_structure)
 
-    compute_RT(json_structure, params)
+    R,T = compute_RT(json_structure, params)
+
+    #pprint(R)
+    #pprint(T)
 
 #
 #        #print(f"layer: {layer['name']}")
@@ -373,3 +375,6 @@ if __name__ == '__main__':
 #        plt.show()
 #
 #    R,T = compute_RT(json_structure, RI, params)
+else:
+    import alhazen.ScatteringMatrix as SM
+
