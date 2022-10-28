@@ -15,7 +15,7 @@
 				<div class="col-1"><a href="{{ l }}">{{ n }}</a></div>
 				{% end %}
 				<div class="col-8" id="ws_connection">
-					<label for="host">host:</label><input type="text" id="host" value="127.0.0.1"/>
+					<label for="host">host:</label><input type="text" id="host" value="{{ listen_address }}"/>
 					<label for="port">port:</label><input type="text" id="port" value="8000"/>
 					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
 					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
