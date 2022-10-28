@@ -217,7 +217,6 @@ def wl_range(wl_list, params):
         'wl_range', DEFAULT_WL_RANGE).split(',')]
 
     # find global min and max wl of the structure
-    # FIXME: convert to list of couples
     s_wl_min = -np.inf
     s_wl_max = +np.inf
     for _wl in wl_list:
@@ -234,7 +233,7 @@ def wl_range(wl_list, params):
 
 def prepare_ScatteringMatrix_input(json_structure, params):
     '''
-    This SHOULD BE (but so far is not; FIXME!) (more or less) equivalent to optical.functions.PrepareList
+    This is equivalent to optical.functions.PrepareList
     '''
 
     _wl = []
@@ -305,4 +304,3 @@ def get_description(_structure, params):
         message += f"{k} {v.get('thickness')}(µ), "
 
     return message
-
