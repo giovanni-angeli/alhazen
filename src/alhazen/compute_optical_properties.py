@@ -10,7 +10,7 @@ import os
 import numpy as np
 from scipy.interpolate import interp1d
 
-import alhazen.ScatteringMatrix
+#import alhazen.ScatteringMatrix
 
 # paths
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,6 @@ def material_refractive_index_read(fname):
     separated 'real' and 'imaginary' parts (see return statement)
     '''
 
-    #print(f'debug:material_refractive_index_read:fname: {fname}')
     # FIXME: encoding can be strange for these files: use some guess tool
     with open(os.path.join(REFRACTIVE_INDEX_DIR, fname),
               mode='r', encoding='utf-8') as fp:
@@ -47,24 +46,22 @@ def material_refractive_index_read(fname):
 
         # read real part: wavelength, refractive index
         Nr = int(next(fp))  # number of records for the real part
-        wl_r = []
-        ri_r = []
+        RI_r = []
         for _ in range(Nr):
-            wl, ri = next(fp).split()
-            wl_r.append(float(wl)/10)
-            ri_r.append(float(ri))
+            wl,ri = next(fp).split()
+            RI_r.append( (float(wl)/10,ri) )
 
         # read imaginary part: wavelength, refractive index
         Ni = int(next(fp))  # number of records for the imag part
-        wl_i = []
-        ri_i = []
+        RI_i = []
         for _ in range(Ni):
             wl, ri = next(fp).split()
-            wl_i.append(float(wl)/10)
-            ri_i.append(float(ri))
+            RI_i.append( (float(wl)/10,ri) )
 
-        # TODO: discuss this format with Giovanni
-        return dict(real=dict(wl=wl_r, ri=ri_r), imag=dict(wl=wl_i, ri=ri_i))
+        # TODO: discuss this format with Giovanni; possible alternative:
+        #   a list of the union of wl_r and wl_i with 'Null' (or None)
+        #   values for missing ri
+        return dict(real=RI_r, imag=RI_i)
 
 
 def wl_grid(wl):
@@ -90,21 +87,23 @@ def material_refractive_index(fname):
 
     # get data from refractive index file
     mri = material_refractive_index_read(fname)
+    _wl_r = [ _[0] for _ in mri['real'] ]
+    _ri_r = [ _[1] for _ in mri['real'] ]
+    _wl_i = [ _[0] for _ in mri['imag'] ]
+    _ri_i = [ _[1] for _ in mri['imag'] ]
 
     # build interpolation functions (from scipy.interpolate)
-    _interp_r = interp1d(mri['real']['wl'], mri['real']['ri'],
-                         kind='linear', fill_value='extrapolate')
-    _interp_i = interp1d(mri['imag']['wl'], mri['imag']['ri'],
-                         kind='linear', fill_value='extrapolate')
+    _interp_r = interp1d(_wl_r, _ri_r, kind='linear', fill_value='extrapolate')
+    _interp_i = interp1d(_wl_i, _ri_i, kind='linear', fill_value='extrapolate')
 
     # build the target grid
-    wl = wl_grid([mri['real']['wl'], mri['imag']['wl']])
+    wl = wl_grid([_wl_r, _wl_i])
 
-    # iterpolate on the target grid
-    RI_r = _interp_r(wl).tolist()
-    RI_i = _interp_i(wl).tolist()
+    # iterpolate on the target grid (tolist() because output is a numpy array)
+    ri_r = _interp_r(wl).tolist()
+    ri_i = _interp_i(wl).tolist()
 
-    return dict(wl=wl, ri=dict(real=RI_r, imag=RI_i))
+    return [(wl[i], complex(ri_r[i], ri_i[i])) for i in range(len(wl))]
 
 
 def compute_EMA(refractive_index, fraction):
@@ -170,8 +169,6 @@ def layer_refractive_index(json_layer):
 
     Nc = len(json_layer['components'])
     if Nc == 1:
-        qaz=material_refractive_index(json_layer['components'][0]['material_file_name'])
-        print(f'qaz!: {qaz}')
         return material_refractive_index(json_layer['components'][0]['material_file_name'])
     # compute refractive index for EMA:
     # - extract info for each component
@@ -180,9 +177,9 @@ def layer_refractive_index(json_layer):
     _ri = []
     for c in json_layer['components']:
         fraction.append(c['fraction'])
-        mri = material_refractive_index(c['material_file_name'])
-        _wl.append(mri['wl'])
-        _ri.append(mri['ri'])
+        mRI = material_refractive_index(c['material_file_name'])
+        _wl.append([ _[0] for _ in mRI ])
+        _ri.append([ _[1] for _ in mRI ])
 
     # - create target grid
     wl = wl_grid(_wl)
@@ -206,40 +203,9 @@ def layer_refractive_index(json_layer):
     for i, _wl in enumerate(wl):
         ema.append((compute_EMA([ri[j][i] for j in range(Nc)], fraction)))
 
-    return dict(wl=wl, ri=dict(real=[_.real for _ in ema], imag=[_.imag for _ in ema]))
+    return list(zip(wl, ema))
 
-
-def prepare_ScatteringMatrix_input(json_structure, RI, wl):
-    '''
-    This SHOULD BE (but so far is not; FIXME!) (more or less) equivalent to optical.functions.PrepareList
-    '''
-
-    SM_structure = []
-    ri = []
-    for i,layer in enumerate(json_structure['layers']):
-
-        # interpolate and arrange ri as complex
-        # - build interpolate functions
-        _interp_r = interp1d(RI[i]['wl'], RI[i]['ri']['real'],
-                             kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(RI[i]['wl'], RI[i]['ri']['imag'],
-                             kind='linear', fill_value='extrapolate')
-
-        # interpolate and arrange ri as complex
-        ri_r = _interp_r(wl).tolist()
-        ri_i = _interp_i(wl).tolist()
-        ri.append([complex(r, i) for r, i in zip(ri_r, ri_i)])
-        #print(f'debug: prepare_ScatteringMatrix_input:len(ri): {len(ri)}')
-
-        # convert coherence (bool) to incoherent (int)
-        incoherent = 1 if layer['coherence'] == 0 else 0
-
-        SM_structure.append([float(layer['thickness']), ri,
-                          incoherent, float(layer['roughness'])])
-
-    return SM_structure
-
-def wl_range(RI, params):
+def wl_range(wl_list, params):
     '''
     Builds the target wl grid for output.
     '''
@@ -251,10 +217,12 @@ def wl_range(RI, params):
         'wl_range', DEFAULT_WL_RANGE).split(',')]
 
     # find global min and max wl of the structure
-    s_wl_min = max([min(ri['wl']) for ri in RI ])
-    s_wl_max = min([max(ri['wl']) for ri in RI ])
-    #print(f'debug:wl_range:structure min and max: {s_wl_min, s_wl_max}')
-    #print(f'debug:wl_range:user min and max: {u_wl_min, u_wl_max}')
+    # FIXME: convert to list of couples
+    s_wl_min = -np.inf
+    s_wl_max = +np.inf
+    for _wl in wl_list:
+        s_wl_min = max(s_wl_min,min(_wl))
+        s_wl_max = min(s_wl_max,max(_wl))
 
     # define min and max of wl range and create a linear grid
     wl_min = max(u_wl_min, s_wl_min)
@@ -264,30 +232,63 @@ def wl_range(RI, params):
 
     return wl
 
-def compute_RT(json_structure, params):
+def prepare_ScatteringMatrix_input(json_structure, params):
+    '''
+    This SHOULD BE (but so far is not; FIXME!) (more or less) equivalent to optical.functions.PrepareList
+    '''
 
-    RI = []
+    _wl = []
+    _ri = []
     for layer in json_structure['layers']:
-        RI.append(layer_refractive_index(layer))
-    # FIXME: RI e` sbagliato: ogni elemento e` una lista!!!
-    #print(f'debug:')
+        lri = layer_refractive_index(layer)
+        #FIXME: giovanni dice che e` meglio list comprehension
+        _wl.append(list(list(zip(*lri))[0]))
+        _ri.append(list(list(zip(*lri))[1]))
 
     # prepare target grid
-    wl = wl_range( RI, params )
+    wl = wl_range( _wl, params )
+
     #print(f'debug:prepare_ScatteringMatrix_input:input:wl: {wl}')
 
+    SM_structure = []
+    for i,layer in enumerate(json_structure['layers']):
+
+        # interpolate and arrange ri as complex
+        # - build interpolate functions
+        _interp_r = interp1d(_wl[i], _ri[i],
+                             kind='linear', fill_value='extrapolate')
+        _interp_i = interp1d(_wl[i], _ri[i],
+                             kind='linear', fill_value='extrapolate')
+
+        # interpolate and arrange ri as complex
+        ri_r = _interp_r(wl).tolist()
+        ri_i = _interp_i(wl).tolist()
+        ri = [complex(r, i) for r, i in zip(ri_r, ri_i)]
+        #print(f'debug: prepare_ScatteringMatrix_input:len(ri): {len(ri)}')
+
+        # convert coherence (bool) to incoherent (int)
+        incoherent = 1 if layer['coherence'] == 0 else 0
+
+        SM_structure.append([float(layer['thickness']), ri,
+                          incoherent, float(layer['roughness'])])
+
+    return wl,SM_structure
+
+def compute_RT(json_structure, params):
+
     # prepare structure data
-    SM_structure = prepare_ScatteringMatrix_input(json_structure, RI, wl)
+    wl,SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
 
     # get incidence angle in degrees and convert it into radians
     incidence_angle = np.pi/180 * \
         float(params['model_edit_panel']['incidence_angle'])
 
-    # FIXME: quello che entra qui e` sbagliato
-    for i,zaq in enumerate(SM_structure):
-        print(f'debug:compute_RT:PrepareList: layer[{i}]:\n- thickness {zaq[0]}\n- RI: {zaq[1][0], zaq[1][-1]}\n- incoherent: {zaq[2]}\n- roughness: {zaq[3]}')
+    ## FIXME: quello che entra qui e` sbagliato
+    #for i,zaq in enumerate(SM_structure):
+    #    print(f'debug:compute_RT:PrepareList: layer[{i}]:\n- thickness {zaq[0]}\n- RI: {zaq[1][0], zaq[1][-1]}\n- incoherent: {zaq[2]}\n- roughness: {zaq[3]}')
 
-    Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
+    #Ronly, Tonly = alhazen.ScatteringMatrix.ComputeRT(
+    Ronly, Tonly = ScatteringMatrix.ComputeRT(
         SM_structure, wl, incidence_angle)
     # WARNING: ScatteringMatrix.ComputeRT returns two numpy.ndarray
     # containing R and T only (not the wavelength); need to be processed
@@ -318,9 +319,11 @@ if __name__ == '__main__':
     import json
     import matplotlib.pyplot as plt
 
+    from pprint import pprint
+
     import ScatteringMatrix
 
-    STRUCTURE_FILE = 'structure-test.json'
+    STRUCTURE_FILE = 'structure-test-wo_ema.json'
 
     params={'plot_edit_panel': {'wl_range': '200, 1100', 'wl_np': '400', 'show_R': 'on', 'show_T': 'on'},
             'model_edit_panel': {'thickness_active_layer': '-1', 'incidence_angle': '0'} }
@@ -328,26 +331,45 @@ if __name__ == '__main__':
     with open(os.path.join(STRUCTURE_DIR, STRUCTURE_FILE), encoding='utf-8') as f:
         json_structure = json.load(f)
 
-#    # add "properties" to structure
-#    json_structure = dict_extend( json_structure, {'wl_min': None, 'wl_max': None} )
+#    RI = []
+    for i,layer in enumerate(json_structure['layers']):
+        print('----------------------------------')
+        print(f"layer [{i}]: {layer}")
 
-    RI = []
-    for i, layer in enumerate(json_structure['layers']):
+        for j,component in enumerate(layer['components']):
+            print(f"\t component {[j]}: {component}")
 
-        #print(f"layer: {layer['name']}")
+            fname = component['material_file_name']
+            print(f"\t\tmateria:RI:read: {len(material_refractive_index_read(fname)['real'])} records for real part")
+            print(f"\t\tmateria:RI:read: {len(material_refractive_index_read(fname)['imag'])} records for imag part")
+            #pprint(material_refractive_index_read(fname),sort_dicts=False)
 
-        RI.append(layer_refractive_index(layer))
-        #print(f"- refractive index: {RI[i]}")
+            print(f"\t\tmaterial:RI:interp: {len(material_refractive_index(fname))} records for complex RI")
+            #pprint(material_refractive_index(fname))
 
-        # TODO: test interpolation by plotting also original values from file
+        print(f"\tlayer:RI: {len(layer_refractive_index(layer))} records")
+        #pprint(layer_refractive_index(layer))
 
-        plt.plot(RI[i]['wl'], RI[i]['ri']['real'], label='n')
-        plt.plot(RI[i]['wl'], RI[i]['ri']['imag'], label='k')
-        plt.xlabel('wavelength (nm)')
-        plt.ylabel('n, k')
-        plt.title(f"{json_structure['name']} - layer {i}: {layer['name']}")
-        plt.legend()
-        plt.show()
+    wl,SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
+    #pprint(wl)
+    #pprint(SM_structure)
 
-    R,T = compute_RT(json_structure, RI, params)
+    compute_RT(json_structure, params)
 
+#
+#        #print(f"layer: {layer['name']}")
+#
+#        RI.append(layer_refractive_index(layer))
+#        #print(f"- refractive index: {RI[i]}")
+#
+#        # TODO: test interpolation by plotting also original values from file
+#
+#        plt.plot(RI[i]['wl'], RI[i]['ri']['real'], label='n')
+#        plt.plot(RI[i]['wl'], RI[i]['ri']['imag'], label='k')
+#        plt.xlabel('wavelength (nm)')
+#        plt.ylabel('n, k')
+#        plt.title(f"{json_structure['name']} - layer {i}: {layer['name']}")
+#        plt.legend()
+#        plt.show()
+#
+#    R,T = compute_RT(json_structure, RI, params)
