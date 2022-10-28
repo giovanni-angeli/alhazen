@@ -31,7 +31,7 @@
         "components": [
             { "material_file_name": "corning.in3", "fraction": 100 }        ],
         "thickness": 1e7,
-        "coherence": 1,
+        "coherence": 0,
         "roughness": 0
         },
         {
