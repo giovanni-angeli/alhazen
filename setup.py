@@ -54,6 +54,7 @@ def main():
             'tornado',
             'pygal',
             'numpy',
+            'scipy',
         ],
     )
 
