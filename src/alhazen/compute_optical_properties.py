@@ -48,15 +48,15 @@ def material_refractive_index_read(fname):
         Nr = int(next(fp))  # number of records for the real part
         RI_r = []
         for _ in range(Nr):
-            wl,ri = next(fp).split()
-            RI_r.append( (float(wl)/10,ri) )
+            wl, ri = next(fp).split()
+            RI_r.append((float(wl)/10, ri))
 
         # read imaginary part: wavelength, refractive index
         Ni = int(next(fp))  # number of records for the imag part
         RI_i = []
         for _ in range(Ni):
             wl, ri = next(fp).split()
-            RI_i.append( (float(wl)/10,ri) )
+            RI_i.append((float(wl)/10, ri))
 
         # TODO: discuss this format with Giovanni; possible alternative:
         #   a list of the union of wl_r and wl_i with 'Null' (or None)
@@ -87,10 +87,10 @@ def material_refractive_index(fname):
 
     # get data from refractive index file
     mri = material_refractive_index_read(fname)
-    _wl_r = [ _[0] for _ in mri['real'] ]
-    _ri_r = [ _[1] for _ in mri['real'] ]
-    _wl_i = [ _[0] for _ in mri['imag'] ]
-    _ri_i = [ _[1] for _ in mri['imag'] ]
+    _wl_r = [_[0] for _ in mri['real']]
+    _ri_r = [_[1] for _ in mri['real']]
+    _wl_i = [_[0] for _ in mri['imag']]
+    _ri_i = [_[1] for _ in mri['imag']]
 
     # build interpolation functions (from scipy.interpolate)
     _interp_r = interp1d(_wl_r, _ri_r, kind='linear', fill_value='extrapolate')
@@ -159,6 +159,7 @@ def compute_EMA(refractive_index, fraction):
 
     return pn[distance.index(min(distance))]
 
+
 def layer_refractive_index(json_layer):
     '''
     Given a layer in json format, computes the refractive index of the layer
@@ -178,8 +179,8 @@ def layer_refractive_index(json_layer):
     for c in json_layer['components']:
         fraction.append(c['fraction'])
         mRI = material_refractive_index(c['material_file_name'])
-        _wl.append([ _[0] for _ in mRI ])
-        _ri.append([ _[1] for _ in mRI ])
+        _wl.append([_[0] for _ in mRI])
+        _ri.append([_[1] for _ in mRI])
 
     # - create target grid
     wl = wl_grid(_wl)
@@ -188,9 +189,9 @@ def layer_refractive_index(json_layer):
     ri = []
     for i in range(Nc):
         # build interpolation functions
-        _interp_r = interp1d(_wl[i], [ _.real for _ in _ri[i]],
+        _interp_r = interp1d(_wl[i], [_.real for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(_wl[i], [ _.imag for _ in _ri[i]],
+        _interp_i = interp1d(_wl[i], [_.imag for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
         # interpolate on the new common grid
         ri_r = _interp_r(wl).tolist()
@@ -204,6 +205,7 @@ def layer_refractive_index(json_layer):
         ema.append((compute_EMA([ri[j][i] for j in range(Nc)], fraction)))
 
     return list(zip(wl, ema))
+
 
 def wl_range(wl_list, params):
     '''
@@ -220,8 +222,8 @@ def wl_range(wl_list, params):
     s_wl_min = -np.inf
     s_wl_max = +np.inf
     for _wl in wl_list:
-        s_wl_min = max(s_wl_min,min(_wl))
-        s_wl_max = min(s_wl_max,max(_wl))
+        s_wl_min = max(s_wl_min, min(_wl))
+        s_wl_max = min(s_wl_max, max(_wl))
 
     # define min and max of wl range and create a linear grid
     wl_min = max(u_wl_min, s_wl_min)
@@ -230,6 +232,7 @@ def wl_range(wl_list, params):
     wl = np.linspace(wl_min, wl_max, wl_np)
 
     return wl
+
 
 def prepare_ScatteringMatrix_input(json_structure, params):
     '''
@@ -240,21 +243,21 @@ def prepare_ScatteringMatrix_input(json_structure, params):
     _ri = []
     for layer in json_structure['layers']:
         lri = layer_refractive_index(layer)
-        #FIXME: giovanni dice che e` meglio list comprehension
+        # FIXME: giovanni dice che e` meglio list comprehension
         _wl.append(list(list(zip(*lri))[0]))
         _ri.append(list(list(zip(*lri))[1]))
 
     # prepare target grid
-    wl = wl_range( _wl, params )
+    wl = wl_range(_wl, params)
 
     SM_structure = []
-    for i,layer in enumerate(json_structure['layers']):
+    for i, layer in enumerate(json_structure['layers']):
 
         # interpolate and arrange ri as complex
         # - build interpolate functions
-        _interp_r = interp1d(_wl[i], [ _.real for _ in _ri[i]],
+        _interp_r = interp1d(_wl[i], [_.real for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(_wl[i], [ _.imag for _ in _ri[i]],
+        _interp_i = interp1d(_wl[i], [_.imag for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
 
         # interpolate and arrange ri as complex
@@ -266,14 +269,15 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         incoherent = 1 if layer['coherence'] == 0 else 0
 
         SM_structure.append([float(layer['thickness'])/10, ri,
-                          incoherent, float(layer['roughness'])])
+                             incoherent, float(layer['roughness'])])
 
-    return wl,SM_structure
+    return wl, SM_structure
+
 
 def compute_RT(json_structure, params):
 
     # prepare structure data
-    wl,SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
+    wl, SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
 
     # get incidence angle in degrees and convert it into radians
     incidence_angle = np.pi/180 * \
@@ -295,6 +299,7 @@ def compute_RT(json_structure, params):
         T.append((l, r*100))
 
     return R, T
+
 
 def get_description(_structure, params):
 
