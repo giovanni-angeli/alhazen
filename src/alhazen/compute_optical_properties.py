@@ -188,9 +188,9 @@ def layer_refractive_index(json_layer):
     ri = []
     for i in range(Nc):
         # build interpolation functions
-        _interp_r = interp1d(_wl[i], _ri[i]['real'],
+        _interp_r = interp1d(_wl[i], [ _.real for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
-        _interp_i = interp1d(_wl[i], _ri[i]['imag'],
+        _interp_i = interp1d(_wl[i], [ _.imag for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
         # interpolate on the new common grid
         ri_r = _interp_r(wl).tolist()
