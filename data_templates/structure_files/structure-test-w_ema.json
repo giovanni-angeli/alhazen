@@ -16,11 +16,11 @@
         },
 
         {
-        "name": "a-Si",
+        "name": "EMA",
         "active": true,
         "materials": [
-            { "name":"", "fname": "n/Amorfh.in3", "fraction": 100 },
-            { "name":"", "fname": "", "fraction": 0 },
+            { "name":"", "fname": "n/silicon.in3", "fraction":  50 },
+            { "name":"", "fname": "n/quartz.in3",  "fraction":  50 },
             { "name":"", "fname": "", "fraction": 0 }
         ],
         "thickness": 950,
