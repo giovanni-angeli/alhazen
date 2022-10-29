@@ -36,8 +36,6 @@ def material_refractive_index_read(fname):
     with open(os.path.join(REFRACTIVE_INDEX_DIR, fname),
               mode='r', encoding='utf-8') as fp:
 
-        # WARNING: this is for files in the "optical" format!
-
         # skip header (fixed number of lines with no particular structure that can be recognised)
         #   first record contains the material name (not used here)
         next(fp)
@@ -46,25 +44,25 @@ def material_refractive_index_read(fname):
 
         # read real part: wavelength, refractive index
         Nr = int(next(fp))  # number of records for the real part
-        RI_r = []
+        ri_r = []
         for _ in range(Nr):
             wl, ri = next(fp).split()
-            RI_r.append((float(wl)/10, ri))
+            ri_r.append((float(wl)/10, ri))
 
         # read imaginary part: wavelength, refractive index
         Ni = int(next(fp))  # number of records for the imag part
-        RI_i = []
+        ri_i = []
         for _ in range(Ni):
             wl, ri = next(fp).split()
-            RI_i.append((float(wl)/10, ri))
+            ri_i.append((float(wl)/10, ri))
 
         # TODO: discuss this format with Giovanni; possible alternative:
         #   a list of the union of wl_r and wl_i with 'Null' (or None)
         #   values for missing ri
-        return dict(real=RI_r, imag=RI_i)
+        return dict(real=ri_r, imag=ri_i)
 
 
-def wl_grid(wl):
+def wl_common(wl):
     '''
     Given a list of lists (wavelengths in this context), returns a list
     containing the sorted union of the input lists
@@ -79,7 +77,7 @@ def wl_grid(wl):
 def material_refractive_index(fname):
     '''
     Given fname containing the refractive index of the material "addressed"
-    by fname itself, build a target wl list based on the wl lists for
+    by fname itself, build a target wl list as the union of the wl lists for
     real and imaginary parts and intepolates refractive index on this target
     grid. Returns the refractive index for the material in "standard" format
     (standard in this context).
@@ -87,17 +85,17 @@ def material_refractive_index(fname):
 
     # get data from refractive index file
     mri = material_refractive_index_read(fname)
-    _wl_r = [_[0] for _ in mri['real']]
-    _ri_r = [_[1] for _ in mri['real']]
-    _wl_i = [_[0] for _ in mri['imag']]
-    _ri_i = [_[1] for _ in mri['imag']]
+    wl_r = [_[0] for _ in mri['real']]
+    ri_r = [_[1] for _ in mri['real']]
+    wl_i = [_[0] for _ in mri['imag']]
+    ri_i = [_[1] for _ in mri['imag']]
 
     # build interpolation functions (from scipy.interpolate)
-    _interp_r = interp1d(_wl_r, _ri_r, kind='linear', fill_value='extrapolate')
-    _interp_i = interp1d(_wl_i, _ri_i, kind='linear', fill_value='extrapolate')
+    _interp_r = interp1d(wl_r, ri_r, kind='linear', fill_value='extrapolate')
+    _interp_i = interp1d(wl_i, ri_i, kind='linear', fill_value='extrapolate')
 
     # build the target grid
-    wl = wl_grid([_wl_r, _wl_i])
+    wl = wl_common([wl_r, wl_i])
 
     # iterpolate on the target grid (tolist() because output is a numpy array)
     ri_r = _interp_r(wl).tolist()
@@ -168,6 +166,15 @@ def layer_refractive_index(json_layer):
     of the materials composing the layer.
     '''
 
+    # check EMA consistency
+    fraction_total = 0
+    for i,c in enumerate(json_layer['components']):
+        if c['fraction'] == 0:
+            raise Exception(f"no EMA components with zero fraction allowed: {c}")
+        fraction_total += c['fraction']
+    if fraction_total != 100:
+        raise Exception(f"EMA components total fraction exceeds 100%: {json_layer['components']}")
+
     Nc = len(json_layer['components'])
     if Nc == 1:
         return material_refractive_index(json_layer['components'][0]['material_file_name'])
@@ -178,12 +185,12 @@ def layer_refractive_index(json_layer):
     _ri = []
     for c in json_layer['components']:
         fraction.append(c['fraction'])
-        mRI = material_refractive_index(c['material_file_name'])
-        _wl.append([_[0] for _ in mRI])
-        _ri.append([_[1] for _ in mRI])
+        mri = material_refractive_index(c['material_file_name'])
+        _wl.append([_[0] for _ in mri])
+        _ri.append([_[1] for _ in mri])
 
     # - create target grid
-    wl = wl_grid(_wl)
+    wl = wl_common(_wl)
 
     # - for each material, interpolate _RI on the common grid
     ri = []
@@ -207,7 +214,7 @@ def layer_refractive_index(json_layer):
     return list(zip(wl, ema))
 
 
-def wl_range(wl_list, params):
+def wl_grid(wl_list, params):
     '''
     Builds the target wl grid for output.
     '''
@@ -218,7 +225,7 @@ def wl_range(wl_list, params):
     u_wl_min, u_wl_max = [float(a) for a in params['plot_edit_panel'].get(
         'wl_range', DEFAULT_WL_RANGE).split(',')]
 
-    # find global min and max wl of the structure
+    # find min and max wl fro the structure
     s_wl_min = -np.inf
     s_wl_max = +np.inf
     for _wl in wl_list:
@@ -248,7 +255,7 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         _ri.append(list(list(zip(*lri))[1]))
 
     # prepare target grid
-    wl = wl_range(_wl, params)
+    wl = wl_grid(_wl, params)
 
     SM_structure = []
     for i, layer in enumerate(json_structure['layers']):
