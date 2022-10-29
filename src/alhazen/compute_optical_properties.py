@@ -62,7 +62,7 @@ def material_refractive_index_read(fname):
         return dict(real=ri_r, imag=ri_i)
 
 
-def wl_common(wl):
+def wl_union(wl):
     '''
     Given a list of lists (wavelengths in this context), returns a list
     containing the sorted union of the input lists
@@ -95,7 +95,7 @@ def material_refractive_index(fname):
     _interp_i = interp1d(wl_i, ri_i, kind='linear', fill_value='extrapolate')
 
     # build the target grid
-    wl = wl_common([wl_r, wl_i])
+    wl = wl_union([wl_r, wl_i])
 
     # iterpolate on the target grid (tolist() because output is a numpy array)
     ri_r = _interp_r(wl).tolist()
@@ -131,16 +131,17 @@ def compute_EMA(refractive_index, fraction):
     # initialize working vars:
     # - verify consistency of input
     if len(fraction) != len(refractive_index):
-        raise Exception("Error in EMA number of components definition")
+        raise Exception("Error in EMA number of components")
     # - fill the missing third component (if necessary)
     #   - fr
     fr = [0, 0, 0]
     fr[0:len(fraction)] = fraction
+    fr = [_/100 for _ in fr]
     #   - ri
     ri = [complex(0) for _ in range(3)]
     ri[0:len(refractive_index)] = refractive_index
     # - compute auxiliaty var ri2 = ri**2
-    ri2 = [ri[i]**2 for i in range(len(ri))]
+    ri2 = [_**2 for _ in ri]
 
     nguess = fr[0]*ri[0]+fr[1]*ri[1]+fr[2]*ri[2]
     a = -4
@@ -168,7 +169,7 @@ def layer_refractive_index(json_layer):
 
     # check EMA consistency
     fraction_total = 0
-    for i,c in enumerate(json_layer['components']):
+    for c in json_layer['components']:
         if c['fraction'] == 0:
             raise Exception(f"no EMA components with zero fraction allowed: {c}")
         fraction_total += c['fraction']
@@ -189,8 +190,8 @@ def layer_refractive_index(json_layer):
         _wl.append([_[0] for _ in mri])
         _ri.append([_[1] for _ in mri])
 
-    # - create target grid
-    wl = wl_common(_wl)
+    # - create target wl list
+    wl = wl_union(_wl)
 
     # - for each material, interpolate _RI on the common grid
     ri = []
@@ -200,18 +201,18 @@ def layer_refractive_index(json_layer):
                              kind='linear', fill_value='extrapolate')
         _interp_i = interp1d(_wl[i], [_.imag for _ in _ri[i]],
                              kind='linear', fill_value='extrapolate')
-        # interpolate on the new common grid
+        # interpolate on the new wl list
         ri_r = _interp_r(wl).tolist()
         ri_i = _interp_i(wl).tolist()
         # pack the result and append to RI
         ri.append([complex(r, i) for r, i in zip(ri_r, ri_i)])
 
     # - for each point in the wl grid compute EMA
-    ema = []
-    for i, _wl in enumerate(wl):
-        ema.append((compute_EMA([ri[j][i] for j in range(Nc)], fraction)))
+    ema_ri = []
+    for i in range(len(wl)):
+        ema_ri.append((compute_EMA([ri[j][i] for j in range(Nc)], fraction)))
 
-    return list(zip(wl, ema))
+    return list(zip(wl, ema_ri))
 
 
 def wl_grid(wl_list, params):
@@ -276,7 +277,7 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         incoherent = 1 if layer['coherence'] == 0 else 0
 
         SM_structure.append([float(layer['thickness'])/10, ri,
-                             incoherent, float(layer['roughness'])])
+                             incoherent, float(layer['roughness'])/10])
 
     return wl, SM_structure
 
