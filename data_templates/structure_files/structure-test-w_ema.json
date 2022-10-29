@@ -10,7 +10,7 @@
             { "material_file_name": "air.in3", "fraction": 100 }
         ],
         "thickness": 0,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         },
         {
@@ -22,7 +22,7 @@
             { "material_file_name": "quartz.in3" , "fraction":  50 }
         ],
         "thickness": 950,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         },
         {
@@ -32,7 +32,7 @@
         "components": [
             { "material_file_name": "corning.in3", "fraction": 100 }        ],
         "thickness": 1e7,
-        "coherence": 0,
+        "coherence": false,
         "roughness": 0
         },
         {
@@ -42,7 +42,7 @@
         "components": [
             { "material_file_name": "air.in3", "fraction": 100 }        ],
         "thickness": 0,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         }
     ]

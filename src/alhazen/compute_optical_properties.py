@@ -297,7 +297,7 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         ri = [complex(r, i) for r, i in zip(ri_r, ri_i)]
 
         # convert coherence (bool) to incoherent (int)
-        incoherent = 1 if layer['coherence'] == 0 else 0
+        incoherent = 0 if layer['coherence'] else 1
 
         # convert lenght units
         thickness = float(layer['thickness'])/10
