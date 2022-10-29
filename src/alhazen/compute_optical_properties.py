@@ -299,8 +299,11 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         # convert coherence (bool) to incoherent (int)
         incoherent = 1 if layer['coherence'] == 0 else 0
 
-        SM_structure.append([float(layer['thickness'])/10, ri,
-                             incoherent, float(layer['roughness'])/10])
+        # convert lenght units
+        thickness = float(layer['thickness'])/10
+        roughness = float(layer['roughness'])/10
+
+        SM_structure.append([thickness, ri, incoherent, roughness])
 
     return wl, SM_structure
 
