@@ -14,8 +14,8 @@ import alhazen.ScatteringMatrix
 
 # paths
 HERE = os.path.dirname(os.path.abspath(__file__))
-REFRACTIVE_INDEX_DIR = os.path.join(
-    HERE, '..', '..', 'refractive_index_collection')
+REFRACTIVE_INDEX_DIR_IN3 = os.path.join(
+    HERE, '..', '..', 'refractive_index_collection','in3')
 STRUCTURE_DIR = os.path.join(
     HERE, '..', '..', 'data_templates', 'structure_files')
 
@@ -33,7 +33,7 @@ def material_refractive_index_read(fname):
     """
 
     # FIXME: encoding can be strange for these files: use some guess tool
-    with open(os.path.join(REFRACTIVE_INDEX_DIR, fname),
+    with open(os.path.join(REFRACTIVE_INDEX_DIR_IN3, fname),
               mode='r', encoding='utf-8') as fp:
 
         # skip header (fixed number of lines with no particular structure that can be recognised)
