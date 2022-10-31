@@ -1,0 +1,21 @@
+{
+    "name": "simple structure",
+    "description": "this structure is just an example with few layers",
+    "layers": [
+        {
+        "name": "air",
+        "description": "semiinfinite layer of air above the structure",
+        "active": false,
+        "components": [
+            { "material_file_name": "refractive_index_fname_1", "fraction": 100 },
+            { "material_file_name": ""                        , "fraction":   0 },
+            { "material_file_name": ""                        , "fraction":   0 }
+        ],
+        "thickness": 0,
+        "coherence": true,
+        "roughness": 0
+        }
+    ]
+}
+
+

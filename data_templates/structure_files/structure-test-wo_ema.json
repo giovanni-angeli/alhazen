@@ -1,59 +1,49 @@
 {
-    "name": "simple structure for testing purposes",
+    "name": "simple structure",
+    "description": "this structure is just an example with few layers with only one material per layer",
     "layers": [
-
         {
-        "name": "TopMedium",
+        "name": "air",
+        "description": "semiinfinite layer of air above the structure",
         "active": false,
-        "materials": [
-            { "name":"air", "fname": "n/air.in3", "fraction": 100 },
-            { "name":"", "fname": "", "fraction": 0 },
-            { "name":"", "fname": "", "fraction": 0 }
+        "components": [
+            { "material_file_name": "air.in3", "fraction": 100 }
         ],
         "thickness": 0,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         },
-
         {
         "name": "a-Si",
+        "description": "amorpous silicon",
         "active": true,
-        "materials": [
-            { "name":"", "fname": "n/Amorfh.in3", "fraction": 100 },
-            { "name":"", "fname": "", "fraction": 0 },
-            { "name":"", "fname": "", "fraction": 0 }
+        "components": [
+            { "material_file_name": "Amorfh.in3", "fraction": 100 }
         ],
         "thickness": 950,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         },
-
         {
         "name": "glass",
-        "active": false,
-        "materials": [
-            { "name":"glass", "fname": "n/corning.in3", "fraction": 100 },
-            { "name":"", "fname": "", "fraction": 0 },
-            { "name":"", "fname": "", "fraction": 0 }
-        ],
+        "description": "substrate layer",
+        "active": true,
+        "components": [
+            { "material_file_name": "corning.in3", "fraction": 100 }        ],
         "thickness": 1e7,
-        "coherence": 0,
+        "coherence": false,
         "roughness": 0
         },
-
         {
-        "name": "BottomMedium",
+        "name": "air",
+        "description": "semiinfinite layer of air below the structure",
         "active": false,
-        "materials": [
-            { "name":"air", "fname": "n/air.in3", "fraction": 100 },
-            { "name":"", "fname": "", "fraction": 0 },
-            { "name":"", "fname": "", "fraction": 0 }
-        ],
+        "components": [
+            { "material_file_name": "air.in3", "fraction": 100 }        ],
         "thickness": 0,
-        "coherence": 1,
+        "coherence": true,
         "roughness": 0
         }
-
     ]
 }
 

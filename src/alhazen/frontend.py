@@ -66,6 +66,7 @@ class Setup(BaseRequestHandler):  # pylint: disable=too-few-public-methods
             'result_title': result_title,
             'results': results,
             'errors': errors,
+            'listen_address': LISTEN_ADDRESS,
         }
 
         return ctx
@@ -112,6 +113,7 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
             'measure_file': self.parent.backend.measure_file,
             'structure_file_list': structure_file_list,
             'measure_file_list': measure_file_list,
+            'listen_address': LISTEN_ADDRESS,
         }
 
         logging.debug(f"ctx:{ctx}")
@@ -184,8 +186,8 @@ class Frontend(tornado.web.Application):
             if BROWSER is not None:
                 logging.warning("starting browser ...")
                 urls = [
-                    f'http://127.0.0.1:{LISTEN_PORT}/setup',
-                    f'http://127.0.0.1:{LISTEN_PORT}']
+                    f'http://{LISTEN_ADDRESS}:{LISTEN_PORT}/setup',
+                    f'http://{LISTEN_ADDRESS}:{LISTEN_PORT}']
                 for url in urls:
                     try:
                         webbrowser.get(BROWSER).open(url, new=0)
