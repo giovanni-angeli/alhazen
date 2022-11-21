@@ -4,66 +4,66 @@
 {% block article %}
 
 <div class="row">
-	<div class="col-10">
-		<input class="btn" type="button" name="install_templates_btn" onclick="install_templates();" value="install templates from template library"></input>
-		<label>(will overwrite existent copies)</label>
-	</div>
+  <div class="col-10">
+    <input class="btn" type="button" name="install_templates_btn" onclick="install_templates();" value="install templates from template library"></input>
+    <label>(will overwrite existent copies)</label>
+  </div>
 </div>
 <div class="row">
-	<hr></hr>
+  <hr></hr>
 </div>
 <div class="row view_file_container" hidden>
-	<div class="col-10">
-		<div class="row">
-			<span class="col-1 small_btn" style="float:left;margin:6px;" onclick="toggle_element_view('view_file_content');">hide/show</span>
-			<textarea class="col-4" style=";" id="view_file_name" rows="1" cols="60"></textarea>
-			<span class="col-1 small_btn" style="margin:6px;" onclick="on_save_file_button_clicked();">save</span>
-			<span class="col-1" id="view_file_type" hidden></span>
-		</div>
-		<div class="row">
-			<pre id="view_file_content" contenteditable="true"></pre>
-		</div>
-	</div>
+  <div class="col-10">
+    <div class="row">
+      <span class="col-1 small_btn" style="float:left;margin:6px;" onclick="toggle_element_view('view_file_content');">hide/show</span>
+      <textarea class="col-4" style=";" id="view_file_name" rows="1" cols="60"></textarea>
+      <span class="col-1 small_btn" style="margin:6px;" onclick="on_save_file_button_clicked();">save</span>
+      <span class="col-1" id="view_file_type" hidden></span>
+    </div>
+    <div class="row">
+      <pre id="view_file_content" contenteditable="true"></pre>
+    </div>
+  </div>
 </div>
 <div class="row">
-	<div class="col-5">
-		<div id="structure_file_list" class="file_list">
-		</div>
-		<hr></hr>
-		<div>
-			<h3>upload structure file (json format)</h3>
-			<form method="POST" action="/setup" enctype="multipart/form-data" id="upload_structure_form">
-				<input class="btn" type="file" name="structure_file" multiple="true" autocomplete="on" required></input>
-			</form>
-		</div>
-		<br></br>
-		<div>
-			<input class="btn" type="button" onclick="document.forms['upload_structure_form'].submit();" value="upload"></input>
-		</div>
-	</div>
-	<div class="col-5">
-		<div id="measure_file_list" class="file_list">
-		</div>
-		<hr></hr>
-		<div>
-			<h3>upload measurement file (csv format)</h3>
-			<form method="POST" action="/setup" enctype="multipart/form-data" id="upload_measure_form">
-				<input class="btn" type="file" name="measure_file" multiple="true" autocomplete="on" required></input>
-			</form>
-		</div>
-		<br></br>
-		<div>
-			<input class="btn"  type="button" onclick="document.forms['upload_measure_form'].submit();" value="upload"></input>
-		</div>
-	</div>
+  <div class="col-5">
+    <div id="structure_file_list" class="file_list">
+    </div>
+    <hr></hr>
+    <div>
+      <h3>upload structure file (json format)</h3>
+      <form method="POST" action="/setup" enctype="multipart/form-data" id="upload_structure_form">
+        <input class="btn" type="file" name="structure_file" multiple="true" autocomplete="on" required></input>
+      </form>
+    </div>
+    <br></br>
+    <div>
+      <input class="btn" type="button" onclick="document.forms['upload_structure_form'].submit();" value="upload"></input>
+    </div>
+  </div>
+  <div class="col-5">
+    <div id="measure_file_list" class="file_list">
+    </div>
+    <hr></hr>
+    <div>
+      <h3>upload measurement file (csv format)</h3>
+      <form method="POST" action="/setup" enctype="multipart/form-data" id="upload_measure_form">
+        <input class="btn" type="file" name="measure_file" multiple="true" autocomplete="on" required></input>
+      </form>
+    </div>
+    <br></br>
+    <div>
+      <input class="btn"  type="button" onclick="document.forms['upload_measure_form'].submit();" value="upload"></input>
+    </div>
+  </div>
 </div>
 <div class="row">
-	<hr></hr>
+  <hr></hr>
 </div>
 
 
 <script>
-	init_wsocket(refresh_file_lists);
+  init_wsocket(refresh_file_lists);
 </script>
 
 {% end %}

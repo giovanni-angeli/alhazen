@@ -1,54 +1,52 @@
 {% extends "base.html" %}
 
-
 {% block article %}
 
 <div class="row">
-	<div class="col-2"></div>
-	<div class="col-7" class="data_container" id="pygal_description_container"></div>
+  <div class="col-2"></div>
+  <div class="col-7" class="data_container" id="pygal_description_container"></div>
 </div>
 <div class="row">
-	<div class="col-2">
-		<div class="row" name="model_selector_container">
-			<div class="col-10">
-				<h3>select a structure file:</h3>
-				<select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector">
-					{% for name in structure_file_list %}
-						{% if structure_file == name %}
-							<option value="{{ name }}" selected='on'>{{ name }}</option>
-						{% else %}
-							<option value="{{ name }}">{{ name }}</option>
-						{% end %}
-					{% end %}
-				</select>
-				<div> {% include "param_model_edit_panel.html" %} </div>
-				<div><hr></hr></div>
-				<h3>select a measurement file:</h3>
-				<select id="measure_selector" onchange="on_file_selected('measure');" class="file_selector">
-					{% for name in measure_file_list %}
-						{% if measure_file == name %}
-							<option value="{{ name }}" selected='on'>{{ name }}</option>
-						{% else %}
-							<option value="{{ name }}">{{ name }}</option>
-						{% end %}
-					{% end %}
-				</select>
-				<div><hr></hr></div>
-				<div> {% include "param_plot_edit_panel.html" %} </div>
-				<div><hr></hr></div>
-				<input type="submit" id="refresh_data_graph_btn" value="refresh graph (Alt+r)" accesskey="r"
-					 class="file_selector" onclick="refresh_data_graph();">
-				</input>
-			</div>
-		</div>
-	</div>
-	<div class="col-7" class="data_container" id="pygal_data_container_frame">
-	<object id="pygal_data_container" type="image/svg+xml" data=""></object>
-	</div>
+  <div class="col-2">
+    <div class="row" name="model_selector_container">
+      <div class="col-10">
+      <h3>select a structure file:</h3>
+      <select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector">
+        {% for name in structure_file_list %}
+        {% if structure_file == name %}
+          <option value="{{ name }}" selected='on'>{{ name }}</option>
+        {% else %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% end %}
+        {% end %}
+      </select>
+      <div> {% include "param_model_edit_panel.html" %} </div>
+      <div><hr></hr></div>
+      <h3>select a measurement file:</h3>
+      <select id="measure_selector" onchange="on_file_selected('measure');" class="file_selector">
+        {% for name in measure_file_list %}
+        {% if measure_file == name %}
+          <option value="{{ name }}" selected='on'>{{ name }}</option>
+        {% else %}
+          <option value="{{ name }}">{{ name }}</option>
+        {% end %}
+        {% end %}
+      </select>
+      <div><hr></hr></div>
+      <div> {% include "param_plot_edit_panel.html" %} </div>
+      <div><hr></hr></div>
+        <input type="submit" id="refresh_data_graph_btn" value="refresh graph (Alt+r)" accesskey="r" class="file_selector" onclick="refresh_data_graph();">
+        </input>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" class="data_container" id="pygal_data_container_frame">
+    <object id="pygal_data_container" type="image/svg+xml" data=""></object>
+  </div>
 </div>
 
 <script>
-	init_wsocket(refresh_data_graph);
+  init_wsocket(refresh_data_graph);
 </script>
 
 {% end %}

@@ -1,55 +1,55 @@
 <!doctype html>
 <html>
-	<head>
-		<title>{{ page_name }}</title>
-		<meta charset="utf-8" />
-		<link type="text/css" rel="stylesheet" href="/static/alhazen.css"/>
-		<script type="text/javascript" src="/static/alhazen.js"></script>
-	</head>
+  <head>
+    <title>{{ page_name }}</title>
+    <meta charset="utf-8" />
+    <link type="text/css" rel="stylesheet" href="/static/alhazen.css"/>
+    <script type="text/javascript" src="/static/alhazen.js"></script>
+  </head>
  
-	<body>
-		<header>
-			<div class="row">
-				<div class="col-1">{{ page_name }}</div>
-				{% for l, n in page_links %}
-				<div class="col-1"><a href="{{ l }}">{{ n }}</a></div>
-				{% end %}
-				<div class="col-8" id="ws_connection">
-					<label for="host">host:</label><input type="text" id="host" value="{{ listen_address }}"/>
-					<label for="port">port:</label><input type="text" id="port" value="8000"/>
-					<label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
-					<input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
-					<input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-10" id="status_display"></div>
-				<div class="col-10" id="error_display" onclick="document.getElementById('error_display').style.display='none';"></div>
-			</div>
-		</header>
+  <body>
+    <header>
+      <div class="row">
+        <div class="col-1">{{ page_name }}</div>
+        {% for l, n in page_links %}
+          <div class="col-1"><a href="{{ l }}">{{ n }}</a></div>
+        {% end %}
+        <div class="col-8" id="ws_connection">
+          <label for="host">host:</label><input type="text" id="host" value="{{ listen_address }}"/>
+          <label for="port">port:</label><input type="text" id="port" value="8000"/>
+          <label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+          <input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
+          <input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-10" id="status_display"></div>
+        <div class="col-10" id="error_display" onclick="document.getElementById('error_display').style.display='none';"></div>
+      </div>
+    </header>
 
-		<article>
-			{% block article %}
-			{% end %}
-		</article>
+    <article>
+      {% block article %}
+      {% end %}
+    </article>
 
-		<footer>
-			<div class="row" id="hint">
-				<small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham" target="__blank">Alhazem</a> on wikipedia</small>
-			</div>
-			<div class="row" id="logger_area_container">
-				<div class="col-1" >
-					<input type="button" value="hide/show logs" class="data_container" onclick="toggle_element_view('logger_area');">
-					</input>
-					<input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
-					</input>
-				</div>
-				<div class="col-9" >
-					<textarea id="logger_area" rows="10" cols="200" hidden>
-					</textarea>
-				</div>    
-			</div>    
-		</footer>
-	</body>
+    <footer>
+      <div class="row" id="hint">
+        <small>see: <a href="https://en.wikipedia.org/wiki/Ibn_al-Haytham" target="__blank">Alhazem</a> on wikipedia</small>
+      </div>
+      <div class="row" id="logger_area_container">
+        <div class="col-1" >
+          <input type="button" value="hide/show logs" class="data_container" onclick="toggle_element_view('logger_area');">
+          </input>
+          <input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
+          </input>
+        </div>
+        <div class="col-9" >
+          <textarea id="logger_area" rows="10" cols="200" hidden>
+          </textarea>
+        </div>  
+      </div>  
+    </footer>
+  </body>
 
 </html>
