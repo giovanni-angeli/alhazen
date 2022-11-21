@@ -26,7 +26,7 @@ var on_template_clicked = function(action, type, file_name) {
 }
 
 var on_file_selected = function (arg) {
-	refresh_data_graph();
+    refresh_data_graph();
 }
 
 var refresh_file_lists = function () {
@@ -63,13 +63,13 @@ var install_templates = function () {
 }
 
 var logging = function(message){
-	console.log(message);
-	var el = document.getElementById("logger_area");
-	if (el) {
-		let s = new Date().toLocaleString();
-		_ = el.innerHTML.substring(0, 10000);
-		el.innerHTML = "[" + s + "]" + message.substring(0, 100) + "\n" + _;
-	}
+    console.log(message);
+    var el = document.getElementById("logger_area");
+    if (el) {
+        let s = new Date().toLocaleString();
+        _ = el.innerHTML.substring(0, 10000);
+        el.innerHTML = "[" + s + "]" + message.substring(0, 100) + "\n" + _;
+    }
 };
 
 var error_handler = function(data){
@@ -78,24 +78,24 @@ var error_handler = function(data){
 }
 
 var clear_logger_area_view = function(){
-	var el = document.getElementById("logger_area");
+    var el = document.getElementById("logger_area");
     if (window.confirm("comfirm clearing logs?") && el) {
-		el.innerHTML = '';
-	}
+        el.innerHTML = '';
+    }
 };
 
 var toggle_element_view = function(id){
-	var el = document.getElementById(id);
-	if (el) {
-		//~ if (el.style.display == 'block'){
-		if (el.style.visibility != "visible"){
-			el.style.display = 'block';
+    var el = document.getElementById(id);
+    if (el) {
+        //~ if (el.style.display == 'block'){
+        if (el.style.visibility != "visible"){
+            el.style.display = 'block';
             el.style.visibility = "visible";
-		} else {
-			el.style.display = 'none';
+        } else {
+            el.style.display = 'none';
             el.style.visibility = "hidden";
-		}
-	}
+        }
+    }
 };
 
 
@@ -104,89 +104,94 @@ var open_btn_clicked = function () {
 }
 
 var close_btn_clicked = function () {
-	try {
-		ws_instance.close();
-		ws_instance = null;
-	} catch(err) {
-		error_handler("err:" + err);
-	}
+    try {
+        ws_instance.close();
+        ws_instance = null;
+    } catch(err) {
+        error_handler("err:" + err);
+    }
 }
 var send_to_websocket_server = function (object) {
-	if (ws_instance != null) {
-		try {
-			var msg_ = JSON.stringify(object);
-			logging("send_to_websocket_server() msg_:'" + msg_.substring(0, 120) + "'");
-			ws_instance.send(msg_);
-		} catch(err) {
-			error_handler("err:" + err);
-		}
-	} else {
-		error_handler("Cannot send: the web socket is disconnected!");
-	}
+    if (ws_instance != null) {
+        try {
+            var msg_ = JSON.stringify(object);
+            logging("send_to_websocket_server() msg_:'" + msg_.substring(0, 120) + "'");
+            ws_instance.send(msg_);
+        } catch(err) {
+            error_handler("err:" + err);
+        }
+    } else {
+        error_handler("Cannot send: the web socket is disconnected!");
+    }
 }
 
 var on_ws_error = function (evt) {
-	logging("error: " + evt.data);
-	alert("error: " + evt.data);
+    logging("error: " + evt.data);
+    alert("error: " + evt.data);
 }
 
 var on_ws_open = function (evt) {
-	logging("* ws connection open *");
-	document.getElementById("open_btn").disabled = true; 
-	document.getElementById("open_btn").style.color = "gray"; 
-	document.getElementById("close_btn").disabled = false; 
+    logging("* ws connection open *");
+    document.getElementById("open_btn").disabled = true; 
+    document.getElementById("open_btn").style.color = "gray"; 
+    document.getElementById("close_btn").disabled = false; 
     if (ws_on_connect_call_back ) {
         ws_on_connect_call_back();
     }
 }
 
 var on_ws_close = function (evt) {
-	logging("* ws connection closed *");
-	ws_instance = null;
-	document.getElementById("open_btn").disabled = false; 
-	document.getElementById("open_btn").style.color = "red"; 
-	document.getElementById("close_btn").disabled = true; 
-	document.getElementById("close_btn").style.color = "grey"; 
+    logging("* ws connection closed *");
+    ws_instance = null;
+    document.getElementById("open_btn").disabled = false; 
+    document.getElementById("open_btn").style.color = "red"; 
+    document.getElementById("close_btn").disabled = true; 
+    document.getElementById("close_btn").style.color = "grey"; 
 }
 
+// augh: e` questa funzione che dovrebbe catturare l'evento websocket.
+// qui si dovrebbe estrarre gli elementi e i valori da modificare (v. zim)
+// "data" is the json form of the message; 
 var on_ws_message = function (evt) {
-	try {
-		const data = JSON.parse(evt.data);            
-        const el = document.getElementById(data.element_id)
-        el.style.display = 'block';
-        el.style.visibility = "visible";
-        el[data.target] = data.payload; 
-        if (data.class_name) {
-            const els = document.getElementsByClassName(data.class_name);
-            for (let i = 0; i < els.length; i++) {
-                els[i].style.visibility = "visible";
-                els[i].style.display = 'block';
-            };
-        }
-        logging("on_ws_message() " + data.element_id + ', ' + data.target + ', ' + data.class_name + ', ' + data.payload.substring(0, 120));
-	} catch(err) {
-		error_handler("err:" + err);
-	}
+    try {
+        const data = JSON.parse(evt.data);            
+            // non capisco la seguente: element_id cos'e`?
+            const el = document.getElementById(data.element_id)
+            el.style.display = 'block';
+            el.style.visibility = "visible";
+            // che cosa e` data.paylod?
+            el[data.target] = data.payload;
+            if (data.class_name) {
+                const els = document.getElementsByClassName(data.class_name);
+                for (let i = 0; i < els.length; i++) {
+                    els[i].style.visibility = "visible";
+                    els[i].style.display = 'block';
+                };
+            }
+            logging("on_ws_message() " + data.element_id + ', ' + data.target + ', ' + data.class_name + ', ' + data.payload.substring(0, 120));
+    } catch(err) {
+        error_handler("err:" + err);
+    }
 }
 
 var init_wsocket = function (on_connect_call_back) {
     ws_on_connect_call_back = on_connect_call_back;
-	var host = document.getElementById("host").value;
-	var port = document.getElementById("port").value;
-	var uri  = document.getElementById("uri").value;
-	try {
-		if (ws_instance) {
-			ws_instance.close();
-		}
-		var resource = "ws://" + host + ":" + port + uri;
-		logging("connecting to: " + resource);
-		ws_instance = new WebSocket(resource);
-		ws_instance.onerror   = on_ws_error  ; 
-		ws_instance.onopen    = on_ws_open   ;  
-		ws_instance.onclose   = on_ws_close  ;
-		ws_instance.onmessage = on_ws_message;
-	} catch(err) {
-		error_handler("err:" + err);
-	}
+    var host = document.getElementById("host").value;
+    var port = document.getElementById("port").value;
+    var uri  = document.getElementById("uri").value;
+    try {
+        if (ws_instance) {
+            ws_instance.close();
+        }
+        var resource = "ws://" + host + ":" + port + uri;
+        logging("connecting to: " + resource);
+        ws_instance = new WebSocket(resource);
+        ws_instance.onerror   = on_ws_error  ; 
+        ws_instance.onopen    = on_ws_open   ;  
+        ws_instance.onclose   = on_ws_close  ;
+        ws_instance.onmessage = on_ws_message;
+    } catch(err) {
+        error_handler("err:" + err);
+    }
 }
 
