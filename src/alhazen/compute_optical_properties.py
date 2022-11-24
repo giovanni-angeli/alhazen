@@ -234,7 +234,7 @@ def layer_refractive_index(json_layer):
 
 def wl_grid(wl_list, params):
     """
-    Build the wl grid for output.
+    Build the wavelength grid for output.
     """
 
     # TODO: implement 'auto' option (ignore user provided min and max)
@@ -261,7 +261,7 @@ def wl_grid(wl_list, params):
     return wl
 
 
-def prepare_ScatteringMatrix_input(json_structure, params):
+def prepare_ScatteringMatrix_input(json_structure, params, wl_list=None):
     """
     Prepare the input for optical.ScatteringMatrix.
 
@@ -277,7 +277,10 @@ def prepare_ScatteringMatrix_input(json_structure, params):
         _ri.append(list(list(zip(*lri))[1]))
 
     # prepare target grid
-    wl = wl_grid(_wl, params)
+    if wl_list:
+        wl = wl_list
+    else:
+        wl = wl_grid(_wl, params)
 
     SM_structure = []
     for i, layer in enumerate(json_structure['layers']):
@@ -308,10 +311,10 @@ def prepare_ScatteringMatrix_input(json_structure, params):
     return wl, SM_structure
 
 
-def compute_RT(json_structure, params):
+def compute_RT(json_structure, params, wl_list=None):
 
     # prepare structure data
-    wl, SM_structure = prepare_ScatteringMatrix_input(json_structure, params)
+    wl, SM_structure = prepare_ScatteringMatrix_input(json_structure, params, wl_list)
 
     # get incidence angle in degrees and convert it into radians
     incidence_angle = np.pi/180 * \
@@ -332,6 +335,29 @@ def compute_RT(json_structure, params):
 
     return R, T
 
+def compute_chi2(json_structure, experimental_data, params):
+
+    chi2_vars = []
+    if params['chi2_edit_panel'].get('chi2_R',None):
+        chi2_vars.append('R')
+    if params['chi2_edit_panel'].get('chi2_T',None):
+        chi2_vars.append('T')
+
+    # get wl_exp,Rexp,Texp (and error, if any) from experimental_data (to be defined)
+    # if not error: Rerr,Terr <- get_default_error || get_user_defined_error
+    wl_list = []
+
+    # compute R,T onto data wl_grid
+    Rmod, Tmod = compute_RT(json_structure, params, wl_list=wl_list)
+
+    # compute chi2(Rexp, Texp, Rerr, Terr, Rmod, Tmod)
+    chi2 = 0
+    if 'R' in chi2_vars:
+        chi2 += 1e-3
+    if 'T' in chi2_vars:
+        chi2 += 1e-3
+
+    return chi2
 
 def get_description(_structure, params):
 

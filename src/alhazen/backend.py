@@ -13,7 +13,7 @@ import json
 import traceback
 import csv
 
-from alhazen.compute_optical_properties import (compute_RT, get_description)
+from alhazen.compute_optical_properties import (compute_RT, compute_chi2, get_description)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -88,11 +88,14 @@ class Backend:
 
     def load_measure(self, name=None):
 
+        # AUGH: mi sfugge il gioco tra "name" e "self.measure_file" qui ...
         if name is None and self.measure_file != 'None':
             name = self.measure_file
         logging.info(f"name:{name}")
 
         self._measure = []
+        # AUGH: ... e qui (BTW, l'istruzione qui di seguito starebbe meglio
+        # dentro l'if).
         self.measure_file = name
         if name:
             self._measure = [[], []]
@@ -105,10 +108,14 @@ class Backend:
                         l = float(row[0])
                         R = float(row[1])
                         T = float(row[2])
+                        # FIXME: may/should have more columns containing
+                        # measuerement errors
                         self._measure[0].append((l, R))
                         self._measure[1].append((l, T))
 
     def refresh_model_data(self, params):
+        # TODO: backend should call different functions depending on actions
+        # from frontend
 
         show_R = True if params.get('plot_edit_panel').get('show_R') else False
         show_T = True if params.get('plot_edit_panel').get('show_T') else False
@@ -135,7 +142,11 @@ class Backend:
                 data.append(("Ae", serie_A))
 
 
+        chi2 = None
+        if self._structure and self._measure:
+            chi2 = compute_chi2(self._structure, self._measure, params)
+
         message = get_description(self._structure, params)
 
-        return data, message
+        return data, chi2, message
 

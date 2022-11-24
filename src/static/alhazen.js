@@ -45,11 +45,13 @@ var refresh_data_graph = function () {
 
     var plot_formData = new FormData(document.getElementById('plot_edit_panel_form'));
     var model_formData = new FormData(document.getElementById('model_edit_panel_form'));
+    var chi2_formData = new FormData(document.getElementById('chi2_panel_form'));
     _object = {
         "command": "refresh_data_graph", 
         "params": {
             'plot_edit_panel': Object.fromEntries(plot_formData.entries()),
-            'model_edit_panel': Object.fromEntries(model_formData.entries())
+            'model_edit_panel': Object.fromEntries(model_formData.entries()),
+            'chi2_edit_panel': Object.fromEntries(chi2_formData.entries())
         }
     }
     send_to_websocket_server(_object);
@@ -155,7 +157,6 @@ var on_ws_close = function (evt) {
 var on_ws_message = function (evt) {
     try {
         const data = JSON.parse(evt.data);            
-            // non capisco la seguente: element_id cos'e`?
             const el = document.getElementById(data.element_id)
             el.style.display = 'block';
             el.style.visibility = "visible";
