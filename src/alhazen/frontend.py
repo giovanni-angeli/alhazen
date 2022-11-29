@@ -252,7 +252,7 @@ class Frontend(tornado.web.Application):
             await self.send_message_to_UI("pygal_description_container", message, ws_socket=ws_socket)
 
             # augh: qui passo chi2 alla UI, ma è ancora in divenire
-            await self.send_message_to_UI(element_id="chi2", target="innerHTML", payload=str(chi2), ws_socket=ws_socket)
+            await self.send_message_to_UI(element_id="chi2", target="innerHTML", payload="<strong>Result: "+str(chi2)+"</strong>", ws_socket=ws_socket)
 
         _msg = f"structure_file:{self.backend.structure_file}"
         _msg += f", measure_file:{self.backend.measure_file}"
