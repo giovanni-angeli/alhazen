@@ -1,0 +1,43 @@
+<div class="col-8" style="text-align:left;">
+
+  <!--p>This area is for the "menu" (structure, exp. data, model). Structure "new" points to a page where a structure can be edited or uploaded; Data new is for uploading expermental data; model is more complex: there should be the possibility to select more than one component of the model (and alternatives)</p-->
+
+  <div class="col-3">
+    structure:<br />
+    <select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector" style="width:90%;">
+      {% for name in structure_file_list %}
+      {%   if structure_file == name %}
+        <option value="{{ name }}" selected='on'>{{ name }}</option>
+      {%   else %}
+        <option value="{{ name }}">{{ name }}</option>
+      {%   end %}
+      {% end %}
+        <option value="New">New</option>
+    </select>
+  </div>
+
+  <div class="col-3">
+    experimental data:<br />
+    <select id="measure_selector" onchange="on_file_selected('measure');" class="file_selector" style="width:90%;">
+      {% for name in measure_file_list %}
+      {%   if measure_file == name %}
+        <option value="{{ name }}" selected='on'>{{ name }}</option>
+      {%   else %}
+        <option value="{{ name }}">{{ name }}</option>
+      {%   end %}
+      {% end %}
+        <option value="Load">Load</option>
+    </select>
+  </div>
+
+  <div class="col-3">
+    model:<br />
+    <select id="model_selector" onchange="on_model_selected('model');" class="file_selector" style="width:90%;">
+        <option value=""></option>
+        <option value="Jellison">Jellison</option>
+        <option value="Lorentz">Lorentz</option>
+        <option value="Edit">Edit</option>
+    </select>
+  </div>
+
+</div>

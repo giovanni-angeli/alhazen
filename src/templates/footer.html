@@ -1,0 +1,20 @@
+    <footer>
+      <div><hr></hr></div>
+        <div class="col-10" id="ws_connection">
+          <label for="host">host:</label><input type="text" id="host" value="{{ listen_address }}"/>
+          <label for="port">port:</label><input type="text" id="port" value="8001"/>
+          <label for="uri">uri:</label><input type="text" id="uri" value="/websocket"/>
+          <input type="submit" id="open_btn" value="connect" onclick="open_btn_clicked();"/>
+          <input type="submit" id="close_btn" value="disconnect" onclick="close_btn_clicked();" disabled="true"/>
+        </div>
+        <div class="col-1" >
+          <input type="button" value="hide/show logs" class="data_container" onclick="toggle_element_view('logger_area');">
+          </input>
+          <input type="button" value="clear logs" class="data_container" onclick="clear_logger_area_view();">
+          </input>
+        </div>
+        <div class="col-8" >
+          <textarea id="logger_area" rows="10" cols="200" hidden></textarea>
+        </div>
+      </div>
+    </footer>
