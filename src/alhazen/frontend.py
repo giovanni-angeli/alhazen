@@ -29,7 +29,7 @@ import pygal  # pylint: disable=import-error
 from alhazen.backend import (STRUCTURE_FILES_PATH, MEASURE_FILES_PATH)
 
 WS_URI = r'/websocket'
-LISTEN_PORT = 8000
+LISTEN_PORT = 8001
 LISTEN_ADDRESS = '127.0.0.1'
 # ~ LISTEN_ADDRESS = '*'
 
@@ -212,7 +212,8 @@ class Frontend(tornado.web.Application):
 
     async def refresh_data_graph(self, params, ws_socket):
 
-        await self.send_message_to_UI("status_display", 'recalculating model, please wait...', ws_socket=ws_socket)
+        status_message = 'recalculating model'
+        await self.send_message_to_UI("status_display", f"{status_message} ...<br />please wait", ws_socket=ws_socket)
 
         self.backend.load_structure()
         self.backend.load_measure()
@@ -249,14 +250,15 @@ class Frontend(tornado.web.Application):
             await self.send_message_to_UI("pygal_data_container",
                                           payload='/static/temp_chart.svg', target='data', ws_socket=ws_socket)
 
-            await self.send_message_to_UI("pygal_description_container", message, ws_socket=ws_socket)
+            #await self.send_message_to_UI("pygal_description_container", message, ws_socket=ws_socket)
 
             # augh: qui passo chi2 alla UI, ma è ancora in divenire
             await self.send_message_to_UI(element_id="chi2", target="innerHTML", payload="<strong>Result: "+str(chi2)+"</strong>", ws_socket=ws_socket)
 
-        _msg = f"structure_file:{self.backend.structure_file}"
-        _msg += f", measure_file:{self.backend.measure_file}"
-        await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket=ws_socket)
+        #_msg = f"structure_file:{self.backend.structure_file}"
+        #_msg += f", measure_file:{self.backend.measure_file}"
+        #await self.send_message_to_UI("status_display", f"done.<br/>{_msg}", ws_socket=ws_socket)
+        await self.send_message_to_UI("status_display", f"{status_message} ...<br />done.", ws_socket=ws_socket)
 
     async def refresh_file_lists(self, ws_socket):
 

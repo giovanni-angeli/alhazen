@@ -1,16 +1,24 @@
-<h3>model params:</h4>
+<h3>Incident radiation:</h4>
 
 <!-- perche' action qui sotto ha valore ";"? -->
 <form id="model_edit_panel_form" action=";">
 
-  <p>
+  <!--p>
     <label>thickness of active layer (nm):</label>
     <input type="number" value=-1 onchange="refresh_data_graph();" name="thickness_active_layer"></input>
-  </p>
+  </p-->
 
   <p>
     <label>angle of incidence (degrees):</label>
     <input type="number" value=0 onchange="refresh_data_graph();" name="incidence_angle"></input>
+  </p>
+
+  <p>
+    <label>spectrum:</label>
+      <select id="structure_selector" onchange="on_file_selected('structure');" class="file_selector" style="width:90%;">
+        <option value="" selected='on'>TODO: add spectrum files</option>
+        <option value="New">New</option>
+    </select>
   </p>
 
 </form>

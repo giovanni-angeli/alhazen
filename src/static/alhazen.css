@@ -10,7 +10,9 @@ body {
 #status_display {
 	color: #990000;
 	background-color: #FFFF99;
-	padding: 10px;
+	padding: 5px;
+        height:14em;
+        overflow:scroll;
 }
 #params_panel {
 	background-color: #EEEEEE;
