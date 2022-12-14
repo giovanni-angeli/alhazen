@@ -29,7 +29,7 @@ import pygal  # pylint: disable=import-error
 from alhazen.backend import (STRUCTURE_FILES_PATH, MEASURE_FILES_PATH)
 
 WS_URI = r'/websocket'
-LISTEN_PORT = 8001
+LISTEN_PORT = 8000
 LISTEN_ADDRESS = '127.0.0.1'
 # ~ LISTEN_ADDRESS = '*'
 
