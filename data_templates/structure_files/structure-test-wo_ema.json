@@ -5,44 +5,44 @@
         {
         "name": "air",
         "description": "semiinfinite layer of air above the structure",
-        "active": false,
         "components": [
             { "material_file_name": "air.in3", "fraction": 100 }
         ],
-        "thickness": 0,
-        "coherence": true,
-        "roughness": 0
+        "active": false,
+        "coherent": true,
+        "roughness": 0,
+        "thickness": 0
         },
         {
         "name": "a-Si",
         "description": "amorpous silicon",
-        "active": true,
         "components": [
             { "material_file_name": "Amorfh.in3", "fraction": 100 }
         ],
-        "thickness": 950,
-        "coherence": true,
-        "roughness": 0
+        "active": true,
+        "coherent": true,
+        "roughness": 0,
+        "thickness": 950
         },
         {
         "name": "glass",
         "description": "substrate layer",
-        "active": true,
         "components": [
             { "material_file_name": "corning.in3", "fraction": 100 }        ],
-        "thickness": 1e7,
-        "coherence": false,
-        "roughness": 0
+        "active": true,
+        "coherent": false,
+        "roughness": 0,
+        "thickness": 1e7
         },
         {
         "name": "air",
         "description": "semiinfinite layer of air below the structure",
-        "active": false,
         "components": [
             { "material_file_name": "air.in3", "fraction": 100 }        ],
-        "thickness": 0,
-        "coherence": true,
-        "roughness": 0
+        "active": false,
+        "coherent": true,
+        "roughness": 0,
+        "thickness": 0
         }
     ]
 }
