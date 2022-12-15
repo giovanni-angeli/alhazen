@@ -63,6 +63,7 @@ class Setup(BaseRequestHandler):  # pylint: disable=too-few-public-methods
             'results': results,
             'errors': errors,
             'listen_address': LISTEN_ADDRESS,
+            'listen_port': LISTEN_PORT,
         }
 
         return ctx
