@@ -29,8 +29,8 @@ import pygal  # pylint: disable=import-error
 from alhazen.backend import (STRUCTURE_FILES_PATH, MEASURE_FILES_PATH)
 
 WS_URI = r'/websocket'
-LISTEN_PORT = 8000
 LISTEN_ADDRESS = '127.0.0.1'
+LISTEN_PORT = 8000
 # ~ LISTEN_ADDRESS = '*'
 
 # ~ BROWSER = "firefox"
@@ -111,6 +111,7 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
             'structure_file_list': structure_file_list,
             'measure_file_list': measure_file_list,
             'listen_address': LISTEN_ADDRESS,
+            'listen_port': LISTEN_PORT,
         }
 
         logging.debug(f"ctx:{ctx}")
@@ -219,6 +220,9 @@ class Frontend(tornado.web.Application):
         self.backend.load_structure()
         self.backend.load_measure()
 
+        # TODO: questo deve mandarmi i dati che chiedo attraverso la UI;
+        # p.es. devo poter scegliere se plottare R,T oppure n,k della
+        # struttura, del layer?
         data, chi2, message = self.backend.refresh_model_data(params)
 
         if data:
