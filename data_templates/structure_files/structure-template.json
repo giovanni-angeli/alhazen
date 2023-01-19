@@ -10,7 +10,7 @@
             { "material_file_name": ""                        , "fraction":   0 },
             { "material_file_name": ""                        , "fraction":   0 }
         ],
-        "active": false,
+        "texturized": false,
         "coherent": true,
         "roughness": 0,
         "thickness": 0
