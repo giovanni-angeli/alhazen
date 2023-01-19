@@ -212,7 +212,7 @@ class Frontend(tornado.web.Application):
             for ws_ch in self.web_socket_channels:
                 await ws_ch.write_message(msg)
 
-    async def refresh_data_graph(self, params, ws_socket):
+    async def refresh_plot(self, params, ws_socket):
 
         status_message = 'recalculating model'
         await self.send_message_to_UI("status_display", f"{status_message} ...<br />please wait", ws_socket=ws_socket)
@@ -368,10 +368,10 @@ class Frontend(tornado.web.Application):
         self.backend.install_templates()
         await self.refresh_file_lists(ws_socket)
 
-    async def _cmd_refresh_data_graph(self, params, ws_socket):  # pylint: disable=unused-private-member
+    async def _cmd_refresh_plot(self, params, ws_socket):  # pylint: disable=unused-private-member
 
         logging.info(f"params:{json.dumps(params, indent=2)}")
-        await self.refresh_data_graph(params, ws_socket)
+        await self.refresh_plot(params, ws_socket)
 
     async def _cmd_save_template(self, params, ws_socket):  # pylint: disable=unused-private-member
 

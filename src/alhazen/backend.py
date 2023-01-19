@@ -115,7 +115,12 @@ class Backend:
 
     def refresh_model_data(self, params):
         # TODO: backend should call different functions depending on actions
-        # from frontend
+        # from frontend (*); "data" should be "variable" in the sense that it
+        # may represent different stuff: it is better to put it in a self
+        # descriptive form (dict?).
+        # (*) or maybe frontend should call different backend functions
+        # TODO: the name "refresh_model_data" can be non convenient: it
+        # should be "compute something"
 
         show_R = True if params.get('plot_edit_panel').get('show_R') else False
         show_T = True if params.get('plot_edit_panel').get('show_T') else False

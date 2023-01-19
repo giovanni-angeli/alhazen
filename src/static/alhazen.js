@@ -26,7 +26,7 @@ var on_template_clicked = function(action, type, file_name) {
 }
 
 var on_file_selected = function (arg) {
-    refresh_data_graph();
+    refresh_plot();
 }
 
 var refresh_file_lists = function () {
@@ -34,7 +34,7 @@ var refresh_file_lists = function () {
     send_to_websocket_server(object);
 };
 
-var refresh_data_graph = function () {
+var refresh_plot = function () {
 
     var _object = null;
 
@@ -47,7 +47,7 @@ var refresh_data_graph = function () {
     var model_formData = new FormData(document.getElementById('model_edit_panel_form'));
     var chi2_formData = new FormData(document.getElementById('chi2_panel_form'));
     _object = {
-        "command": "refresh_data_graph", 
+        "command": "refresh_plot", 
         "params": {
             'plot_edit_panel': Object.fromEntries(plot_formData.entries()),
             'model_edit_panel': Object.fromEntries(model_formData.entries()),
