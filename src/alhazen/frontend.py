@@ -212,6 +212,12 @@ class Frontend(tornado.web.Application):
             for ws_ch in self.web_socket_channels:
                 await ws_ch.write_message(msg)
 
+    async def refresh_structure(self, params, ws_socket):
+        '''
+        Questa manda alla UI la struttura in forma di dict
+        '''
+        pass
+
     async def refresh_plot(self, params, ws_socket):
 
         status_message = 'recomputing optical properties'
@@ -355,6 +361,7 @@ class Frontend(tornado.web.Application):
             await self.refresh_file_lists(ws_socket)
 
     async def _cmd_structure_selected(self, params, ws_socket):  # pylint: disable=unused-private-member, unused-argument
+
         _name = params
         self.backend.load_structure(_name)
 
@@ -367,6 +374,11 @@ class Frontend(tornado.web.Application):
 
         self.backend.install_templates()
         await self.refresh_file_lists(ws_socket)
+
+    async def _cmd_refresh_structure(self, params, ws_socket):  # pylint: disable=unused-private-member
+
+        logging.info(f"params:{json.dumps(params, indent=2)}")
+        await self.refresh_structure(params, ws_socket)
 
     async def _cmd_refresh_plot(self, params, ws_socket):  # pylint: disable=unused-private-member
 

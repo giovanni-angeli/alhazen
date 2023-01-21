@@ -3,6 +3,7 @@ var ws_instance;
 var ws_on_connect_call_back;  
 
 
+/* functions used in setup */
 var on_save_file_button_clicked = function() {
     const file_name = document.getElementById("view_file_name").value;
     const type = document.getElementById("view_file_type").innerHTML;
@@ -25,23 +26,37 @@ var on_template_clicked = function(action, type, file_name) {
     };
 }
 
-var on_file_selected = function (arg) {
-    refresh_plot();
-}
-
 var refresh_file_lists = function () {
     object = {"command": "refresh_file_lists", "params": {}};
     send_to_websocket_server(object);
 };
+/* /functions used in setup */
 
-var refresh_plot = function () {
+var on_file_selected = function (arg) {
 
     var _object = null;
 
-    _object = {"command": "structure_selected", "params": document.getElementById("structure_selector").value};
+    _object = {"command": arg+"_selected", "params": document.getElementById(arg+"_selector").value};
     send_to_websocket_server(_object);
-    _object = {"command": "measure_selected", "params": document.getElementById("measure_selector").value};
+    if (arg=="structure") {
+        refresh_structure();
+    }
+    refresh_plot();
+}
+
+var refresh_structure = function () {
+
+    var _object = null;
+
+    _object = {"command": "refresh_structure", "params": document.getElementById("structure_selector").value}
     send_to_websocket_server(_object);
+};
+
+var refresh_plot = function () {
+
+    /* TODO: rimuovere il chi2 da questa funzione!!! */
+
+    var _object = null;
 
     var plot_formData = new FormData(document.getElementById('plot_edit_panel_form'));
     var model_formData = new FormData(document.getElementById('model_edit_panel_form'));
