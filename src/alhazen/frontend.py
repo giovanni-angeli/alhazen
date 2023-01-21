@@ -214,7 +214,7 @@ class Frontend(tornado.web.Application):
 
     async def refresh_plot(self, params, ws_socket):
 
-        status_message = 'recalculating model'
+        status_message = 'recomputing optical properties'
         await self.send_message_to_UI("status_display", f"{status_message} ...<br />please wait", ws_socket=ws_socket)
 
         self.backend.load_structure()
@@ -223,7 +223,7 @@ class Frontend(tornado.web.Application):
         # TODO: questo deve mandarmi i dati che chiedo attraverso la UI;
         # p.es. devo poter scegliere se plottare R,T oppure n,k della
         # struttura, del layer?
-        data, chi2, message = self.backend.refresh_model_data(params)
+        data, chi2 = self.backend.refresh_model_data(params)
 
         if data:
             line_chart = pygal.XY(

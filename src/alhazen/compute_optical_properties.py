@@ -358,12 +358,3 @@ def compute_chi2(json_structure, experimental_data, params):
         chi2 += 1e-3
 
     return chi2
-
-def get_description(_structure, params):
-
-    message = f"params: {params}<br/>"
-    message += "layers: "
-    for k, v in _structure.get('structure', {}).items():
-        message += f"{k} {v.get('thickness')}(µ), "
-
-    return message

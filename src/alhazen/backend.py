@@ -151,7 +151,5 @@ class Backend:
         if self._structure and self._measure:
             chi2 = compute_chi2(self._structure, self._measure, params)
 
-        message = get_description(self._structure, params)
-
-        return data, chi2, message
+        return data, chi2
 
