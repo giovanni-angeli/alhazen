@@ -14,8 +14,8 @@ from alhazen.frontend import Frontend
 from alhazen.backend import Backend
 
 
-# ~ LOG_LEVEL = "DEBUG"
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
+# ~ LOG_LEVEL = "INFO"
 # ~ LOG_LEVEL = "WARNING"
 # ~ LOG_LEVEL = "ERROR"
 
@@ -33,7 +33,9 @@ TORNADO_APPLICATION_OPTIONS = dict(
 
 def start(settings):
 
+    # augh: normalmente settings e` vuoto (vedi commento in main)
     backend = Backend(settings)
+    # questo inizializza il frontend dicendogli chi e` il suo backend
     frontend = Frontend(TORNADO_APPLICATION_OPTIONS, backend)
 
     for instance in (backend, frontend):
@@ -63,6 +65,7 @@ def main():
 
     set_logging(LOG_LEVEL)
 
+    # da qui ...
     pth = ''
     if sys.argv[1:]:
         pth = sys.argv[1]
@@ -70,6 +73,8 @@ def main():
     logging.warning(f"time:{time.asctime()} starting application. settings pth:'{pth}'.")
 
     settings = load_settings(pth)
+    # ... a qui serve pr caricare eventuali "settings" passati come
+    # argomento. Di fatto, non utilizzato.
     start(settings)
     asyncio.get_event_loop().run_forever()
 
