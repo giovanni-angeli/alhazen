@@ -1,7 +1,6 @@
 {
     "name": "simple structure",
     "description": "this structure is just an example with few layers",
-    "modelled_material_file_name": "a material can be identified by its file name; put here the file name",
     "layers": [
         {
         "name": "air",

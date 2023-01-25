@@ -1,3 +1,9 @@
+# lines must be removed beginning with "#" must be removed
+# This is to document the way a material is tagged for modeling.
+# Optical models produce the equivalent of a "material_file_name".
+# Therefore, to say that a material is modeled, we decided to put the value
+# "modelled" for the "material_file_name" key. This can even be part of an
+# EMA (though usually it is not).
 {
     "name": "simple structure",
     "description": "this structure is just an example with few layers",
