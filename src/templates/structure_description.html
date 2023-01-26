@@ -1,0 +1,38 @@
+<div style="text-align:left;">
+  <p>
+    structure: <strong>{{ structure['name'] }}</strong>
+    <input type="button" name="edit" value="edit">
+    <input type="button" name="save" value="save">
+  </p>
+  <hr />
+  <table>
+    <tr>
+      <th>name</th>
+      <th>file</th>
+      <th>texturized</th>
+      <th>coherent</th>
+      <th>roughness (nm)</th>
+      <th>thickness (nm)</th>
+    </tr>
+    {% for layer in structure['layers'] %}
+    <tr>
+      <td>{{ layer['name'] }}</td>
+      {% if layer['components'][0]['fraction'] == 100 %}
+      <td>{{ layer['components'][0]['material_file_name'] }}</td>
+      {% else %}
+      <td>
+        <select>
+        {% for material in layer['components'] %}
+        <option>{{ material['material_file_name'] }}, {{ material['fraction'] }}</option>
+        {% end %}
+        </select>
+      </td>
+      {% end %}
+      <td style="text-align: center;"><input type="checkbox" name="texturized" {% if layer['texturized'] %} checked {% end %} /></td>
+      <td style="text-align: center;"><input type="checkbox" name="coherent"   {% if layer['coherent'] %} checked {% end %} /></td>
+      <td style="text-align: center;"><input type="text" name="roughness" value={{ layer['roughness'] }} size="3"/></td>
+      <td style="text-align: center;"><input type="text" name="thickness" value={{ layer['thickness'] }} size="3"/></td>
+    </tr>
+    {% end %}  
+  </table>
+<div>

@@ -153,3 +153,6 @@ class Backend:
 
         return data, chi2
 
+    def get_structure(self):
+        return self._structure
+

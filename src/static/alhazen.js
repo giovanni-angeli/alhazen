@@ -30,22 +30,51 @@ var refresh_file_lists = function () {
     object = {"command": "refresh_file_lists", "params": {}};
     send_to_websocket_server(object);
 };
+
+var install_templates = function () {
+    if (confirm("confirm install templates" + "?\n (will overwrite existent copies)")) {
+        var _object = {"command": "install_templates", "params": null};
+        send_to_websocket_server(_object);
+    }
+}
 /* /functions used in setup */
 
+/* main page actions */
 var on_file_selected = function (arg) {
 
+    /* if a file is selected (or the selection changed) in the main page, it
+     * means that the plot must be refreshed. In addition, if the file is a
+     * structure file, the structure dialog must also be refreshed
+     */
     var _object = null;
 
+    /* send a "command" to the frontend to apply the relative python
+     * function there.
+     */
     _object = {"command": arg+"_selected", "params": document.getElementById(arg+"_selector").value};
     send_to_websocket_server(_object);
-    if (arg=="structure") {
+
+    /* refresh the structure (call the functions below that send all the
+     * necessary information to python to rebuild the plot.
+     */
+    refresh_plot();
+
+    /* if the file selected is a structure file, it call the functions below
+     * to refresh the structure
+     */
+    /*
+    if (arg == "structure") {
         refresh_structure();
     }
-    refresh_plot();
+    */
+    refresh_structure();
 }
 
 var refresh_structure = function () {
 
+    /* send to python the "command" to refresh the html containing the
+     * structure description
+     */
     var _object = null;
 
     _object = {"command": "refresh_structure", "params": document.getElementById("structure_selector").value}
@@ -71,14 +100,9 @@ var refresh_plot = function () {
     }
     send_to_websocket_server(_object);
 };
+/* /main page actions */
 
-var install_templates = function () {
-    if (confirm("confirm install templates" + "?\n (will overwrite existent copies)")) {
-        var _object = {"command": "install_templates", "params": null};
-        send_to_websocket_server(_object);
-    }
-}
-
+/* logging */
 var logging = function(message){
     console.log(message);
     var el = document.getElementById("logger_area");
@@ -115,7 +139,7 @@ var toggle_element_view = function(id){
     }
 };
 
-
+/* websocket */
 var open_btn_clicked = function () {
     init_wsocket();
 }

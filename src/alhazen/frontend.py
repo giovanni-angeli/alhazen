@@ -23,6 +23,7 @@ import tornado.httpserver     # pylint: disable=import-error
 import tornado.ioloop         # pylint: disable=import-error
 import tornado.websocket      # pylint: disable=import-error
 import tornado.options        # pylint: disable=import-error
+import tornado.template       # pylint: disable=import-error
 
 import pygal  # pylint: disable=import-error
 
@@ -103,9 +104,12 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
         structure_file_list = [''] + os.listdir(STRUCTURE_FILES_PATH)
         measure_file_list = [''] + os.listdir(MEASURE_FILES_PATH)
 
+        json_structure = self.parent.backend.get_structure()
+
         ctx = {
             'page_name': 'Alhazen graph page',
             'page_links': [('/setup', 'conf page'), ],
+            'structure': json_structure,
             'structure_file': self.parent.backend.structure_file,
             'measure_file': self.parent.backend.measure_file,
             'structure_file_list': structure_file_list,
@@ -116,9 +120,7 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
 
         logging.debug(f"ctx:{ctx}")
 
-        ret = self.render("index.html", **ctx)
-
-        return ret
+        return self.render("index.html", **ctx)
 
 
 class WebsockHandler(tornado.websocket.WebSocketHandler):
@@ -213,10 +215,13 @@ class Frontend(tornado.web.Application):
                 await ws_ch.write_message(msg)
 
     async def refresh_structure(self, params, ws_socket):
-        '''
-        Questa manda alla UI la struttura in forma di dict
-        '''
-        pass
+
+        structure = self.backend.get_structure()
+        print(structure)
+        # TODO: verificare la costruzione dell'html con il template
+        tmpl_loader = tornado.template.Loader("src/templates/")
+        struct_descr = tmpl_loader.load('structure_description.html').generate(structure=structure).decode()
+        await self.send_message_to_UI("structure_description_container", payload=struct_descr, ws_socket=ws_socket)
 
     async def refresh_plot(self, params, ws_socket):
 
