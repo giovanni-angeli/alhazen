@@ -1,7 +1,11 @@
 <div class="row">
 
-  {% include 'core-control.html' %}
-  {% include 'core-structure.html' %}
-  {% include 'core-plot.html' %}
+  <div class="col-2">
+    {% include 'core-control.html' %}
+  </div>
+  <div class="col-8" style="border-style: solid none none solid; border-width: 2px; border-color: black;">
+    {% include 'core-structure.html' %}
+    {% include 'core-plot.html' %}
+  </div>
 
 </div>
