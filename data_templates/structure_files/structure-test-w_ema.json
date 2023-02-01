@@ -3,47 +3,47 @@
     "description": "this structure is just an example with few layers",
     "layers": [
         {
-        "name": "air",
-        "description": "semiinfinite layer of air above the structure",
-        "components": [
-            { "material_file_name": "air.in3", "fraction": 100 }
-        ],
-        "texturized": false,
-        "coherent": true,
-        "roughness": 0,
-        "thickness": 0
+            "name": "air",
+            "description": "semiinfinite layer of air above the structure",
+            "components": [
+                { "material_file_name": "air.in3", "fraction": 100 }
+            ],
+            "texturized": false,
+            "coherent": true,
+            "roughness": 0,
+            "thickness": 0
         },
         {
-        "name": "EMA",
-        "description": "EMA layer",
-        "components": [
-            { "material_file_name": "silicon.in3", "fraction":  50 },
-            { "material_file_name": "quartz.in3" , "fraction":  50 }
-        ],
-        "texturized": false,
-        "coherent": true,
-        "roughness": 0,
-        "thickness": 950
+            "name": "EMA",
+            "description": "EMA layer",
+            "components": [
+                { "material_file_name": "silicon.in3", "fraction":  50 },
+                { "material_file_name": "quartz.in3" , "fraction":  50 }
+            ],
+            "texturized": false,
+            "coherent": true,
+            "roughness": 0,
+            "thickness": 950
         },
         {
-        "name": "glass",
-        "description": "glass",
-        "components": [
-            { "material_file_name": "corning.in3", "fraction": 100 }        ],
-        "texturized": false,
-        "coherent": false,
-        "roughness": 0,
-        "thickness": 1e7
+            "name": "glass",
+            "description": "glass",
+            "components": [
+                { "material_file_name": "corning.in3", "fraction": 100 }        ],
+            "texturized": false,
+            "coherent": false,
+            "roughness": 0,
+            "thickness": 1e7
         },
         {
-        "name": "air",
-        "description": "semiinfinite layer of air below the structure",
-        "components": [
-            { "material_file_name": "air.in3", "fraction": 100 }        ],
-        "texturized": false,
-        "coherent": true,
-        "roughness": 0,
-        "thickness": 0
+            "name": "air",
+            "description": "semiinfinite layer of air below the structure",
+            "components": [
+                { "material_file_name": "air.in3", "fraction": 100 }        ],
+            "texturized": false,
+            "coherent": true,
+            "roughness": 0,
+            "thickness": 0
         }
     ]
 }
