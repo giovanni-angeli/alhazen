@@ -333,7 +333,20 @@ def compute_RT(json_structure, params, wl_list=None):
     for l, r in zip(wl, Tonly.tolist()):
         T.append((l, r*100))
 
-    return R, T
+    return [ R, T ]
+
+def get_lRT(exp_data):
+
+    '''
+    rearrange experiemntal data into 3 lists
+    assumes R and T measured on the same wavelength set (see
+    backend.load_measure)
+    '''
+    l = [ exp_data[0][i][0] for i in range(len(exp_data[0])) ]
+    R = [ exp_data[0][i][1] for i in range(len(exp_data[0])) ]
+    T = [ exp_data[1][i][1] for i in range(len(exp_data[0])) ]
+
+    return l,R,T
 
 def compute_chi2(json_structure, experimental_data, params):
 
@@ -345,16 +358,29 @@ def compute_chi2(json_structure, experimental_data, params):
 
     # get wl_exp,Rexp,Texp (and error, if any) from experimental_data (to be defined)
     # if not error: Rerr,Terr <- get_default_error || get_user_defined_error
-    wl_list = []
+    wl_list, Rexp, Texp = get_lRT(experimental_data)
 
-    # compute R,T onto data wl_grid
-    Rmod, Tmod = compute_RT(json_structure, params, wl_list=wl_list)
+    # compute R,T onto experimental wl_list
+    model_data = compute_RT(json_structure, params, wl_list=wl_list)
+    _, Rmod, Tmod = get_lRT(model_data)
 
-    # compute chi2(Rexp, Texp, Rerr, Terr, Rmod, Tmod)
-    chi2 = 0
-    if 'R' in chi2_vars:
-        chi2 += 1e-3
-    if 'T' in chi2_vars:
-        chi2 += 1e-3
+    _Rmod = np.asarray(Rmod[0])
+    _Rexp = np.asarray(Rexp)
+    _Rerr = np.asarray( [1 for _ in Rmod] )
+    ChiR = np.sum( ( _Rmod - _Rexp )**2 / _Rerr )
+
+    _Tmod = np.asarray(Tmod[0])
+    _Texp = np.asarray(Texp)
+    _Terr = np.asarray( [1 for _ in Tmod] )
+    ChiT = np.sum( ( _Tmod - _Texp )**2 / _Terr )
+
+    if 'R' in chi2_vars and 'T' in chi2_vars:
+        chi2 = ( ChiR + ChiT ) / (2*len(wl_list))
+    elif 'R' in chi2_vars:
+        chi2 = ChiR / len(wl_list)
+    elif 'T' in chi2_vars:
+        chi2 = ChiT / len(wl_list)
+    else:
+        chi2 = 0
 
     return chi2

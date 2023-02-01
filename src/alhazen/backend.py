@@ -88,6 +88,19 @@ class Backend:
 
     def load_measure(self, name=None):
 
+        # REMARK: la situazione dei files sperimentali e` piu` complessa: in
+        # principio ci sono files separati per R e T, ciascuno misurtato su
+        # un proprio set di lunghezze d'onda. E` possibile anche avere un
+        # file che contiene R e T su un unico set di lunchegge d'onda (tre
+        # colonne, cosi` come nell'esempio implementato fin'ora).
+        # TODO: Bisogna prevedere tutti i casi ma restituire sempre una
+        # lista tipo: [ (lambda, R, T), (lambda, R, T), ... ] che implica
+        # una interpolazione sull'unione degli insiemi di lunghezze d'onda.
+        # Il formato potrebbe anche restare come e` ora:
+        # [ [ (lambda, R), (lambda, R), ...] [ (lambda, T), (lambda, T), ...] ]
+        # (implica sempre una interpolazione) ma bisogna ricordare che
+        # lambda e` lo stesso.
+
         # AUGH: mi sfugge il gioco tra "name" e "self.measure_file" qui ...
         if name is None and self.measure_file != 'None':
             name = self.measure_file
@@ -128,7 +141,7 @@ class Backend:
 
         data = []
         if self._structure:
-            serie_R,serie_T = compute_RT(self._structure, params)
+            [ serie_R,serie_T ] = compute_RT(self._structure, params)
             if show_R: data.append(("Rc", serie_R))
             if show_T: data.append(("Tc", serie_T))
             if show_A:
