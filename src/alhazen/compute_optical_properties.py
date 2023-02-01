@@ -383,4 +383,4 @@ def compute_chi2(json_structure, experimental_data, params):
     else:
         chi2 = 0
 
-    return chi2
+    return '{:.2f}'.format(chi2)
