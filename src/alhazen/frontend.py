@@ -216,11 +216,20 @@ class Frontend(tornado.web.Application):
     async def refresh_structure_description(self, params, ws_socket):
 
         structure = self.backend.get_structure()
-        print(structure)
-        # TODO: verificare la costruzione dell'html con il template
         tmpl_loader = tornado.template.Loader("src/templates/")
         struct_descr = tmpl_loader.load('structure_description.html').generate(structure=structure).decode()
         await self.send_message_to_UI("structure_description_container", payload=struct_descr, ws_socket=ws_socket)
+
+    async def update_structure(self, params, ws_socker):
+        '''
+        Tutte le funzioni helper fanno send_message_to_UI. Ma questa deve fare
+        un'altra cosa: deve aggiornare la struttura e non la sua
+        rappresentazione nella UI (che viene aggiornata altrove ...). Ora (Sat
+        28 Jan 12:13:01 CET 2023) sono troppo confuso e devo fermarmi...
+        '''
+        print(f'---------------- {params} -----------------')
+
+        pass
 
     async def refresh_plot(self, params, ws_socket):
 
@@ -268,7 +277,7 @@ class Frontend(tornado.web.Application):
             #await self.send_message_to_UI("pygal_description_container", message, ws_socket=ws_socket)
 
             # augh: qui passo chi2 alla UI, ma è ancora in divenire
-            await self.send_message_to_UI(element_id="chi2_value", target="innerHTML", payload="<strong>Result: "+str(chi2)+"</strong>", ws_socket=ws_socket)
+            await self.send_message_to_UI(element_id="chi2_value", target="innerHTML", payload="<strong>&chi;<sup>2</sup> = "+str(chi2)+"</strong>", ws_socket=ws_socket)
 
         #_msg = f"structure_file:{self.backend.structure_file}"
         #_msg += f", measure_file:{self.backend.measure_file}"
@@ -383,6 +392,11 @@ class Frontend(tornado.web.Application):
 
         logging.info(f"params:{json.dumps(params, indent=2)}")
         await self.refresh_structure_description(params, ws_socket)
+
+    async def _cmd_update_structure(self, params, ws_socket):
+
+        logging.info(f"params:{json.dumps(params, indent=2)}")
+        await self.update_structure(params, ws_socket)
 
     async def _cmd_refresh_plot(self, params, ws_socket):  # pylint: disable=unused-private-member
 

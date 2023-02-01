@@ -59,8 +59,11 @@ var on_file_selected = function (arg) {
      */
     refresh_plot();
 
+    /* FIXME: only when arg == structure */
+    /* if the file selected is a structure file, it call the functions below
+     * to refresh the structure
+     */
     /*
-    FIXME: refresh_structure_description should be called only when arg == structure!!!
     if (arg == "structure") {
         refresh_structure_description();
     }
@@ -78,6 +81,22 @@ var refresh_structure_description = function () {
     _object = {"command": "refresh_structure_description", "params": document.getElementById("structure_selector").value}
     send_to_websocket_server(_object);
 };
+
+var update_structure = function () {
+
+    var _object = null;
+
+    var structure_formData = new FormData(document.getElementById('structure_edit_panel_form'));
+    _object = {
+        "command": "update_structure", 
+        /* FIXME: l'errore dovrebbe essere qui: devo fare in modo di prendere tutti
+        gli input come array (funzione del numero del layer */
+        "params": { 'structure_edit_panel': Object.fromEntries(structure_formData.entries()) }
+    }
+    send_to_websocket_server(_object);
+
+    refresh_plot();
+}
 
 var refresh_plot = function () {
 
