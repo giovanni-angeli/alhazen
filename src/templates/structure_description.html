@@ -9,6 +9,7 @@
   <hr />
   <table>
     <tr>
+      <th>layer</th>
       <th>name</th>
       <th>file</th>
       <th style="text-align:center;">thickness<br />(nm)</th>
@@ -18,6 +19,7 @@
     </tr>
     {% for i,layer in enumerate(structure['layers']) %}
     <tr>
+      <td style="text-align:center;">{{ i+1 }}</td>
       <td>{{ layer['name'] }}</td>
       {% if layer['components'][0]['fraction'] == 100 %}
       <td>{{ layer['components'][0]['material_file_name'] }}</td>
