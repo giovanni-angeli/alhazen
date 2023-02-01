@@ -9,10 +9,10 @@
       <div> {% include "param_model_edit_panel.html" %} </div>
       <div><hr></hr></div>
 
-      <h3>chi2</h3>
+      <h3>Weighted sum of squares</h3>
       <form id="chi2_panel_form" action=";">
         <p>
-          <label>compute with respect to:</label>
+          <label>Compute with respect to:</label>
           <br />
 
           <label for="R">R:</label>
@@ -23,8 +23,28 @@
         </p>
       </form>
       <div id="chi2_value"></div>
-
       <div><hr></hr></div>
+
+      <h3>Thickness determination</h3>
+      <p>Minimize &chi;<sup>2</sup> over thicknesses of checked layers</p>
+      <form id="thickdet_panel_form" action=";">
+        <ul style="text-align:left;">
+          <li>
+            <label for="layer1">layer 1:</label>
+            <input type='checkbox' name="layer1_thickness"></input>
+          </li>
+          <li>
+            <label for="layer2">layer 2:</label>
+            <input type='checkbox' name="layer2_thickness"></input>
+          </li>
+          <li>
+          ...
+          </li>
+        </ul>
+        <input type="button" name="compute_thickdet" value="compute" onsubmit="compute_thickdet();">
+      </form>
+      <div><hr></hr></div>
+
       <div> {% include "param_plot_edit_panel.html" %} </div>
         <input type="submit" id="refresh_model_grap_btn" value="refresh graph (Alt+r)" accesskey="r" class="file_selector" onclick="refresh_plot();">
         </input>
