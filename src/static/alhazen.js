@@ -59,25 +59,23 @@ var on_file_selected = function (arg) {
      */
     refresh_plot();
 
-    /* if the file selected is a structure file, it call the functions below
-     * to refresh the structure
-     */
     /*
+    FIXME: refresh_structure_description should be called only when arg == structure!!!
     if (arg == "structure") {
-        refresh_structure();
+        refresh_structure_description();
     }
     */
-    refresh_structure();
+    refresh_structure_description();
 }
 
-var refresh_structure = function () {
+var refresh_structure_description = function () {
 
     /* send to python the "command" to refresh the html containing the
      * structure description
      */
     var _object = null;
 
-    _object = {"command": "refresh_structure", "params": document.getElementById("structure_selector").value}
+    _object = {"command": "refresh_structure_description", "params": document.getElementById("structure_selector").value}
     send_to_websocket_server(_object);
 };
 

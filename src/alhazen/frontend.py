@@ -104,12 +104,9 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
         structure_file_list = [''] + os.listdir(STRUCTURE_FILES_PATH)
         measure_file_list = [''] + os.listdir(MEASURE_FILES_PATH)
 
-        json_structure = self.parent.backend.get_structure()
-
         ctx = {
             'page_name': 'Alhazen graph page',
             'page_links': [('/setup', 'conf page'), ],
-            'structure': json_structure,
             'structure_file': self.parent.backend.structure_file,
             'measure_file': self.parent.backend.measure_file,
             'structure_file_list': structure_file_list,
@@ -119,6 +116,8 @@ class Index(BaseRequestHandler):  # pylint: disable=too-few-public-methods
         }
 
         logging.debug(f"ctx:{ctx}")
+
+        # FIXME: must refresh structure description on page reload. How?
 
         return self.render("index.html", **ctx)
 
@@ -214,7 +213,7 @@ class Frontend(tornado.web.Application):
             for ws_ch in self.web_socket_channels:
                 await ws_ch.write_message(msg)
 
-    async def refresh_structure(self, params, ws_socket):
+    async def refresh_structure_description(self, params, ws_socket):
 
         structure = self.backend.get_structure()
         print(structure)
@@ -380,10 +379,10 @@ class Frontend(tornado.web.Application):
         self.backend.install_templates()
         await self.refresh_file_lists(ws_socket)
 
-    async def _cmd_refresh_structure(self, params, ws_socket):  # pylint: disable=unused-private-member
+    async def _cmd_refresh_structure_description(self, params, ws_socket):  # pylint: disable=unused-private-member
 
         logging.info(f"params:{json.dumps(params, indent=2)}")
-        await self.refresh_structure(params, ws_socket)
+        await self.refresh_structure_description(params, ws_socket)
 
     async def _cmd_refresh_plot(self, params, ws_socket):  # pylint: disable=unused-private-member
 
