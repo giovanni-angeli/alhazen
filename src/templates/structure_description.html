@@ -1,13 +1,10 @@
 <form id="structure_edit_panel_form" action=";">
 <div style="text-align:left;">
+{% if structure != {} %}
   <p>
-    {% if structure['name'] %}
     structure: <strong>{{ structure['name'] }}</strong>
     <input type="button" name="edit" value="edit">
     <input type="button" name="save" value="save">
-    {% else %}
-    Please, select a structure.
-    {% end %}
   </p>
   <hr />
   <table>
@@ -40,5 +37,10 @@
     </tr>
     {% end %}
   </table>
+{% else %}
+  <p>
+    Please, select a structure.
+  </p>
+{% end %}
 <div>
 </form>
